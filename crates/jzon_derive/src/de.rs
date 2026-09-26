@@ -211,6 +211,7 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
                             fn from_json_scanner(
                                 scanner: &mut ::jzon::Scanner<'de>,
                             ) -> ::std::result::Result<Self, ::jzon::Error> {
+                                let _depth_guard = scanner.enter_depth()?;
                                 scanner.skip_whitespace();
                                 scanner.expect_byte(b'[')?;
                                 scanner.skip_whitespace();
@@ -264,6 +265,7 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
                         fn from_json_scanner(
                             scanner: &mut ::jzon::Scanner<'de>,
                         ) -> ::std::result::Result<Self, ::jzon::Error> {
+                            let _depth_guard = scanner.enter_depth()?;
                             scanner.skip_whitespace();
                             scanner.expect_byte(b'[')?;
                             let #first_var = <#first_ty as ::jzon::FromJson<'de>>::from_json_scanner(scanner)?;
@@ -570,6 +572,7 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
             fn from_json_scanner(
                 scanner: &mut ::jzon::Scanner<'de>,
             ) -> ::std::result::Result<Self, ::jzon::Error> {
+                let _depth_guard = scanner.enter_depth()?;
                 scanner.skip_whitespace();
                 scanner.expect_byte(b'{')?;
 
@@ -577,12 +580,18 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
 
                 const FIELD_HINTS: [&[u8]; #num_active] = [#(#hint_table),*];
                 let mut _hint: usize = 0;
+                let mut _after_comma = false;
                 #bitmask_init
 
                 loop {
                     match scanner.peek_byte_after_ws()? {
-                        b'}' => { scanner.advance(); break; }
+                        b'}' => {
+                            scanner.check_trailing_comma(_after_comma)?;
+                            scanner.advance();
+                            break;
+                        }
                         b'"' => {
+                            _after_comma = false;
                             let _key = scanner.read_key_colon()?;
 
                             #first_byte_check
@@ -604,7 +613,7 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
                     }
 
                     match scanner.peek_byte_after_ws()? {
-                        b',' => { scanner.advance(); }
+                        b',' => { scanner.advance(); _after_comma = true; }
                         b'}' => { scanner.advance(); break; }
                         _ => return Err(::jzon::Error::UnexpectedToken),
                     }
@@ -1019,16 +1028,22 @@ fn expand_internally_tagged_enum(
             Fields::Unit => {
                 Ok(quote! {
                     #vbytes_lit #(| #valias_pats)* => {
+                        let mut _after_comma = false;
                         loop {
                             scanner.skip_whitespace();
                             match scanner.peek_byte()? {
-                                b'}' => { scanner.advance(); break; }
+                                b'}' => {
+                                    scanner.check_trailing_comma(_after_comma)?;
+                                    scanner.advance();
+                                    break;
+                                }
                                 b'"' => {
+                                    _after_comma = false;
                                     scanner.read_key_colon()?;
                                     scanner.skip_value()?;
                                     scanner.skip_whitespace();
                                     match scanner.peek_byte()? {
-                                        b',' => { scanner.advance(); }
+                                        b',' => { scanner.advance(); _after_comma = true; }
                                         b'}' => {}
                                         _ => return Err(::jzon::Error::UnexpectedToken),
                                     }
@@ -1071,11 +1086,17 @@ fn expand_internally_tagged_enum(
                 Ok(quote! {
                     #vbytes_lit #(| #valias_pats)* => {
                         #(#decls)*
+                        let mut _after_comma = false;
                         loop {
                             scanner.skip_whitespace();
                             match scanner.peek_byte()? {
-                                b'}' => { scanner.advance(); break; }
+                                b'}' => {
+                                    scanner.check_trailing_comma(_after_comma)?;
+                                    scanner.advance();
+                                    break;
+                                }
                                 b'"' => {
+                                    _after_comma = false;
                                     let _k2 = scanner.read_key_colon()?;
                                     if _k2 == #tag_bytes_lit {
                                         scanner.skip_value()?;
@@ -1087,7 +1108,7 @@ fn expand_internally_tagged_enum(
                                     }
                                     scanner.skip_whitespace();
                                     match scanner.peek_byte()? {
-                                        b',' => { scanner.advance(); }
+                                        b',' => { scanner.advance(); _after_comma = true; }
                                         b'}' => {}
                                         _ => return Err(::jzon::Error::UnexpectedToken),
                                     }
@@ -1112,6 +1133,7 @@ fn expand_internally_tagged_enum(
             fn from_json_scanner(
                 scanner: &mut ::jzon::Scanner<'de>,
             ) -> ::std::result::Result<Self, ::jzon::Error> {
+                let _depth_guard = scanner.enter_depth()?;
                 scanner.skip_whitespace();
 
                 let _obj_start = scanner.pos();
@@ -1120,11 +1142,17 @@ fn expand_internally_tagged_enum(
                 let mut _tag: ::std::option::Option<::jzon::JsonStr<'de>> = None;
                 let mut _tag_first = false;
                 let mut _first_key = true;
+                let mut _after_comma = false;
                 loop {
                     scanner.skip_whitespace();
                     match scanner.peek_byte()? {
-                        b'}' => { scanner.advance(); break; }
+                        b'}' => {
+                            scanner.check_trailing_comma(_after_comma)?;
+                            scanner.advance();
+                            break;
+                        }
                         b'"' => {
+                            _after_comma = false;
                             let _k = scanner.read_key_colon()?;
                             if _k == #tag_bytes_lit {
                                 _tag = ::std::option::Option::Some(scanner.read_str()?);
@@ -1135,7 +1163,7 @@ fn expand_internally_tagged_enum(
                                 scanner.skip_value()?;
                                 scanner.skip_whitespace();
                                 match scanner.peek_byte()? {
-                                    b',' => { scanner.advance(); }
+                                    b',' => { scanner.advance(); _after_comma = true; }
                                     b'}' => {}
                                     _ => return Err(::jzon::Error::UnexpectedToken),
                                 }
@@ -1163,16 +1191,22 @@ fn expand_internally_tagged_enum(
                     #(#variant_arms)*
                     _ => {
                         if _tag_first {
+                            let mut _after_comma = false;
                             loop {
                                 scanner.skip_whitespace();
                                 match scanner.peek_byte()? {
-                                    b'}' => { scanner.advance(); break; }
+                                    b'}' => {
+                                        scanner.check_trailing_comma(_after_comma)?;
+                                        scanner.advance();
+                                        break;
+                                    }
                                     b'"' => {
+                                        _after_comma = false;
                                         scanner.read_key_colon()?;
                                         scanner.skip_value()?;
                                         scanner.skip_whitespace();
                                         match scanner.peek_byte()? {
-                                            b',' => { scanner.advance(); }
+                                            b',' => { scanner.advance(); _after_comma = true; }
                                             b'}' => { scanner.advance(); break; }
                                             _ => return Err(::jzon::Error::UnexpectedToken),
                                         }
@@ -1412,10 +1446,16 @@ fn expand_externally_tagged_enum(
                         #(#decls)*
                         scanner.skip_whitespace();
                         scanner.expect_byte(b'{')?;
+                        let mut _after_comma = false;
                         loop {
                             match scanner.peek_byte_after_ws()? {
-                                b'}' => { scanner.advance(); break; }
+                                b'}' => {
+                                    scanner.check_trailing_comma(_after_comma)?;
+                                    scanner.advance();
+                                    break;
+                                }
                                 b'"' => {
+                                    _after_comma = false;
                                     let _k = scanner.read_key_colon()?;
                                     match _k {
                                         #(#field_arms)*
@@ -1423,7 +1463,7 @@ fn expand_externally_tagged_enum(
                                     }
                                     scanner.skip_whitespace();
                                     match scanner.peek_byte()? {
-                                        b',' => { scanner.advance(); }
+                                        b',' => { scanner.advance(); _after_comma = true; }
                                         b'}' => {}
                                         _ => return Err(::jzon::Error::UnexpectedToken),
                                     }
@@ -1470,6 +1510,7 @@ fn expand_externally_tagged_enum(
                         }
                     }
                     b'{' => {
+                        let _depth_guard = scanner.enter_depth()?;
                         scanner.advance();
                         scanner.skip_whitespace();
                         let _js = scanner.read_str()?;

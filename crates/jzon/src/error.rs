@@ -16,6 +16,10 @@ pub enum Error {
     EscapedString,
     /// An object key contained escape sequences (extremely rare).
     EscapedKey,
+    /// Nesting exceeded 128 levels (mirrors `serde_json`'s recursion limit).
+    RecursionLimit,
+    /// Trailing comma in an object or array (only with the `strict` feature).
+    TrailingComma,
     Custom(String),
 }
 
@@ -35,6 +39,8 @@ impl fmt::Display for Error {
                 "string contains escape sequences — borrow is impossible; use `String`"
             ),
             Error::EscapedKey       => write!(f, "JSON object key contains escape sequences"),
+            Error::RecursionLimit  => write!(f, "recursion limit exceeded"),
+            Error::TrailingComma   => write!(f, "trailing comma in JSON input"),
             Error::Custom(m)        => write!(f, "{m}"),
         }
     }

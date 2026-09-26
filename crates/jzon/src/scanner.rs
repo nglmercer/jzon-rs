@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use crate::{simd, Error};
 
 #[cold]
@@ -58,11 +60,50 @@ impl<'de> JsonStr<'de> {
     }
 }
 
+/// Levels of array/object nesting a single parse may enter, mirroring
+/// `serde_json` (127 nested opens parse, the 128th errors).
+pub const MAX_DEPTH: u8 = 128;
+
 pub struct Scanner<'de> {
     input: &'de [u8],
     pos: usize,
+    remaining_depth: u8,
     #[cfg(feature = "stats")]
     pub stats: crate::stats::ScannerStats,
+}
+
+/// Restores one level of [`Scanner`] depth when dropped. Bind the result of
+/// [`Scanner::enter_depth`] for the duration of a composite value.
+///
+/// Stores a raw pointer so the `&mut` borrow used to create the guard ends
+/// immediately and the scanner stays usable while the guard is alive. This
+/// is sound because the guard is always a stack local dropped before the
+/// borrowed scanner can move or be dropped, no borrows of the scanner
+/// itself ever escape it (returned slices borrow the input with `'de`),
+/// and no live borrows exist when the guard drops at scope end.
+#[must_use = "bind the guard so depth is restored when the value is done"]
+#[derive(Debug)]
+pub struct DepthGuard<'de> {
+    scanner: *mut Scanner<'de>,
+    _not_sync: PhantomData<&'de mut Scanner<'de>>,
+}
+
+impl Drop for DepthGuard<'_> {
+    #[inline]
+    fn drop(&mut self) {
+        // SAFETY: the pointer is valid (see struct docs) and nothing else
+        // touches the counter while the guard is being dropped.
+        #[cfg(not(feature = "unbounded_depth"))]
+        unsafe {
+            (*self.scanner).remaining_depth += 1;
+        }
+        // Touch the pointer in all configurations so it is not dead code
+        // when the limit is compiled out.
+        #[cfg(feature = "unbounded_depth")]
+        {
+            let _ = self.scanner;
+        }
+    }
 }
 
 impl<'de> Scanner<'de> {
@@ -71,6 +112,7 @@ impl<'de> Scanner<'de> {
         Scanner {
             input,
             pos: 0,
+            remaining_depth: MAX_DEPTH,
             #[cfg(feature = "stats")]
             stats: crate::stats::ScannerStats::default(),
         }
@@ -132,6 +174,43 @@ impl<'de> Scanner<'de> {
         {
             self.stats.hint_misses += 1;
         }
+    }
+
+    /// Reject a trailing comma when closing a composite: call with
+    /// `after_comma` set if a `,` was just consumed. Always `Ok` without
+    /// the `strict` feature (the default parser is a lenient superset).
+    #[inline]
+    pub fn check_trailing_comma(&self, after_comma: bool) -> Result<(), Error> {
+        #[cfg(feature = "strict")]
+        {
+            if after_comma {
+                return Err(Error::TrailingComma);
+            }
+        }
+        #[cfg(not(feature = "strict"))]
+        {
+            let _ = after_comma;
+        }
+        Ok(())
+    }
+
+    /// Enter one level of array/object nesting, enforcing the 128-level
+    /// recursion limit (use the `unbounded_depth` feature to opt out, exactly
+    /// like `serde_json`). The returned guard restores the level on drop, so
+    /// bind it for the whole composite value.
+    #[inline]
+    pub fn enter_depth(&mut self) -> Result<DepthGuard<'de>, Error> {
+        #[cfg(not(feature = "unbounded_depth"))]
+        {
+            if self.remaining_depth <= 1 {
+                return Err(Error::RecursionLimit);
+            }
+            self.remaining_depth -= 1;
+        }
+        Ok(DepthGuard {
+            scanner: self as *mut Scanner<'de>,
+            _not_sync: PhantomData,
+        })
     }
 
     #[inline]
@@ -363,6 +442,9 @@ impl<'de> Scanner<'de> {
 
         // Read the integer part.  If it starts with '0', the spec forbids any
         // further digit immediately following (leading zeros like "01" are invalid).
+        // An integer part is REQUIRED: inputs like ".5" or "-.5" are invalid
+        // JSON (serde_json rejects them) and must not slip through to the
+        // fraction/exponent matchers below.
         match self.input.get(self.pos) {
             Some(&b'0') => {
                 self.pos += 1;
@@ -375,7 +457,7 @@ impl<'de> Scanner<'de> {
                 self.pos += 1;
                 self.scan_ascii_digits();
             }
-            _ => {} // will be caught by the end-check below
+            _ => return Err(Error::InvalidNumber),
         }
 
         if self.input.get(self.pos) == Some(&b'.') {
@@ -510,10 +592,12 @@ impl<'de> Scanner<'de> {
     /// Skip remaining fields of an already-opened object (cursor is just past `{`).
     /// Used by internally-tagged enum deserialization when the variant is unknown.
     pub fn skip_object_tail(&mut self) -> Result<(), Error> {
+        let mut after_comma = false;
         loop {
             self.skip_whitespace();
             match self.peek_byte()? {
                 b'}' => {
+                    self.check_trailing_comma(after_comma)?;
                     self.pos += 1;
                     return Ok(());
                 }
@@ -526,6 +610,7 @@ impl<'de> Scanner<'de> {
                     match self.peek_byte()? {
                         b',' => {
                             self.pos += 1;
+                            after_comma = true;
                         }
                         b'}' => {
                             self.pos += 1;
@@ -540,6 +625,7 @@ impl<'de> Scanner<'de> {
     }
 
     fn skip_object(&mut self) -> Result<(), Error> {
+        let _depth = self.enter_depth()?;
         self.expect_byte(b'{')?;
         self.skip_whitespace();
         if self.input.get(self.pos) == Some(&b'}') {
@@ -568,6 +654,7 @@ impl<'de> Scanner<'de> {
     }
 
     fn skip_array(&mut self) -> Result<(), Error> {
+        let _depth = self.enter_depth()?;
         self.expect_byte(b'[')?;
         self.skip_whitespace();
         if self.input.get(self.pos) == Some(&b']') {
@@ -644,6 +731,12 @@ impl<'de> Scanner<'de> {
                                     .map_err(|_| Error::InvalidEscape)?;
                                 let lo = u32::from_str_radix(lo_s, 16)
                                     .map_err(|_| Error::InvalidEscape)?;
+                                // The second half must be a low surrogate
+                                // (DC00–DFFF); anything else is a lone
+                                // leading surrogate (serde_json rejects it).
+                                if !(0xDC00..=0xDFFF).contains(&lo) {
+                                    return Err(Error::InvalidEscape);
+                                }
                                 self.pos += 4;
                                 let combined = 0x10000 + ((code - 0xD800) << 10) + (lo - 0xDC00);
                                 char::from_u32(combined).ok_or(Error::InvalidEscape)?

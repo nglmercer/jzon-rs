@@ -8,13 +8,13 @@
 //!   - Invalid JSON → parse via `jzon_serde::from_str::<serde_json::Value>` and assert `Err`.
 //!   - Serialisation → `jzon_serde::to_string` and compare with expected output.
 //!
-//! Status: 95 pass, 2 ignored.
+//! Status: 95 pass, 2 ignored (both run under the `strict` feature).
 //!
-//! Remaining known deviations (intentional — trailing commas):
-//!   jzon's lenient parser accepts trailing commas in arrays/objects.
-//!   Valid JSON per ECMA-404 never has trailing commas, but many real-world
-//!   generators emit them. Rejecting them is a future `strict` feature, not
-//!   a correctness issue for consuming well-formed JSON.
+//! Known intentional behavior — trailing commas:
+//!   jzon's default parser is a lenient superset that accepts trailing
+//!   commas in arrays/objects (many real-world generators emit them).
+//!   The `strict` feature rejects them per ECMA-404; `jzon::compat`
+//!   always enables `strict` for drop-in `serde_json` parity.
 
 use jzon_serde::{from_str, to_string};
 use serde_json::Value;
@@ -572,9 +572,12 @@ fn array_nested() {
 }
 
 // spec: arrays/trailing-comma-rejected
-// KNOWN DEVIATION: jzon accepts trailing commas in arrays.
+// Lenient by default (superset); enforced with the `strict` feature.
 #[test]
-#[ignore = "jzon accepts trailing commas in arrays; strict JSON forbids them"]
+#[cfg_attr(
+    not(feature = "strict"),
+    ignore = "jzon accepts trailing commas in arrays unless `strict`"
+)]
 fn array_trailing_comma_rejected() {
     assert!(parse("[1,2,]").is_err());
 }
@@ -626,9 +629,12 @@ fn obj_unquoted_key_rejected() {
 }
 
 // spec: objects/trailing-comma-rejected
-// KNOWN DEVIATION: jzon accepts trailing commas in objects.
+// Lenient by default (superset); enforced with the `strict` feature.
 #[test]
-#[ignore = "jzon accepts trailing commas in objects; strict JSON forbids them"]
+#[cfg_attr(
+    not(feature = "strict"),
+    ignore = "jzon accepts trailing commas in objects unless `strict`"
+)]
 fn obj_trailing_comma_rejected() {
     assert!(parse(r#"{"a":1,}"#).is_err());
 }
@@ -765,13 +771,11 @@ fn ser_negative_zero() {
 // Verify the actual (current) jzon behaviour for -0 so it is visible in tests.
 #[test]
 fn ser_negative_zero_actual_behavior() {
-    // Document what jzon currently produces for -0.0.
+    // The serde path follows serde_json, which preserves the sign ("-0.0");
+    // ECMA-262's "0" still applies to the core ToJson path (unchanged).
     let s = to_string(&(-0.0f64)).unwrap();
-    // jzon currently emits "-0"; record this as the observed output.
-    assert!(
-        s == "-0" || s == "0" || s == "0.0",
-        "unexpected negative-zero output: {s}"
-    );
+    assert_eq!(s, "-0.0");
+    assert_eq!(s, serde_json::to_string(&(-0.0f64)).unwrap());
 }
 
 // spec: stringify/non-finite-as-null

@@ -82,9 +82,18 @@ impl<'de, T: FromJson<'de>> FromJson<'de> for Option<T> {
 
 // ── Vec<T> ───────────────────────────────────────────────────────────────────
 
+impl<'de, T: FromJson<'de>> FromJson<'de> for Box<T> {
+    #[inline]
+    fn from_json_scanner(sc: &mut Scanner<'de>) -> Result<Self, Error> {
+        // Transparent like Option: no depth consumed (matches serde_json).
+        Ok(Box::new(T::from_json_scanner(sc)?))
+    }
+}
+
 impl<'de, T: FromJson<'de>> FromJson<'de> for Vec<T> {
     #[inline]
     fn from_json_scanner(sc: &mut Scanner<'de>) -> Result<Self, Error> {
+        let _depth = sc.enter_depth()?;
         sc.skip_whitespace();
         sc.expect_byte(b'[')?;
         // Fuse whitespace skip + empty-array check in one call.
@@ -215,28 +224,17 @@ macro_rules! impl_sint {
 
 // ── floats ────────────────────────────────────────────────────────────────────
 //
-// With `fast-float` feature: use fast-float2 crate for ~3× faster parsing.
-// Without: fall back to std str::parse.
+// fast-float2 parses the float AND returns bytes consumed in a single pass,
+// eliminating the separate forward-scan that read_number_bytes() does.
 
 impl<'de> FromJson<'de> for f64 {
     #[inline]
     fn from_json_scanner(sc: &mut Scanner<'de>) -> Result<Self, Error> {
         sc.skip_whitespace();
-        #[cfg(feature = "fast-float")]
-        {
-            // Single-pass: parse_partial parses the float AND returns bytes consumed,
-            // eliminating the separate forward-scan that read_number_bytes() does.
-            let (val, consumed) = fast_float2::parse_partial::<f64, _>(sc.remaining_input())
-                .map_err(|_| Error::InvalidNumber)?;
-            sc.advance_by(consumed);
-            return Ok(val);
-        }
-        #[cfg(not(feature = "fast-float"))]
-        {
-            let bytes = sc.read_number_bytes()?;
-            let s = core::str::from_utf8(bytes).map_err(|_| Error::InvalidUtf8)?;
-            s.parse::<f64>().map_err(|_| Error::InvalidNumber)
-        }
+        let (val, consumed) = fast_float2::parse_partial::<f64, _>(sc.remaining_input())
+            .map_err(|_| Error::InvalidNumber)?;
+        sc.advance_by(consumed);
+        Ok(val)
     }
 }
 
@@ -244,19 +242,10 @@ impl<'de> FromJson<'de> for f32 {
     #[inline]
     fn from_json_scanner(sc: &mut Scanner<'de>) -> Result<Self, Error> {
         sc.skip_whitespace();
-        #[cfg(feature = "fast-float")]
-        {
-            let (val, consumed) = fast_float2::parse_partial::<f32, _>(sc.remaining_input())
-                .map_err(|_| Error::InvalidNumber)?;
-            sc.advance_by(consumed);
-            return Ok(val);
-        }
-        #[cfg(not(feature = "fast-float"))]
-        {
-            let bytes = sc.read_number_bytes()?;
-            let s = core::str::from_utf8(bytes).map_err(|_| Error::InvalidUtf8)?;
-            s.parse::<f32>().map_err(|_| Error::InvalidNumber)
-        }
+        let (val, consumed) = fast_float2::parse_partial::<f32, _>(sc.remaining_input())
+            .map_err(|_| Error::InvalidNumber)?;
+        sc.advance_by(consumed);
+        Ok(val)
     }
 }
 
@@ -264,7 +253,7 @@ impl_uint!(u8, u16, u32, usize); // u64 has a hand-written impl above; u128 has 
 impl_sint!(i8, i16, i32, i64, isize); // i128 has its own impl below
 
 // Note: Vec<f64> automatically benefits from the fast f64::from_json_scanner
-// above (fast-float2 when enabled) via the generic Vec<T> implementation.
+// above via the generic Vec<T> implementation.
 // Stable Rust does not allow specialization, so no separate Vec<f64> impl is
 // possible — the generic impl above (with fused peek_byte_after_ws and
 // pre-allocation) is the optimized hot path for nested coordinate arrays.
@@ -369,17 +358,21 @@ use std::collections::HashMap;
 impl<'de, V: FromJson<'de>> FromJson<'de> for HashMap<String, V> {
     #[inline]
     fn from_json_scanner(sc: &mut Scanner<'de>) -> Result<Self, Error> {
+        let _depth = sc.enter_depth()?;
         sc.skip_whitespace();
         sc.expect_byte(b'{')?;
         // Pre-size: most JSON objects have fewer than 8 keys; avoids rehashing on small maps.
         let mut map = HashMap::with_capacity(8);
+        let mut after_comma = false;
         loop {
             match sc.peek_byte_after_ws()? {
                 b'}' => {
+                    sc.check_trailing_comma(after_comma)?;
                     sc.advance();
                     break;
                 }
                 b'"' => {
+                    after_comma = false;
                     // read_str_key_colon: zero-copy borrowed key, no intermediate JsonStr allocation.
                     // Returns EscapedKey error if backslash present (uncommon in map keys).
                     let key = sc.read_str_key_colon()?.to_owned();
@@ -388,6 +381,7 @@ impl<'de, V: FromJson<'de>> FromJson<'de> for HashMap<String, V> {
                     match sc.peek_byte_after_ws()? {
                         b',' => {
                             sc.advance();
+                            after_comma = true;
                         }
                         b'}' => {}
                         _ => return Err(Error::UnexpectedToken),
@@ -402,16 +396,20 @@ impl<'de, V: FromJson<'de>> FromJson<'de> for HashMap<String, V> {
 
 impl<'de, V: FromJson<'de>> FromJson<'de> for HashMap<&'de str, V> {
     fn from_json_scanner(sc: &mut Scanner<'de>) -> Result<Self, Error> {
+        let _depth = sc.enter_depth()?;
         sc.skip_whitespace();
         sc.expect_byte(b'{')?;
         let mut map = HashMap::new();
+        let mut after_comma = false;
         loop {
             match sc.peek_byte_after_ws()? {
                 b'}' => {
+                    sc.check_trailing_comma(after_comma)?;
                     sc.advance();
                     break;
                 }
                 b'"' => {
+                    after_comma = false;
                     let key = sc.read_str()?;
                     let key_str = key.as_borrowed().ok_or(Error::EscapedString)?;
                     sc.skip_whitespace();
@@ -421,6 +419,7 @@ impl<'de, V: FromJson<'de>> FromJson<'de> for HashMap<&'de str, V> {
                     match sc.peek_byte_after_ws()? {
                         b',' => {
                             sc.advance();
+                            after_comma = true;
                         }
                         b'}' => {}
                         _ => return Err(Error::UnexpectedToken),
@@ -440,16 +439,20 @@ use std::collections::BTreeMap;
 impl<'de, V: FromJson<'de>> FromJson<'de> for BTreeMap<String, V> {
     #[inline]
     fn from_json_scanner(sc: &mut Scanner<'de>) -> Result<Self, Error> {
+        let _depth = sc.enter_depth()?;
         sc.skip_whitespace();
         sc.expect_byte(b'{')?;
         let mut map = BTreeMap::new();
+        let mut after_comma = false;
         loop {
             match sc.peek_byte_after_ws()? {
                 b'}' => {
+                    sc.check_trailing_comma(after_comma)?;
                     sc.advance();
                     break;
                 }
                 b'"' => {
+                    after_comma = false;
                     // read_str_key_colon: zero-copy borrowed key — same optimization as HashMap.
                     let key = sc.read_str_key_colon()?.to_owned();
                     let val = V::from_json_scanner(sc)?;
@@ -457,6 +460,7 @@ impl<'de, V: FromJson<'de>> FromJson<'de> for BTreeMap<String, V> {
                     match sc.peek_byte_after_ws()? {
                         b',' => {
                             sc.advance();
+                            after_comma = true;
                         }
                         b'}' => {}
                         _ => return Err(Error::UnexpectedToken),
@@ -471,16 +475,20 @@ impl<'de, V: FromJson<'de>> FromJson<'de> for BTreeMap<String, V> {
 
 impl<'de, V: FromJson<'de>> FromJson<'de> for BTreeMap<&'de str, V> {
     fn from_json_scanner(sc: &mut Scanner<'de>) -> Result<Self, Error> {
+        let _depth = sc.enter_depth()?;
         sc.skip_whitespace();
         sc.expect_byte(b'{')?;
         let mut map = BTreeMap::new();
+        let mut after_comma = false;
         loop {
             match sc.peek_byte_after_ws()? {
                 b'}' => {
+                    sc.check_trailing_comma(after_comma)?;
                     sc.advance();
                     break;
                 }
                 b'"' => {
+                    after_comma = false;
                     let key = sc.read_str()?;
                     let key_str = key.as_borrowed().ok_or(Error::EscapedString)?;
                     sc.skip_whitespace();
@@ -490,6 +498,7 @@ impl<'de, V: FromJson<'de>> FromJson<'de> for BTreeMap<&'de str, V> {
                     match sc.peek_byte_after_ws()? {
                         b',' => {
                             sc.advance();
+                            after_comma = true;
                         }
                         b'}' => {}
                         _ => return Err(Error::UnexpectedToken),
@@ -510,6 +519,7 @@ macro_rules! impl_tuple_from_json {
             for ($first, $($T,)*)
         {
             fn from_json_scanner(sc: &mut Scanner<'de>) -> Result<Self, Error> {
+                let _depth = sc.enter_depth()?;
                 sc.skip_whitespace(); sc.expect_byte(b'[')?;
                 let $fv = $first::from_json_scanner(sc)?;
                 $(

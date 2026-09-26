@@ -374,6 +374,16 @@ impl_sint!(i8, 4, i16, 6, i32, 11, i64, 20, isize, 20);
 
 // u128 / i128: cannot pass through u64/i64, need dedicated digit writers.
 #[inline]
+pub fn write_u128(n: u128, w: &mut Vec<u8>) {
+    write_u128_sink(n, &mut VecSink(w));
+}
+
+#[inline]
+pub fn write_i128(n: i128, w: &mut Vec<u8>) {
+    write_i128_sink(n, &mut VecSink(w));
+}
+
+#[inline]
 fn write_u128_sink<S: JsonSink>(mut n: u128, w: &mut S) {
     if n == 0 { w.push(b'0'); return; }
     let mut tmp = [0u8; 39];
@@ -447,14 +457,12 @@ fn write_f64<S: JsonSink>(n: f64, w: &mut S) {
         w.extend(buf.format_finite(n).as_bytes());
         return;
     }
-    #[cfg(all(feature = "fast-float", not(feature = "zmij-float-ser")))]
+    #[cfg(not(feature = "zmij-float-ser"))]
     {
         let mut buf = ryu::Buffer::new();
         w.extend(buf.format_finite(n).as_bytes());
         return;
     }
-    #[cfg(not(any(feature = "fast-float", feature = "zmij-float-ser")))]
-    w.extend(format!("{}", n).as_bytes());
 }
 
 #[inline]
@@ -466,14 +474,12 @@ fn write_f32<S: JsonSink>(n: f32, w: &mut S) {
         w.extend(buf.format_finite(n).as_bytes());
         return;
     }
-    #[cfg(all(feature = "fast-float", not(feature = "zmij-float-ser")))]
+    #[cfg(not(feature = "zmij-float-ser"))]
     {
         let mut buf = ryu::Buffer::new();
         w.extend(buf.format_finite(n).as_bytes());
         return;
     }
-    #[cfg(not(any(feature = "fast-float", feature = "zmij-float-ser")))]
-    w.extend(format!("{}", n).as_bytes());
 }
 
 // ── char ──────────────────────────────────────────────────────────────────────

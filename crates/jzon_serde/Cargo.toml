@@ -16,6 +16,11 @@ simd       = ["jzon/simd"]
 fast-float = ["jzon/fast-float"]
 unstable   = ["jzon/unstable"]
 stats      = ["jzon/stats"]
+# Engine-affecting serde_json mirrors. Enable `arbitrary_precision` here when
+# the serde_json you deserialize into has its own `arbitrary_precision` on,
+# so out-of-range numbers visit as exact digit strings instead of f64.
+arbitrary_precision = ["jzon/arbitrary_precision"]
+unbounded_depth     = ["jzon/unbounded_depth"]
 
 [dependencies]
 jzon  = { package = "jzon-rs", path = "../jzon", version = "0.3", default-features = false, features = ["serde"] }

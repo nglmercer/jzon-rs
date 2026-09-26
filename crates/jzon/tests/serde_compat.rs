@@ -222,15 +222,45 @@ fn de_any_number_routes_to_expected_visitor_kinds() {
     assert_eq!(from_str::<AnyNumberKind>("-42").unwrap(), AnyNumberKind::I64(-42));
     assert_eq!(from_str::<AnyNumberKind>("0").unwrap(), AnyNumberKind::U64(0));
     assert_eq!(from_str::<AnyNumberKind>("42").unwrap(), AnyNumberKind::U64(42));
-    assert_eq!(
-        from_str::<AnyNumberKind>("1.5").unwrap(),
-        AnyNumberKind::F64(1.5)
-    );
-    assert!((match from_str::<AnyNumberKind>("1e5").unwrap() {
-        AnyNumberKind::F64(v) => v,
-        other => panic!("expected f64 visitor, got {other:?}"),
-    } - 1e5).abs() < 1.0);
-    assert!(from_str::<AnyNumberKind>("18446744073709551616").is_err());
+    #[cfg(not(feature = "arbitrary_precision"))]
+    {
+        assert_eq!(
+            from_str::<AnyNumberKind>("1.5").unwrap(),
+            AnyNumberKind::F64(1.5)
+        );
+        assert!(
+            (match from_str::<AnyNumberKind>("1e5").unwrap() {
+                AnyNumberKind::F64(v) => v,
+                other => panic!("expected f64 visitor, got {other:?}"),
+            } - 1e5)
+                .abs()
+                < 1.0
+        );
+        // 2^64 overflows u64: serde_json degrades to f64 on untyped paths.
+        assert!(matches!(
+            from_str::<AnyNumberKind>("18446744073709551616").unwrap(),
+            AnyNumberKind::F64(_)
+        ));
+    }
+    // Under arbitrary_precision, floats and overflowed ints visit as the
+    // `{ NUMBER_TOKEN: digits }` map — native serde_json errors identically
+    // for visitors without `visit_map`.
+    #[cfg(feature = "arbitrary_precision")]
+    {
+        for src in ["1.5", "1e5", "18446744073709551616"] {
+            let ours = from_str::<AnyNumberKind>(src).map_err(|e| e.to_string());
+            let theirs = serde_json::from_str::<AnyNumberKind>(src).map_err(|e| e.to_string());
+            assert!(ours.is_err() && theirs.is_err(), "input: {src}");
+            assert!(
+                ours.unwrap_err().contains("invalid type: map"),
+                "input: {src}"
+            );
+            assert!(
+                theirs.unwrap_err().contains("invalid type: map"),
+                "input: {src}"
+            );
+        }
+    }
 }
 
 #[test]
@@ -684,18 +714,21 @@ fn internally_tagged_ser_circle() {
     assert!(json.contains("\"radius\""), "must contain field: {json}");
 }
 
+#[cfg(not(feature = "arbitrary_precision"))]
 #[test]
 fn internally_tagged_de_circle() {
     let s: Shape = from_str(r#"{"type":"Circle","radius":2.5}"#).unwrap();
     assert_eq!(s, Shape::Circle { radius: 2.5 });
 }
 
+#[cfg(not(feature = "arbitrary_precision"))]
 #[test]
 fn internally_tagged_de_rectangle() {
     let s: Shape = from_str(r#"{"type":"Rectangle","width":3.0,"height":4.0}"#).unwrap();
     assert_eq!(s, Shape::Rectangle { width: 3.0, height: 4.0 });
 }
 
+#[cfg(not(feature = "arbitrary_precision"))]
 #[test]
 fn internally_tagged_roundtrip() {
     for shape in &[
@@ -704,6 +737,28 @@ fn internally_tagged_roundtrip() {
     ] {
         assert_eq!(&roundtrip(shape), shape);
     }
+}
+
+// Under arbitrary_precision, floats inside buffered (internally-tagged)
+// content visit as `{ NUMBER_TOKEN: digits }` maps, so f64 fields fail —
+// native serde_json fails with the identical message (verified by probe),
+// while integer payloads still deserialize.
+#[cfg(feature = "arbitrary_precision")]
+#[test]
+fn internally_tagged_under_arb_matches_native() {
+    for src in [
+        r#"{"type":"Circle","radius":2.5}"#,
+        r#"{"type":"Rectangle","width":3.0,"height":4.0}"#,
+    ] {
+        let ours = from_str::<Shape>(src).map_err(|e| e.to_string());
+        let theirs = serde_json::from_str::<Shape>(src).map_err(|e| e.to_string());
+        assert_eq!(ours.unwrap_err(), "invalid type: map, expected f64");
+        assert!(theirs
+            .unwrap_err()
+            .contains("invalid type: map, expected f64"));
+    }
+    let s: Shape = from_str(r#"{"type":"Circle","radius":2}"#).unwrap();
+    assert_eq!(s, Shape::Circle { radius: 2.0 });
 }
 
 // ============================================================
@@ -1009,4 +1064,116 @@ fn untagged_enum_roundtrip() {
         roundtrip(&Untagged::Str("hello".to_string())),
         Untagged::Str("hello".to_string())
     );
+}
+
+// ============================================================
+// 15. SERDE_JSON TOKEN PROTOCOLS (RawValue / Number passthrough)
+// ============================================================
+//
+// serde_json's `RawValue` and arbitrary-precision `Number` serialize as
+// private single-field token structs whose payload must be emitted raw
+// (unquoted). `Box<RawValue>` deserializes via `deserialize_newtype_struct`
+// with the token name, expecting a single-entry `{ TOKEN: raw }` map.
+// The engine must honor both directions byte-for-byte.
+
+use serde::ser::SerializeStruct as _SerdeSerializeStruct;
+use serde_json::value::RawValue;
+
+#[test]
+fn raw_value_serialize_passthrough() {
+    let raw: Box<RawValue> = serde_json::from_str(r#"{"a":[1,2],"b":"x"}"#).unwrap();
+    assert_eq!(
+        to_string(&raw).unwrap(),
+        serde_json::to_string(&raw).unwrap()
+    );
+    assert_eq!(to_string(&raw).unwrap(), r#"{"a":[1,2],"b":"x"}"#);
+}
+
+#[test]
+fn raw_value_deserialize_verbatim() {
+    // Whitespace and key order preserved exactly, like serde_json.
+    let input = "{ \"b\" : [1, 2] , \"a\" : true }";
+    let ours: Box<RawValue> = from_str(input).unwrap();
+    let theirs: Box<RawValue> = serde_json::from_str(input).unwrap();
+    assert_eq!(ours.get(), input);
+    assert_eq!(ours.get(), theirs.get());
+}
+
+#[test]
+fn raw_value_borrowed() {
+    let input = r#"[1,"two",{"three":3}]"#;
+    let ours: &RawValue = from_str(input).unwrap();
+    assert_eq!(ours.get(), input);
+}
+
+#[test]
+fn raw_value_scalar_and_nested() {
+    for input in ["42", "-0.0", r#""str""#, "null", "true", "[[]]", "{}"] {
+        let ours: Box<RawValue> = from_str(input).unwrap();
+        assert_eq!(ours.get(), input, "input: {input}");
+        assert_eq!(to_string(&ours).unwrap(), input, "input: {input}");
+    }
+}
+
+#[test]
+fn raw_value_malformed_errors() {
+    assert!(from_str::<Box<RawValue>>("{bad}").is_err());
+    assert!(from_str::<Box<RawValue>>("[1,]").is_err());
+    assert!(from_str::<Box<RawValue>>("").is_err());
+    // Trailing content after the raw value is rejected, like serde_json.
+    assert!(from_str::<Box<RawValue>>("1 2").is_err());
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct WithRaw {
+    id: u32,
+    extra: Box<RawValue>,
+}
+
+#[test]
+fn raw_value_nested_in_struct() {
+    let input = r#"{"id":7,"extra":{"a": [1, 2]}}"#;
+    let ours: WithRaw = from_str(input).unwrap();
+    assert_eq!(ours.id, 7);
+    assert_eq!(ours.extra.get(), r#"{"a": [1, 2]}"#);
+    // serde_json agrees on the captured slice.
+    let theirs: WithRaw = serde_json::from_str(input).unwrap();
+    assert_eq!(ours.id, theirs.id);
+    assert_eq!(ours.extra.get(), theirs.extra.get());
+    assert_eq!(
+        to_string(&ours).unwrap(),
+        serde_json::to_string(&theirs).unwrap()
+    );
+}
+
+/// Hand-rolled `$serde_json::private::Number` token struct, mirroring what
+/// serde_json emits for arbitrary-precision numbers.
+struct NumberToken(&'static str);
+
+impl Serialize for NumberToken {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        let mut st = s.serialize_struct("$serde_json::private::Number", 1)?;
+        st.serialize_field("$serde_json::private::Number", self.0)?;
+        st.end()
+    }
+}
+
+#[test]
+fn number_token_serialize_passthrough() {
+    for digits in ["1e999", "18446744073709551616", "-0.0", "3.14159"] {
+        assert_eq!(to_string(&NumberToken(digits)).unwrap(), digits);
+    }
+}
+
+#[test]
+fn token_struct_wrong_field_errors() {
+    struct BadToken;
+    impl Serialize for BadToken {
+        fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+            let mut st = s.serialize_struct("$serde_json::private::RawValue", 1)?;
+            st.serialize_field("wrong", "x")?;
+            st.end()
+        }
+    }
+    assert!(to_string(&BadToken).is_err());
 }

@@ -57,14 +57,23 @@ let out = jzon_serde::to_string(&user)?;
 
 ### Mode C — drop-in for serde_json
 
-Add one line to your workspace `Cargo.toml`. Zero code changes required — every
-`serde_json` call across your entire dep tree (reqwest, axum, etc.) routes
-through jzon automatically.
+One line per crate in `Cargo.toml`, via a dependency rename. Zero code changes
+required — and because compat re-exports `serde_json`'s own types, renamed
+crates interoperate seamlessly with third-party crates (reqwest, axum, etc.)
+still on real `serde_json`.
 
 ```toml
-[patch.crates-io]
+[dependencies]
 serde_json = { package = "jzon-rs-compat", version = "0.3" }
 ```
+
+`serde_json` features map 1:1 to same-named `jzon-rs-compat` flags
+(`arbitrary_precision`, `preserve_order`, `raw_value`, `float_roundtrip`,
+`unbounded_depth`). Note: `[patch.crates-io]` cannot express this swap —
+cargo silently ignores renamed patches, and this crate itself depends on real
+`serde_json` (fallback + type re-exports). See the
+[`jzon-rs-compat` README](crates/jzon_compat/README.md) for the verified
+details.
 
 ## Features
 
@@ -74,19 +83,30 @@ serde_json = { package = "jzon-rs-compat", version = "0.3" }
 |---------|---------|-------------|
 | `derive` | ✓ | `#[derive(ToJson, FromJson)]` proc-macros |
 | `serde` | | `jzon::from_str` / `to_string` for any serde type (Mode B engine) |
-| `compat` | | `jzon::compat` — `serde_json`-compatible API |
+| `compat` | | `jzon::compat` — `serde_json`-compatible API (engine + fallback) |
 | `simd` | | u128 SWAR (16 bytes/iter) |
 | `simd-intrinsics` | | Hand-written `std::arch` kernels — aarch64 NEON, x86_64 SSE2/AVX2 |
 | `simd + unstable` | | `std::simd` portable SIMD, 32–64 bytes/iter (nightly) |
-| `fast-float` | | ryu for serialization, fast_float2 for parsing |
+| `fast-float` | | no-op (exact float backends are always on) |
 | `zmij-float-ser` | | [zmij](https://crates.io/crates/zmij) (Schubfach+yy) float ser instead of ryu. ~30 % faster on Linux, ~10 % slower on Apple Silicon. MSRV 1.71. |
 | `stats` | | per-parse allocation counters on Scanner |
+| `strict` | | core `parse` rejects trailing commas (serde paths always do) |
+| `unbounded_depth` | | lift the 128-level recursion limit |
+| `arbitrary_precision` | | exact big numbers + forward to `serde_json` |
+| `preserve_order` | | forward to `serde_json` (insertion-ordered `Map`) |
+| `raw_value` | | forward to `serde_json` (`RawValue` API) |
+| `float_roundtrip` | | forward to `serde_json` (exact fallback parsing) |
 
 ### jzon-rs-serde / jzon-rs-compat
 
-Both crates expose the same flags: `simd`, `fast-float`, `unstable`, `stats`.
-`jzon-rs-compat` also has `fast-float` **on by default** (sensible for a
-drop-in replacement).
+Both crates forward the perf flags: `simd`, `fast-float`, `unstable`,
+`stats`. `jzon-rs-compat` has `fast-float` **on by default** (sensible for a
+drop-in replacement). `jzon-rs-serde` additionally forwards the
+engine-affecting mirrors `arbitrary_precision` and `unbounded_depth`;
+`jzon-rs-compat` mirrors the full `serde_json` set (`arbitrary_precision`,
+`preserve_order`, `raw_value`, `float_roundtrip`, `unbounded_depth`, plus
+`std`/`alloc` no-ops) so renames stay total — enable these instead of
+`serde_json`'s flags directly.
 
 ## Benchmarks
 

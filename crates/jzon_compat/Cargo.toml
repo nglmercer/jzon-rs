@@ -4,7 +4,7 @@ repository.workspace = true
 homepage.workspace = true
 keywords.workspace = true
 categories.workspace = true
-description = "Drop-in serde_json replacement powered by jzon (Cargo patch)"
+description = "Drop-in serde_json replacement powered by jzon (dependency rename)"
 name = "jzon-rs-compat"
 version.workspace = true
 edition.workspace = true
@@ -16,6 +16,17 @@ simd       = ["jzon/simd"]
 fast-float = ["jzon/fast-float"]
 unstable   = ["jzon/unstable"]
 stats      = ["jzon/stats"]
+# serde_json feature mirrors, forwarded to the engine and the `serde_json`
+# dependency together. Enable these instead of serde_json's flags directly.
+arbitrary_precision = ["jzon/arbitrary_precision"]
+preserve_order      = ["jzon/preserve_order"]
+raw_value           = ["jzon/raw_value"]
+float_roundtrip     = ["jzon/float_roundtrip"]
+unbounded_depth     = ["jzon/unbounded_depth"]
+# Always-on platform surface: this crate is std-only, so both names exist as
+# no-ops to keep `serde_json` -> `jzon-rs-compat` feature renames total.
+std   = []
+alloc = []
 
 [dependencies]
 jzon = { package = "jzon-rs", path = "../jzon", version = "0.3", default-features = false, features = ["compat"] }

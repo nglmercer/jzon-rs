@@ -16,7 +16,7 @@
 //! | `simd` | | u128 SWAR scanning (16 B/iter) |
 //! | `simd-intrinsics` | | hand-written aarch64 NEON / x86_64 SSE2+AVX2 kernels |
 //! | `simd + unstable` | | `std::simd` portable SIMD (32–64 B/iter, nightly) |
-//! | `fast-float` | | `ryu` serialization, `fast_float2` parsing |
+//! | `fast-float` | | no-op (exact `ryu` / `fast-float2` backends are always on) |
 //! | `zmij-float-ser` | | `zmij` float serialization instead of `ryu` |
 //! | `stats` | | `ScannerStats` allocation/cache-hit counters |
 //!
@@ -81,7 +81,7 @@ pub mod serde_impl;
 pub mod compat;
 
 pub use error::Error;
-pub use scanner::{JsonStr, Scanner};
+pub use scanner::{DepthGuard, JsonStr, Scanner};
 pub use ser::{IoSink, JsonSink, LengthCounter, ToJson, VecSink};
 pub use de::FromJson;
 pub use fixed::{FixedBuf, ToJsonExt, json_str_len};

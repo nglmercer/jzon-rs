@@ -103,7 +103,7 @@ Full matrix: [`BENCHMARKS.md`](../../BENCHMARKS.md).
 | Crate | Purpose |
 |-------|---------|
 | [`jzon-rs-serde`](https://crates.io/crates/jzon-rs-serde) | Standalone serde `Serializer`/`Deserializer` (included via `serde` feature) |
-| [`jzon-rs-compat`](https://crates.io/crates/jzon-rs-compat) | Cargo `[patch]` to replace `serde_json` for the whole dep tree |
+| [`jzon-rs-compat`](https://crates.io/crates/jzon-rs-compat) | Dependency rename replacing `serde_json` per crate (zero code changes) |
 
 ## License
 

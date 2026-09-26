@@ -1,7 +1,7 @@
 //! Integration tests covering all supported struct syntaxes, serde attributes,
 //! data types, and runtime properties (zero-copy, allocation behaviour).
 
-use jzon::{FromJson, ToJson};
+use jzon::{Error, FromJson, ToJson};
 #[derive(ToJson, FromJson, Debug, PartialEq)]
 struct Point {
     x: f64,
@@ -2117,6 +2117,133 @@ fn read_str_raw_control_byte_returns_invalid_escape() {
     let input = b"\"hello\x01world\"";
     let mut sc = Scanner::new(input);
     assert!(matches!(sc.read_str(), Err(Error::InvalidEscape)));
+}
+
+#[cfg(not(feature = "unbounded_depth"))]
+#[test]
+fn recursion_limit_enforced_and_bounded() {
+    // Recursive shape: each level is one object.
+    #[derive(ToJson, FromJson, Debug, PartialEq)]
+    struct Node {
+        next: Option<Box<Node>>,
+    }
+    let nested = |depth: usize| "{\"next\":".repeat(depth) + "null" + &"}".repeat(depth);
+    // Shallow nesting parses fine.
+    let shallow: Node = FromJson::from_json_str(&nested(10)).unwrap();
+    assert!(shallow.next.is_some());
+    // serde_json trips at 128 opens; the derive path matches.
+    assert!(matches!(Node::from_json_str(&nested(127)), Ok(_)));
+    assert!(matches!(
+        Node::from_json_str(&nested(128)),
+        Err(Error::RecursionLimit)
+    ));
+    assert!(matches!(
+        Node::from_json_str(&nested(500)),
+        Err(Error::RecursionLimit)
+    ));
+}
+
+#[cfg(not(feature = "unbounded_depth"))]
+#[test]
+fn recursion_limit_applies_to_skipped_regions() {
+    // Unknown fields are skipped, not parsed — the skipper must enforce
+    // the same limit so hostile input cannot overflow the stack.
+    #[derive(ToJson, FromJson, Debug, PartialEq)]
+    struct HasSkipped {
+        keep: u32,
+    }
+    let deep = format!("{{\"keep\":1,\"drop\":{}{}}}", "[".repeat(500), "]".repeat(500));
+    assert!(matches!(
+        HasSkipped::from_json_str(&deep),
+        Err(Error::RecursionLimit)
+    ));
+    let ok = format!("{{\"keep\":1,\"drop\":{}{}}}", "[".repeat(10), "]".repeat(10));
+    assert_eq!(
+        HasSkipped::from_json_str(&ok).unwrap(),
+        HasSkipped { keep: 1 }
+    );
+}
+
+#[cfg(feature = "strict")]
+#[test]
+fn strict_rejects_trailing_commas_in_structs_and_maps() {
+    use std::collections::HashMap;
+    #[derive(ToJson, FromJson, Debug, PartialEq)]
+    struct Solo {
+        x: u64,
+    }
+    assert!(matches!(
+        Solo::from_json_str(r#"{"x":1,}"#),
+        Err(Error::TrailingComma)
+    ));
+    assert!(matches!(
+        Solo::from_json_str(r#"{"x":1,"y":2,}"#),
+        Err(Error::TrailingComma)
+    ));
+    assert!(matches!(
+        HashMap::<String, u64>::from_json_str(r#"{"a":1,}"#),
+        Err(Error::TrailingComma)
+    ));
+    // Well-formed input still parses.
+    assert_eq!(Solo::from_json_str(r#"{"x":1}"#).unwrap().x, 1);
+}
+
+#[cfg(feature = "strict")]
+#[test]
+fn strict_rejects_trailing_commas_in_enums() {
+    #[derive(ToJson, FromJson, Debug, PartialEq)]
+    enum Msg {
+        Ping,
+        Move { x: i32 },
+    }
+    assert!(matches!(
+        Msg::from_json_str(r#"{"Move":{"x":1,}}"#),
+        Err(Error::TrailingComma)
+    ));
+
+    #[derive(ToJson, FromJson, Debug, PartialEq)]
+    #[serde(tag = "t")]
+    enum Tagged {
+        Point { x: u32 },
+    }
+    assert!(matches!(
+        Tagged::from_json_str(r#"{"t":"Point","x":1,}"#),
+        Err(Error::TrailingComma)
+    ));
+}
+
+#[cfg(feature = "strict")]
+#[test]
+fn strict_rejects_trailing_commas_on_other_fallback() {
+    // `#[serde(other)]` can return Ok for unknown tags, so its drain loops
+    // must enforce strictness too — tag-first and tag-last shapes.
+    #[derive(ToJson, FromJson, Debug, PartialEq)]
+    #[serde(tag = "t")]
+    enum Catch {
+        Known { x: u32 },
+        #[serde(other)]
+        Other,
+    }
+    assert!(matches!(
+        Catch::from_json_str(r#"{"t":"Nope","x":1,}"#),
+        Err(Error::TrailingComma)
+    ));
+    assert!(matches!(
+        Catch::from_json_str(r#"{"x":1,"t":"Nope",}"#),
+        Err(Error::TrailingComma)
+    ));
+    assert_eq!(
+        Catch::from_json_str(r#"{"t":"Nope","x":1}"#).unwrap(),
+        Catch::Other
+    );
+}
+
+#[test]
+fn arrays_reject_trailing_commas_unconditionally() {
+    // Array-shaped decoders (Vec, tuples, skippers) reject trailing commas
+    // in every configuration, matching serde_json.
+    assert!(Vec::<u64>::from_json_str("[1,]").is_err());
+    assert!(<(u64, u64)>::from_json_str("[1,2,]").is_err());
 }
 
 #[test]
