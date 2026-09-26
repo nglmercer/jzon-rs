@@ -12,15 +12,13 @@ rust-version.workspace = true
 
 [features]
 default    = ["fast-float"]
-simd       = ["jzon_serde/simd"]
-fast-float = ["jzon_serde/fast-float"]
-unstable   = ["jzon_serde/unstable"]
-stats      = ["jzon_serde/stats"]
+simd       = ["jzon/simd"]
+fast-float = ["jzon/fast-float"]
+unstable   = ["jzon/unstable"]
+stats      = ["jzon/stats"]
 
 [dependencies]
-jzon_serde = { package = "jzon-rs-serde", path = "../jzon_serde", version = "0.3" }
-serde      = { version = "1", default-features = false, features = ["std"] }
-serde_json = { version = "1" }
+jzon = { package = "jzon-rs", path = "../jzon", version = "0.3", default-features = false, features = ["compat"] }
 
 [dev-dependencies]
 serde = { version = "1", features = ["derive"] }

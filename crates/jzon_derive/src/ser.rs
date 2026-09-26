@@ -405,17 +405,36 @@ fn expand_enum(input: &DeriveInput) -> Result<TokenStream> {
 
             match &v.fields {
                 Fields::Unit => {
-                    let quoted_name = format!("\"{}\"", variant_name);
-                    let vname_lit = proc_macro2::Literal::byte_string(quoted_name.as_bytes());
-                    Ok(quote! {
-                        Self::#vident => w.extend(#vname_lit),
-                    })
+                    if let Some(tag_key) = tag {
+                        // Internally-tagged unit variants serialize as {"tag":"Variant"}
+                        // (adjacently-tagged omits `content` for unit variants).
+                        let payload = format!("{{\"{}\":\"{}\"}}", tag_key, variant_name);
+                        let vname_lit = proc_macro2::Literal::byte_string(payload.as_bytes());
+                        Ok(quote! {
+                            Self::#vident => w.extend(#vname_lit),
+                        })
+                    } else if untagged {
+                        // Untagged unit variants carry no data → null.
+                        Ok(quote! {
+                            Self::#vident => w.extend(b"null"),
+                        })
+                    } else {
+                        let quoted_name = format!("\"{}\"", variant_name);
+                        let vname_lit = proc_macro2::Literal::byte_string(quoted_name.as_bytes());
+                        Ok(quote! {
+                            Self::#vident => w.extend(#vname_lit),
+                        })
+                    }
                 }
                 Fields::Named(f) => {
-                    let field_writes = build_variant_field_writes(
+                    // In tag-only (internally-tagged) objects the tag pair is
+                    // already written when variant fields start, so conditional
+                    // fields must begin with a separator pending.
+                    let tag_prefix_written = tag.is_some() && content.is_none();
+                    let (field_writes, has_conditional) = build_variant_field_writes(
                         f.named.iter(),
                         &container,
-                        true,
+                        tag_prefix_written,
                     )?;
                     let arm = if let Some(tag_key) = tag {
                         if let Some(content_key) = content {
@@ -428,6 +447,30 @@ fn expand_enum(input: &DeriveInput) -> Result<TokenStream> {
                                     w.push(b'{');
                                     #(#field_writes)*
                                     w.extend(b"}}");
+                                }
+                            }
+                        } else if has_conditional {
+                            // Conditional fields manage their own separators
+                            // starting from a pending comma after the tag pair.
+                            let tag_payload = format!("{{\"{}\":\"{}\"", tag_key, variant_name);
+                            let tag_lit = proc_macro2::Literal::byte_string(tag_payload.as_bytes());
+                            let field_names: Vec<&syn::Ident> = f.named.iter().map(|f| f.ident.as_ref().unwrap()).collect();
+                            quote! {
+                                Self::#vident { #(#field_names),* } => {
+                                    w.extend(#tag_lit);
+                                    #(#field_writes)*
+                                    w.push(b'}');
+                                }
+                            }
+                        } else if field_writes.is_empty() {
+                            // No serializable fields: close right after the tag
+                            // pair instead of leaving a trailing comma.
+                            let tag_payload = format!("{{\"{}\":\"{}\"}}", tag_key, variant_name);
+                            let tag_lit = proc_macro2::Literal::byte_string(tag_payload.as_bytes());
+                            let field_names: Vec<&syn::Ident> = f.named.iter().map(|f| f.ident.as_ref().unwrap()).collect();
+                            quote! {
+                                Self::#vident { #(#field_names),* } => {
+                                    w.extend(#tag_lit);
                                 }
                             }
                         } else {
@@ -489,18 +532,37 @@ fn expand_enum(input: &DeriveInput) -> Result<TokenStream> {
     })
 }
 
+/// Build the per-field writes for one struct variant.
+///
+/// Returns the writes plus whether any field is conditional
+/// (`skip_serializing_if`), in which case separators are tracked at runtime
+/// via `_vfirst` instead of being fused into the key literals. When
+/// `tag_prefix_written` is set, a `{"tag":"V"` pair was already emitted, so
+/// the first conditional field starts with a separator pending.
 fn build_variant_field_writes<'a>(
     fields: impl Iterator<Item = &'a syn::Field>,
     container: &attrs::ContainerAttrs,
-    _is_named: bool,
-) -> Result<Vec<TokenStream>> {
-    let mut writes = Vec::new();
-    let mut first = true;
-    let mut field_idx = 0usize;
+    tag_prefix_written: bool,
+) -> Result<(Vec<TokenStream>, bool)> {
+    struct VariantField<'a> {
+        fname: &'a syn::Ident,
+        json_key: String,
+        predicate: Option<syn::ExprPath>,
+    }
+
+    let mut vfields: Vec<VariantField<'a>> = Vec::new();
     for field in fields {
         let fname = field.ident.as_ref().unwrap();
         let fattrs = attrs::parse_field_attrs(&field.attrs)?;
-        if fattrs.skip || fattrs.skip_serializing { continue; }
+        if fattrs.skip || fattrs.skip_serializing {
+            continue;
+        }
+        if fattrs.flatten {
+            return Err(Error::new_spanned(
+                &field.ident,
+                "#[serde(flatten)] is not yet supported by jzon ToJson; use jzon_serde (Mode B)",
+            ));
+        }
 
         let json_key = if let Some(r) = &fattrs.rename {
             r.clone()
@@ -510,26 +572,78 @@ fn build_variant_field_writes<'a>(
             fname.to_string()
         };
 
-        let fused_key = if first {
-            first = false;
-            format!("\"{}\":", json_key)
-        } else {
-            format!(",\"{}\":", json_key)
-        };
-        let fused_lit = proc_macro2::Literal::byte_string(fused_key.as_bytes());
+        vfields.push(VariantField {
+            fname,
+            json_key,
+            predicate: fattrs.skip_serializing_if,
+        });
+    }
+
+    let mut writes = Vec::new();
+    let has_conditional = vfields.iter().any(|f| f.predicate.is_some());
+    if !has_conditional {
+        // Fast path: every field is always present — fuse separators into
+        // the key literals.
+        let mut first = true;
+        for (field_idx, vf) in vfields.iter().enumerate() {
+            let fused_key = if first {
+                first = false;
+                format!("\"{}\":", vf.json_key)
+            } else {
+                format!(",\"{}\":", vf.json_key)
+            };
+            let fused_lit = proc_macro2::Literal::byte_string(fused_key.as_bytes());
+            let const_name = proc_macro2::Ident::new(
+                &format!("_VK{}", field_idx),
+                proc_macro2::Span::call_site(),
+            );
+            let fname = vf.fname;
+
+            writes.push(quote! {
+                {
+                    const #const_name: &[u8] = #fused_lit;
+                    w.extend(#const_name);
+                    ::jzon::ToJson::json_write_sink(#fname, w);
+                }
+            });
+        }
+        return Ok((writes, false));
+    }
+
+    writes.push(if tag_prefix_written {
+        quote! { let mut _vfirst = false; }
+    } else {
+        quote! { let mut _vfirst = true; }
+    });
+    for (field_idx, vf) in vfields.iter().enumerate() {
+        let key_literal = format!("\"{}\":", vf.json_key);
+        let key_lit = proc_macro2::Literal::byte_string(key_literal.as_bytes());
         let const_name = proc_macro2::Ident::new(
             &format!("_VK{}", field_idx),
             proc_macro2::Span::call_site(),
         );
-        field_idx += 1;
-
-        writes.push(quote! {
-            {
-                const #const_name: &[u8] = #fused_lit;
-                w.extend(#const_name);
-                ::jzon::ToJson::json_write_sink(#fname, w);
+        let fname = vf.fname;
+        // Match bindings on `&self` are already references, so the predicate
+        // takes the binding directly (struct code passes `&self.#fname`).
+        let emit_field = quote! {
+            if !_vfirst {
+                w.push(b',');
+            } else {
+                _vfirst = false;
             }
-        });
+            const #const_name: &[u8] = #key_lit;
+            w.extend(#const_name);
+            ::jzon::ToJson::json_write_sink(#fname, w);
+        };
+        if let Some(predicate) = &vf.predicate {
+            writes.push(quote! {
+                if !#predicate(#fname) {
+                    #emit_field
+                }
+            });
+        } else {
+            writes.push(emit_field);
+        }
     }
-    Ok(writes)
+    Ok((writes, true))
 }

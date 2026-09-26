@@ -113,6 +113,27 @@ impl<'de> Scanner<'de> {
         &self.input[self.pos..]
     }
 
+    /// Record a field-hint cache hit. No-op unless the `stats` feature is on.
+    ///
+    /// Called by `#[derive(FromJson)]` generated code; always compiled so the
+    /// proc-macro output stays identical across feature sets.
+    #[inline]
+    pub fn record_hint_hit(&mut self) {
+        #[cfg(feature = "stats")]
+        {
+            self.stats.hint_hits += 1;
+        }
+    }
+
+    /// Record a field-hint cache miss. No-op unless the `stats` feature is on.
+    #[inline]
+    pub fn record_hint_miss(&mut self) {
+        #[cfg(feature = "stats")]
+        {
+            self.stats.hint_misses += 1;
+        }
+    }
+
     #[inline]
     pub fn expect_byte(&mut self, expected: u8) -> Result<(), Error> {
         match self.input.get(self.pos) {

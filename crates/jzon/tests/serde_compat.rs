@@ -278,8 +278,8 @@ fn de_string_unicode_escape() {
 
 #[test]
 fn de_vec() {
-    assert_eq!(from_str::<Vec<u64>>("[]").unwrap(), vec![]);
-    assert_eq!(from_str::<Vec<u64>>("[ ]").unwrap(), vec![]);
+    assert_eq!(from_str::<Vec<u64>>("[]").unwrap(), Vec::<u64>::new());
+    assert_eq!(from_str::<Vec<u64>>("[ ]").unwrap(), Vec::<u64>::new());
     assert_eq!(from_str::<Vec<u64>>("[3,1]").unwrap(), vec![3, 1]);
     assert_eq!(from_str::<Vec<u64>>(" [ 3 , 1 ] ").unwrap(), vec![3, 1]);
 }

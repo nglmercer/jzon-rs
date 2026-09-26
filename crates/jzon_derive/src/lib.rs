@@ -6,7 +6,7 @@ mod rename;
 mod ser;
 mod de;
 
-/// Derive `jzon::ToJson` for a named struct or unit/tuple-less enum.
+/// Derive `jzon::ToJson` for structs and enums with unit and struct variants.
 ///
 /// Supported `#[serde(…)]` container attributes:
 /// - `rename_all = "camelCase"` | `"snake_case"` | `"PascalCase"` | …
@@ -26,13 +26,14 @@ pub fn derive_to_json(input: TokenStream) -> TokenStream {
         .into()
 }
 
-/// Derive `jzon::FromJson<'de>` for a named struct or unit/tuple-less enum.
+/// Derive `jzon::FromJson<'de>` for structs and enums with unit and struct
+/// variants (externally-tagged by default, or `tag = "…"` internally-tagged).
 ///
 /// Supported `#[serde(…)]` container attributes:
 /// - `rename_all = "camelCase"` | …
 /// - `deny_unknown_fields` — error on unrecognised JSON keys
 /// - `default` — use `Default::default()` for every missing field
-/// - `tag = "type"`, `content = "data"`, `untagged`
+/// - `tag = "type"` — internally-tagged enums
 ///
 /// Supported `#[serde(…)]` field attributes:
 /// - `rename = "json_name"`

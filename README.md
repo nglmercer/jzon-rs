@@ -73,6 +73,8 @@ serde_json = { package = "jzon-rs-compat", version = "0.3" }
 | Feature | Default | What it does |
 |---------|---------|-------------|
 | `derive` | ✓ | `#[derive(ToJson, FromJson)]` proc-macros |
+| `serde` | | `jzon::from_str` / `to_string` for any serde type (Mode B engine) |
+| `compat` | | `jzon::compat` — `serde_json`-compatible API |
 | `simd` | | u128 SWAR (16 bytes/iter) |
 | `simd-intrinsics` | | Hand-written `std::arch` kernels — aarch64 NEON, x86_64 SSE2/AVX2 |
 | `simd + unstable` | | `std::simd` portable SIMD, 32–64 bytes/iter (nightly) |

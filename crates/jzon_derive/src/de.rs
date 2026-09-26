@@ -588,8 +588,10 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
                             #first_byte_check
 
                             let _field_idx = if _hint < #num_active && _key == FIELD_HINTS[_hint] {
+                                scanner.record_hint_hit();
                                 _hint
                             } else {
+                                scanner.record_hint_miss();
                                 #dispatch_expr
                             };
 
@@ -904,67 +906,25 @@ fn expand_enum(input: &DeriveInput) -> Result<TokenStream> {
         _ => unreachable!(),
     };
 
-    let all_unit = variants.iter().all(|v| matches!(&v.fields, Fields::Unit));
-
-    if all_unit {
-        let mut other_variant: Option<TokenStream> = None;
-        let arms: Vec<TokenStream> = variants
-            .iter()
-            .filter_map(|v| {
-                let vident = &v.ident;
-                let vattrs = match attrs::parse_field_attrs(&v.attrs) {
-                    Ok(a) => a,
-                    Err(e) => return Some(Err(e)),
-                };
-                if vattrs.other {
-                    other_variant = Some(quote! { #ident::#vident });
-                    return None; // not a named arm
-                }
-                let vname = if let Some(r) = &vattrs.rename {
-                    r.clone()
-                } else if let Some(rule) = container.rename_all {
-                    rename::apply_variant(&vident.to_string(), rule)
-                } else {
-                    vident.to_string()
-                };
-                let vbytes = vname.as_bytes();
-                let byte_str = proc_macro2::Literal::byte_string(vbytes);
-                let alias_pats: Vec<_> = vattrs
-                    .aliases
-                    .iter()
-                    .map(|a| proc_macro2::Literal::byte_string(a.as_bytes()))
-                    .collect();
-                Some(Ok(
-                    quote! { #byte_str #(| #alias_pats)* => Ok(#ident::#vident), },
-                ))
-            })
-            .collect::<Result<_>>()?;
-
-        let fallback = if let Some(ov) = other_variant {
-            quote! { _ => Ok(#ov), }
-        } else {
-            quote! { _ => Err(::jzon::Error::UnknownVariant), }
-        };
-
-        return Ok(quote! {
-            #[automatically_derived]
-            impl<#(#impl_params),*> ::jzon::FromJson<'de>
-                for #ident #ty_args #where_clause
-            {
-                fn from_json_scanner(
-                    scanner: &mut ::jzon::Scanner<'de>,
-                ) -> ::std::result::Result<Self, ::jzon::Error> {
-                    let js = scanner.read_str()?;
-                    let s = js.as_str().as_bytes();
-                    match s {
-                        #(#arms)*
-                        #fallback
-                    }
-                }
-            }
-        });
+    // Tagging modes that need input buffering are rejected loudly — Mode B
+    // (jzon_serde) supports them.
+    if container.untagged {
+        return Err(Error::new_spanned(
+            ident,
+            "FromJson does not support #[serde(untagged)] enums; use jzon_serde (Mode B)",
+        ));
+    }
+    if container.content.is_some() {
+        // `content` without `tag` is invalid serde; with `tag` it selects
+        // adjacently-tagged representation, which needs buffering.
+        return Err(Error::new_spanned(
+            ident,
+            "FromJson does not support adjacently-tagged \
+             (#[serde(tag = \"…\", content = \"…\")]) enums; use jzon_serde (Mode B)",
+        ));
     }
 
+    // Internally-tagged enums (unit-only or mixed) dispatch on the tag key.
     if let Some(tag_key) = &container.tag {
         return expand_internally_tagged_enum(
             input,
@@ -978,12 +938,16 @@ fn expand_enum(input: &DeriveInput) -> Result<TokenStream> {
         );
     }
 
-    Err(Error::new_spanned(
+    // Serde default: externally-tagged (`"Variant"` / `{"Variant": …}`).
+    // Unit-only enums take the same path so both spellings are accepted.
+    expand_externally_tagged_enum(
         ident,
-        "FromJson currently supports only unit-variant enums and internally-tagged \
-         (#[serde(tag = \"…\")]) struct-variant enums; \
-         adjacently tagged, untagged, and tuple-variant enums are not yet supported",
-    ))
+        &impl_params,
+        &ty_args,
+        where_clause,
+        &container,
+        variants,
+    )
 }
 
 /// Generate `FromJson` for an internally tagged enum (`#[serde(tag = "…")]`).
@@ -1003,18 +967,58 @@ fn expand_internally_tagged_enum(
     let tag_key_missing: &str = tag_key;
     let de_lt = Lifetime::new("'de", Span::call_site());
 
-    let variant_arms: Vec<TokenStream> = variants.iter().map(|v| {
+    let unknown_handler = if container.deny_unknown_fields {
+        quote! { return Err(::jzon::Error::UnknownField); }
+    } else {
+        quote! { scanner.skip_value()?; }
+    };
+
+    // A `#[serde(other)]` catch-all must be a single unit variant.
+    let mut other_variant: Option<TokenStream> = None;
+    for v in variants.iter() {
+        if attrs::parse_field_attrs(&v.attrs)?.other {
+            if !matches!(&v.fields, Fields::Unit) {
+                return Err(Error::new_spanned(
+                    &v.ident,
+                    "#[serde(other)] is only supported on unit variants",
+                ));
+            }
+            if other_variant.is_some() {
+                return Err(Error::new_spanned(&v.ident, "multiple #[serde(other)] variants"));
+            }
+            let vident = &v.ident;
+            other_variant = Some(quote! { #ident::#vident });
+        }
+    }
+    let unknown_variant_tail = match &other_variant {
+        Some(ov) => quote! { Ok(#ov) },
+        None => quote! { Err(::jzon::Error::UnknownVariant) },
+    };
+
+    let variant_arms: Vec<TokenStream> = variants
+        .iter()
+        .filter(|v| {
+            !attrs::parse_field_attrs(&v.attrs)
+                .map(|a| a.other)
+                .unwrap_or(false)
+        })
+        .map(|v| {
         let vident = &v.ident;
         let vattrs = attrs::parse_field_attrs(&v.attrs)?;
         let vname = if let Some(r) = &vattrs.rename { r.clone() }
             else if let Some(rule) = container.rename_all { rename::apply_variant(&vident.to_string(), rule) }
             else { vident.to_string() };
         let vbytes_lit = proc_macro2::Literal::byte_string(vname.as_bytes());
+        let valias_pats: Vec<_> = vattrs
+            .aliases
+            .iter()
+            .map(|a| proc_macro2::Literal::byte_string(a.as_bytes()))
+            .collect();
 
         match &v.fields {
             Fields::Unit => {
                 Ok(quote! {
-                    #vbytes_lit => {
+                    #vbytes_lit #(| #valias_pats)* => {
                         loop {
                             scanner.skip_whitespace();
                             match scanner.peek_byte()? {
@@ -1053,42 +1057,19 @@ fn expand_internally_tagged_enum(
                     if fa.skip || fa.skip_deserializing {
                         return Ok(quote! {});
                     }
-                    let json_key = if let Some(r) = &fa.rename { r.clone() }
-                        else if let Some(rule) = container.rename_all { rename::apply(&fname.to_string(), rule) }
-                        else { fname.to_string() };
-                    let jkey_lit = proc_macro2::Literal::byte_string(json_key.as_bytes());
-                    let fty = &field.ty;
-                    let read = field_read_expr(fty, &de_lt);
-                    Ok(quote! {
-                        #jkey_lit => { #fname = Some(#read); }
-                    })
+                    let json_key = variant_json_key(fname, &fa, container);
+                    Ok(variant_field_arm(fname, &json_key, &fa.aliases, &field.ty, &de_lt))
                 }).collect::<Result<_>>()?;
 
                 let assembly: Vec<TokenStream> = f.named.iter().map(|field| {
                     let fname = field.ident.as_ref().unwrap();
                     let fa = attrs::parse_field_attrs(&field.attrs)?;
-                    let json_key = if let Some(r) = &fa.rename { r.clone() }
-                        else if let Some(rule) = container.rename_all { rename::apply(&fname.to_string(), rule) }
-                        else { fname.to_string() };
-                    if fa.skip || fa.skip_deserializing {
-                        return Ok(quote! { #fname: ::std::default::Default::default(), });
-                    }
-                    let missing = json_key.clone();
-                    match &fa.default {
-                        attrs::FieldDefault::None => {
-                            if matches!(fa.skip, false) {
-                                Ok(quote! { #fname: #fname.ok_or(::jzon::Error::MissingField(#missing))?, })
-                            } else {
-                                Ok(quote! { #fname: ::std::default::Default::default(), })
-                            }
-                        }
-                        attrs::FieldDefault::Default => Ok(quote! { #fname: #fname.unwrap_or_default(), }),
-                        attrs::FieldDefault::Path(p) => Ok(quote! { #fname: #fname.unwrap_or_else(#p), }),
-                    }
+                    let json_key = variant_json_key(fname, &fa, container);
+                    Ok(variant_field_assembly(fname, &json_key, &fa, &field.ty, container.default))
                 }).collect::<Result<_>>()?;
 
                 Ok(quote! {
-                    #vbytes_lit => {
+                    #vbytes_lit #(| #valias_pats)* => {
                         #(#decls)*
                         loop {
                             scanner.skip_whitespace();
@@ -1101,7 +1082,7 @@ fn expand_internally_tagged_enum(
                                     } else {
                                         match _k2 {
                                             #(#field_arms)*
-                                            _ => { scanner.skip_value()?; }
+                                            _ => { #unknown_handler }
                                         }
                                     }
                                     scanner.skip_whitespace();
@@ -1202,8 +1183,304 @@ fn expand_internally_tagged_enum(
                         } else {
                             scanner.skip_object_tail()?;
                         }
-                        Err(::jzon::Error::UnknownVariant)
+                        #unknown_variant_tail
                     }
+                }
+            }
+        }
+    })
+}
+
+/// Resolve the primary JSON key for an enum struct-variant field.
+fn variant_json_key(fname: &syn::Ident, fa: &FieldAttrs, container: &ContainerAttrs) -> String {
+    if let Some(r) = &fa.rename {
+        r.clone()
+    } else if let Some(rule) = container.rename_all {
+        rename::apply(&fname.to_string(), rule)
+    } else {
+        fname.to_string()
+    }
+}
+
+/// Match arm decoding one struct-variant field: primary key plus `alias` keys.
+fn variant_field_arm(
+    fname: &syn::Ident,
+    json_key: &str,
+    aliases: &[String],
+    fty: &Type,
+    de_lt: &Lifetime,
+) -> TokenStream {
+    let jkey_lit = proc_macro2::Literal::byte_string(json_key.as_bytes());
+    let alias_pats: Vec<_> = aliases
+        .iter()
+        .map(|a| proc_macro2::Literal::byte_string(a.as_bytes()))
+        .collect();
+    let read = field_read_expr(fty, de_lt);
+    quote! {
+        #jkey_lit #(| #alias_pats)* => { #fname = Some(#read); }
+    }
+}
+
+/// Assemble one struct-variant field, mirroring struct decode semantics:
+/// skipped fields → `Default`, container `default` → `unwrap_or_default`,
+/// `Option<T>` → `None` when absent, explicit defaults honored.
+fn variant_field_assembly(
+    fname: &syn::Ident,
+    json_key: &str,
+    fa: &FieldAttrs,
+    fty: &Type,
+    container_default: bool,
+) -> TokenStream {
+    if fa.skip || fa.skip_deserializing {
+        return quote! { #fname: ::std::default::Default::default(), };
+    }
+    if fa.skip_serializing {
+        return quote! { #fname: #fname.unwrap_or_default(), };
+    }
+    match &fa.default {
+        FieldDefault::None => {
+            if container_default {
+                quote! { #fname: #fname.unwrap_or_default(), }
+            } else if is_option(fty) {
+                quote! { #fname: #fname.unwrap_or(None), }
+            } else {
+                quote! { #fname: #fname.ok_or(::jzon::Error::MissingField(#json_key))?, }
+            }
+        }
+        FieldDefault::Default => quote! { #fname: #fname.unwrap_or_default(), },
+        FieldDefault::Path(p) => quote! { #fname: #fname.unwrap_or_else(#p), },
+    }
+}
+
+/// Generate `FromJson` for an externally-tagged enum (the serde default):
+/// unit variants from `"Variant"` (or `{"Variant":null}`), struct variants
+/// from `{"Variant":{…}}`.
+fn expand_externally_tagged_enum(
+    ident: &syn::Ident,
+    impl_params: &[TokenStream],
+    ty_args: &TokenStream,
+    where_clause: &Option<syn::WhereClause>,
+    container: &ContainerAttrs,
+    variants: &syn::punctuated::Punctuated<syn::Variant, syn::token::Comma>,
+) -> Result<TokenStream> {
+    let de_lt = Lifetime::new("'de", Span::call_site());
+
+    let unknown_handler = if container.deny_unknown_fields {
+        quote! { return Err(::jzon::Error::UnknownField); }
+    } else {
+        quote! { scanner.skip_value()?; }
+    };
+
+    // Validate representable variants; collect the `#[serde(other)]` catch-all.
+    let mut other_variant: Option<TokenStream> = None;
+    for v in variants.iter() {
+        let vattrs = attrs::parse_field_attrs(&v.attrs)?;
+        if matches!(&v.fields, Fields::Unnamed(_)) {
+            return Err(Error::new_spanned(
+                &v.ident,
+                "FromJson does not support tuple/newtype enum variants; use jzon_serde (Mode B)",
+            ));
+        }
+        if vattrs.other {
+            if !matches!(&v.fields, Fields::Unit) {
+                return Err(Error::new_spanned(
+                    &v.ident,
+                    "#[serde(other)] is only supported on unit variants",
+                ));
+            }
+            if other_variant.is_some() {
+                return Err(Error::new_spanned(&v.ident, "multiple #[serde(other)] variants"));
+            }
+            let vident = &v.ident;
+            other_variant = Some(quote! { #ident::#vident });
+        }
+    }
+
+    struct VariantInfo<'a> {
+        vident: &'a syn::Ident,
+        name: String,
+        aliases: Vec<String>,
+        fields: &'a Fields,
+    }
+    let mut infos: Vec<VariantInfo> = Vec::new();
+    for v in variants.iter() {
+        let vattrs = attrs::parse_field_attrs(&v.attrs)?;
+        if vattrs.other {
+            continue;
+        }
+        let name = if let Some(r) = &vattrs.rename {
+            r.clone()
+        } else if let Some(rule) = container.rename_all {
+            rename::apply_variant(&v.ident.to_string(), rule)
+        } else {
+            v.ident.to_string()
+        };
+        infos.push(VariantInfo {
+            vident: &v.ident,
+            name,
+            aliases: vattrs.aliases,
+            fields: &v.fields,
+        });
+    }
+
+    // Bare-string form carries unit variants only.
+    let str_arms: Vec<TokenStream> = infos
+        .iter()
+        .filter(|i| matches!(i.fields, Fields::Unit))
+        .map(|i| {
+            let vident = i.vident;
+            let vbytes = proc_macro2::Literal::byte_string(i.name.as_bytes());
+            let alias_pats: Vec<_> = i
+                .aliases
+                .iter()
+                .map(|a| proc_macro2::Literal::byte_string(a.as_bytes()))
+                .collect();
+            quote! { #vbytes #(| #alias_pats)* => Ok(#ident::#vident), }
+        })
+        .collect();
+    let str_fallback = match &other_variant {
+        Some(ov) => quote! { _ => Ok(#ov), },
+        None => quote! { _ => Err(::jzon::Error::UnknownVariant), },
+    };
+
+    // Single-entry map form carries every variant kind.
+    let mut map_arms: Vec<TokenStream> = Vec::new();
+    for i in infos.iter() {
+        let vident = i.vident;
+        let vbytes = proc_macro2::Literal::byte_string(i.name.as_bytes());
+        let alias_pats: Vec<_> = i
+            .aliases
+            .iter()
+            .map(|a| proc_macro2::Literal::byte_string(a.as_bytes()))
+            .collect();
+        match i.fields {
+            Fields::Unit => {
+                map_arms.push(quote! {
+                    #vbytes #(| #alias_pats)* => {
+                        scanner.read_null()?;
+                        scanner.skip_whitespace();
+                        scanner.expect_byte(b'}')?;
+                        Ok(#ident::#vident)
+                    }
+                });
+            }
+            Fields::Named(f) => {
+                let decls: Vec<TokenStream> = f
+                    .named
+                    .iter()
+                    .map(|field| {
+                        let fname = field.ident.as_ref().unwrap();
+                        let fa = attrs::parse_field_attrs(&field.attrs)?;
+                        if fa.skip || fa.skip_deserializing {
+                            Ok(quote! {})
+                        } else {
+                            Ok(quote! { let mut #fname = None; })
+                        }
+                    })
+                    .collect::<Result<_>>()?;
+                let field_arms: Vec<TokenStream> = f
+                    .named
+                    .iter()
+                    .map(|field| {
+                        let fname = field.ident.as_ref().unwrap();
+                        let fa = attrs::parse_field_attrs(&field.attrs)?;
+                        if fa.skip || fa.skip_deserializing {
+                            return Ok(quote! {});
+                        }
+                        let json_key = variant_json_key(fname, &fa, container);
+                        Ok(variant_field_arm(fname, &json_key, &fa.aliases, &field.ty, &de_lt))
+                    })
+                    .collect::<Result<_>>()?;
+                let assembly: Vec<TokenStream> = f
+                    .named
+                    .iter()
+                    .map(|field| {
+                        let fname = field.ident.as_ref().unwrap();
+                        let fa = attrs::parse_field_attrs(&field.attrs)?;
+                        let json_key = variant_json_key(fname, &fa, container);
+                        Ok(variant_field_assembly(
+                            fname,
+                            &json_key,
+                            &fa,
+                            &field.ty,
+                            container.default,
+                        ))
+                    })
+                    .collect::<Result<_>>()?;
+                map_arms.push(quote! {
+                    #vbytes #(| #alias_pats)* => {
+                        #(#decls)*
+                        scanner.skip_whitespace();
+                        scanner.expect_byte(b'{')?;
+                        loop {
+                            match scanner.peek_byte_after_ws()? {
+                                b'}' => { scanner.advance(); break; }
+                                b'"' => {
+                                    let _k = scanner.read_key_colon()?;
+                                    match _k {
+                                        #(#field_arms)*
+                                        _ => { #unknown_handler }
+                                    }
+                                    scanner.skip_whitespace();
+                                    match scanner.peek_byte()? {
+                                        b',' => { scanner.advance(); }
+                                        b'}' => {}
+                                        _ => return Err(::jzon::Error::UnexpectedToken),
+                                    }
+                                }
+                                _ => return Err(::jzon::Error::UnexpectedToken),
+                            }
+                        }
+                        scanner.skip_whitespace();
+                        scanner.expect_byte(b'}')?;
+                        Ok(#ident::#vident { #(#assembly)* })
+                    }
+                });
+            }
+            Fields::Unnamed(_) => unreachable!("tuple variants rejected above"),
+        }
+    }
+    let map_fallback = match &other_variant {
+        Some(ov) => quote! {
+            _ => {
+                scanner.skip_value()?;
+                scanner.skip_whitespace();
+                scanner.expect_byte(b'}')?;
+                Ok(#ov)
+            }
+        },
+        None => quote! { _ => Err(::jzon::Error::UnknownVariant), },
+    };
+
+    Ok(quote! {
+        #[automatically_derived]
+        impl<#(#impl_params),*> ::jzon::FromJson<'de>
+            for #ident #ty_args #where_clause
+        {
+            fn from_json_scanner(
+                scanner: &mut ::jzon::Scanner<'de>,
+            ) -> ::std::result::Result<Self, ::jzon::Error> {
+                scanner.skip_whitespace();
+                match scanner.peek_byte()? {
+                    b'"' => {
+                        let _js = scanner.read_str()?;
+                        match _js.as_str().as_bytes() {
+                            #(#str_arms)*
+                            #str_fallback
+                        }
+                    }
+                    b'{' => {
+                        scanner.advance();
+                        scanner.skip_whitespace();
+                        let _js = scanner.read_str()?;
+                        scanner.skip_whitespace();
+                        scanner.expect_byte(b':')?;
+                        match _js.as_str().as_bytes() {
+                            #(#map_arms)*
+                            #map_fallback
+                        }
+                    }
+                    _ => Err(::jzon::Error::UnexpectedToken),
                 }
             }
         }

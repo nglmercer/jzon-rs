@@ -35,9 +35,11 @@ fn main() {
 
 | Feature | What it adds |
 |---------|-------------|
+| `derive` (default) | `#[derive(ToJson, FromJson)]` proc-macros |
 | `serde` | `jzon::from_str` / `to_string` for any `serde`-deriving type |
 | `compat` | `jzon::compat` — `serde_json`-compatible API (`Value`, `json!`, etc.) |
 | `simd` | u128 SWAR scanning (16 bytes/iter) |
+| `simd-intrinsics` | Hand-written `std::arch` kernels — aarch64 NEON, x86_64 SSE2/AVX2 |
 | `fast-float` | `ryu` float serialization, `fast_float2` parsing |
 | `zmij-float-ser` | Use [`zmij`](https://crates.io/crates/zmij) (Schubfach + yy_double) for float serialization instead of `ryu`. See "Float serialization backend" below for tradeoffs. MSRV 1.71. |
 | `unstable` | `std::simd` portable SIMD 32–64 bytes/iter (nightly only) |

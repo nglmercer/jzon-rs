@@ -28,12 +28,17 @@ pub trait FromJson<'de>: Sized {
 
     fn from_json_str(s: &'de str) -> Result<Self, Error> {
         let mut sc = Scanner::new_str(s);
-        Self::from_json_scanner(&mut sc)
+        let value = Self::from_json_scanner(&mut sc)?;
+        // ECMA-404: a JSON text is exactly one value — reject trailing content.
+        sc.expect_eof()?;
+        Ok(value)
     }
 
     fn from_json_bytes(b: &'de [u8]) -> Result<Self, Error> {
         let mut sc = Scanner::new(b);
-        Self::from_json_scanner(&mut sc)
+        let value = Self::from_json_scanner(&mut sc)?;
+        sc.expect_eof()?;
+        Ok(value)
     }
 }
 
@@ -449,6 +454,39 @@ impl<'de, V: FromJson<'de>> FromJson<'de> for BTreeMap<String, V> {
                     let key = sc.read_str_key_colon()?.to_owned();
                     let val = V::from_json_scanner(sc)?;
                     map.insert(key, val);
+                    match sc.peek_byte_after_ws()? {
+                        b',' => {
+                            sc.advance();
+                        }
+                        b'}' => {}
+                        _ => return Err(Error::UnexpectedToken),
+                    }
+                }
+                _ => return Err(Error::UnexpectedToken),
+            }
+        }
+        Ok(map)
+    }
+}
+
+impl<'de, V: FromJson<'de>> FromJson<'de> for BTreeMap<&'de str, V> {
+    fn from_json_scanner(sc: &mut Scanner<'de>) -> Result<Self, Error> {
+        sc.skip_whitespace();
+        sc.expect_byte(b'{')?;
+        let mut map = BTreeMap::new();
+        loop {
+            match sc.peek_byte_after_ws()? {
+                b'}' => {
+                    sc.advance();
+                    break;
+                }
+                b'"' => {
+                    let key = sc.read_str()?;
+                    let key_str = key.as_borrowed().ok_or(Error::EscapedString)?;
+                    sc.skip_whitespace();
+                    sc.expect_byte(b':')?;
+                    let val = V::from_json_scanner(sc)?;
+                    map.insert(key_str, val);
                     match sc.peek_byte_after_ws()? {
                         b',' => {
                             sc.advance();

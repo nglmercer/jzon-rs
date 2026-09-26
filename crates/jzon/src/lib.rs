@@ -11,9 +11,13 @@
 //! | Feature | Default | Effect |
 //! |---------|---------|--------|
 //! | `derive` | ✓ | `#[derive(ToJson, FromJson)]` proc-macros |
+//! | `serde` | | `jzon::from_str` / `to_string` for any serde type (module `serde_impl`) |
+//! | `compat` | | `jzon::compat` — `serde_json`-compatible API (module `compat`) |
 //! | `simd` | | u128 SWAR scanning (16 B/iter) |
+//! | `simd-intrinsics` | | hand-written aarch64 NEON / x86_64 SSE2+AVX2 kernels |
 //! | `simd + unstable` | | `std::simd` portable SIMD (32–64 B/iter, nightly) |
 //! | `fast-float` | | `ryu` serialization, `fast_float2` parsing |
+//! | `zmij-float-ser` | | `zmij` float serialization instead of `ryu` |
 //! | `stats` | | `ScannerStats` allocation/cache-hit counters |
 //!
 //! For serde integration see [`jzon-rs-serde`](https://crates.io/crates/jzon-rs-serde).
@@ -71,6 +75,10 @@ pub mod simd_arch;
 pub mod fixed;
 #[cfg(feature = "stats")]
 pub mod stats;
+#[cfg(feature = "serde")]
+pub mod serde_impl;
+#[cfg(feature = "compat")]
+pub mod compat;
 
 pub use error::Error;
 pub use scanner::{JsonStr, Scanner};
@@ -80,3 +88,11 @@ pub use fixed::{FixedBuf, ToJsonExt, json_str_len};
 
 #[cfg(feature = "derive")]
 pub use jzon_derive::{FromJson, ToJson};
+
+// Serde engine entry points live in [`serde_impl`]; the most-used functions
+// are re-exported at the crate root. (`serde_impl::Error` keeps its module
+// path to avoid clashing with [`Error`].)
+#[cfg(feature = "serde")]
+pub use serde_impl::{from_reader, from_slice, from_str, to_bytes, to_string, to_writer};
+#[cfg(all(feature = "serde", feature = "stats"))]
+pub use serde_impl::{from_reader_with_stats, from_slice_with_stats, from_str_with_stats};
