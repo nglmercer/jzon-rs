@@ -329,13 +329,10 @@ pub fn write_u64(n: u64, w: &mut Vec<u8>) {
 }
 
 #[inline(always)]
-pub fn write_u64_sink<S: JsonSink>(mut n: u64, w: &mut S) {
-    if n == 0 { w.push(b'0'); return; }
-    let mut tmp = [0u8; 20];
-    let mut len = 0usize;
-    while n > 0 { tmp[len] = b'0' + (n % 10) as u8; n /= 10; len += 1; }
-    tmp[..len].reverse();
-    w.extend(&tmp[..len]);
+pub fn write_u64_sink<S: JsonSink>(n: u64, w: &mut S) {
+    // itoa's 2-digits-at-a-time LUT — same backend serde_json uses.
+    let mut buf = itoa::Buffer::new();
+    w.extend(buf.format(n).as_bytes());
 }
 
 #[inline]
@@ -345,7 +342,8 @@ pub fn write_i64(n: i64, w: &mut Vec<u8>) {
 
 #[inline(always)]
 pub fn write_i64_sink<S: JsonSink>(n: i64, w: &mut S) {
-    if n < 0 { w.push(b'-'); write_u64_sink(n.unsigned_abs(), w); } else { write_u64_sink(n as u64, w); }
+    let mut buf = itoa::Buffer::new();
+    w.extend(buf.format(n).as_bytes());
 }
 
 macro_rules! impl_uint {
@@ -384,13 +382,9 @@ pub fn write_i128(n: i128, w: &mut Vec<u8>) {
 }
 
 #[inline]
-fn write_u128_sink<S: JsonSink>(mut n: u128, w: &mut S) {
-    if n == 0 { w.push(b'0'); return; }
-    let mut tmp = [0u8; 39];
-    let mut len = 0usize;
-    while n > 0 { tmp[len] = b'0' + (n % 10) as u8; n /= 10; len += 1; }
-    tmp[..len].reverse();
-    w.extend(&tmp[..len]);
+fn write_u128_sink<S: JsonSink>(n: u128, w: &mut S) {
+    let mut buf = itoa::Buffer::new();
+    w.extend(buf.format(n).as_bytes());
 }
 impl ToJson for u128 {
     #[inline] fn json_write(&self, w: &mut Vec<u8>) { write_u128_sink(*self, &mut VecSink(w)); }
@@ -411,7 +405,8 @@ impl ToJson for i128 {
 
 #[inline]
 fn write_i128_sink<S: JsonSink>(n: i128, w: &mut S) {
-    if n < 0 { w.push(b'-'); write_u128_sink(n.unsigned_abs(), w); } else { write_u128_sink(n as u128, w); }
+    let mut buf = itoa::Buffer::new();
+    w.extend(buf.format(n).as_bytes());
 }
 
 impl ToJson for f64 {

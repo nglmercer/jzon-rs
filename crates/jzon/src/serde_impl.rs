@@ -26,7 +26,7 @@ use serde::ser::{
 };
 use serde::de::{self as de_trait, DeserializeOwned, Visitor, MapAccess, SeqAccess, EnumAccess, VariantAccess};
 
-use crate::ser::{write_escaped_str, write_u64, write_i64, write_u128, write_i128, ToJson};
+use crate::ser::{write_escaped_str, write_u64, write_i64, write_u128, write_i128};
 use crate::{Scanner, JsonStr};
 
 #[derive(Debug)]
@@ -77,36 +77,11 @@ impl From<crate::Error> for Error {
 }
 
 // ── float helpers ─────────────────────────────────────────────────────────────
-// serde_json always emits a decimal point for whole-number floats (e.g. 3.0 →
-// "3.0").  jzon's core ToJson impl omits it to keep float rendering minimal.
-// We add it back here in the serde layer so output matches serde_json.
-
-#[inline]
-fn ensure_decimal_point(buf_start: usize, w: &mut Vec<u8>) {
-    let written = &w[buf_start..];
-    let has_dot = written.contains(&b'.');
-    let has_exp = written.contains(&b'e') || written.contains(&b'E');
-    if !has_dot && !has_exp {
-        w.extend_from_slice(b".0");
-    }
-}
-
-/// Insert an explicit `+` in unsigned exponents (`1e21` → `1e+21`).
-/// `serde_json` (zmij backend) always signs the exponent; the `ryu` backend
-/// omits `+`. Rare path — only floats rendered with an exponent.
-#[inline]
-fn ensure_exponent_sign(buf_start: usize, w: &mut Vec<u8>) {
-    let written = &w[buf_start..];
-    for (i, &b) in written.iter().enumerate() {
-        if b == b'e' || b == b'E' {
-            match written.get(i + 1) {
-                Some(b'+') | Some(b'-') | None => {}
-                Some(_) => w.insert(buf_start + i + 1, b'+'),
-            }
-            return;
-        }
-    }
-}
+// serde_json emits shortest round-trip floats with signed exponents and an
+// always-present decimal point (`3.0`, `1e+21`). zmij produces exactly that,
+// so the zmij build is a raw passthrough with zero fixups. ryu differs only
+// in unsigned positive exponents (`1e21`), fixed with a single scan below
+// (ryu always emits `.0`/exponents itself, so no decimal-point fixup exists).
 
 #[inline]
 fn serialize_float64(v: f64, w: &mut Vec<u8>) {
@@ -115,15 +90,25 @@ fn serialize_float64(v: f64, w: &mut Vec<u8>) {
         return;
     }
     if v == 0.0 {
-        // serde_json preserves the sign of zero; the core backend
-        // normalizes -0.0 to "0" (ECMA-262), so emit directly here.
-        w.extend_from_slice(if v.is_sign_negative() { b"-0.0" } else { b"0.0" });
+        // serde_json preserves the sign of zero.
+        w.extend_from_slice(if v.is_sign_negative() {
+            b"-0.0"
+        } else {
+            b"0.0"
+        });
         return;
     }
-    let start = w.len();
-    v.json_write(w);
-    ensure_decimal_point(start, w);
-    ensure_exponent_sign(start, w);
+    #[cfg(feature = "zmij-float-ser")]
+    {
+        let mut buf = zmij::Buffer::new();
+        w.extend_from_slice(buf.format_finite(v).as_bytes());
+        return;
+    }
+    #[cfg(not(feature = "zmij-float-ser"))]
+    {
+        let mut buf = ryu::Buffer::new();
+        push_ryu_signed(buf.format(v).as_bytes(), w);
+    }
 }
 
 #[inline]
@@ -133,13 +118,43 @@ fn serialize_float32(v: f32, w: &mut Vec<u8>) {
         return;
     }
     if v == 0.0 {
-        w.extend_from_slice(if v.is_sign_negative() { b"-0.0" } else { b"0.0" });
+        w.extend_from_slice(if v.is_sign_negative() {
+            b"-0.0"
+        } else {
+            b"0.0"
+        });
         return;
     }
-    let start = w.len();
-    v.json_write(w);
-    ensure_decimal_point(start, w);
-    ensure_exponent_sign(start, w);
+    #[cfg(feature = "zmij-float-ser")]
+    {
+        let mut buf = zmij::Buffer::new();
+        w.extend_from_slice(buf.format_finite(v).as_bytes());
+        return;
+    }
+    #[cfg(not(feature = "zmij-float-ser"))]
+    {
+        let mut buf = ryu::Buffer::new();
+        push_ryu_signed(buf.format(v).as_bytes(), w);
+    }
+}
+
+/// Copy ryu output, inserting `+` after a bare `e` (`1e21` → `1e+21`).
+/// Single forward scan (ryu only emits lowercase `e`); written as two
+/// extends so no `Vec::insert` memmove ever runs.
+#[cfg(not(feature = "zmij-float-ser"))]
+#[inline]
+fn push_ryu_signed(s: &[u8], w: &mut Vec<u8>) {
+    w.reserve(s.len() + 1);
+    match s.iter().position(|&b| b == b'e') {
+        Some(i) => {
+            w.extend_from_slice(&s[..=i]);
+            if !matches!(s.get(i + 1), Some(b'+') | Some(b'-')) {
+                w.push(b'+');
+            }
+            w.extend_from_slice(&s[i + 1..]);
+        }
+        None => w.extend_from_slice(s),
+    }
 }
 
 pub struct Serializer {
@@ -1008,14 +1023,7 @@ pub fn from_reader_with_stats<R: std::io::Read, T: DeserializeOwned>(
 macro_rules! deserialize_signed_int {
     ($method:ident, $visit:ident, $num_ty:ty) => {
         fn $method<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, Error> {
-            let bytes = self.scanner.read_number_bytes()?;
-            // serde_json parses `-0` as float -0.0 on every i64-family path,
-            // so integer targets reject it ("invalid type: floating point").
-            // (i128 has its own path and accepts `-0`; see below.)
-            if bytes == b"-0" {
-                return Err(Error::Scanner(crate::Error::InvalidNumber));
-            }
-            let n = parse_i64(bytes)?;
+            let n = self.scanner.read_i64_strict().map_err(Error::Scanner)?;
             if n < <$num_ty>::MIN as i64 || n > <$num_ty>::MAX as i64 {
                 return Err(Error::Scanner(crate::Error::InvalidNumber));
             }
@@ -1027,8 +1035,7 @@ macro_rules! deserialize_signed_int {
 macro_rules! deserialize_unsigned_int {
     ($method:ident, $visit:ident, $num_ty:ty) => {
         fn $method<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, Error> {
-            let bytes = self.scanner.read_number_bytes()?;
-            let n = parse_u64(bytes)?;
+            let n = self.scanner.read_u64_strict().map_err(Error::Scanner)?;
             if n > <$num_ty>::MAX as u64 {
                 return Err(Error::Scanner(crate::Error::InvalidNumber));
             }
@@ -1078,13 +1085,11 @@ impl<'de, 'a> de_trait::Deserializer<'de> for &'a mut Deserializer<'de> {
     }
 
     fn deserialize_f32<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, Error> {
-        let bytes = self.scanner.read_number_bytes()?;
-        let n: f32 = parse_f32(bytes)?;
+        let n = self.scanner.read_f32().map_err(Error::Scanner)?;
         visitor.visit_f32(n)
     }
     fn deserialize_f64<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, Error> {
-        let bytes = self.scanner.read_number_bytes()?;
-        let n: f64 = parse_f64(bytes)?;
+        let n = self.scanner.read_f64().map_err(Error::Scanner)?;
         visitor.visit_f64(n)
     }
 
@@ -1879,6 +1884,21 @@ mod tests {
     }
 
     #[test]
+    fn invalid_float_heads_rejected_like_serde_json() {
+        // The single-pass float reader must reject everything JSON rejects,
+        // including inputs fast-float itself would accept.
+        for src in ["+1", "+1.5", "01", "-01", "inf", "-inf", "nan", "1e", "1e+",
+                    "--1", "0x1", "", "-", ".", "e5", "1ee5"]
+        {
+            assert!(from_str::<f64>(src).is_err(), "{src}");
+            assert!(from_str::<f32>(src).is_err(), "{src} as f32");
+            assert!(from_str::<serde_json::Value>(src).is_err(), "{src} as Value");
+        }
+        assert_eq!(from_str::<f64>("1.5").unwrap(), 1.5);
+        assert_eq!(from_str::<f64>("-0").unwrap().to_bits(), (-0.0f64).to_bits());
+    }
+
+    #[test]
     fn leading_dot_numbers_rejected_like_serde_json() {
         // JSON numbers require an integer part: `.5` / `-.5` are invalid.
         for src in [".5", "-.5", "-.0", ".0", ".5E-7", "-.5e+3"] {
@@ -1898,6 +1918,19 @@ mod tests {
         assert!(from_str::<String>(r#""\uDC00""#).is_err());
         // ...while a valid pair decodes.
         assert_eq!(from_str::<String>(r#""\uD83D\uDE00""#).unwrap(), "😀");
+    }
+
+    #[test]
+    fn int_boundaries_match_serde_json() {
+        assert_eq!(from_str::<i64>("-9223372036854775808").unwrap(), i64::MIN);
+        assert_eq!(from_str::<i64>("9223372036854775807").unwrap(), i64::MAX);
+        assert_eq!(from_str::<u64>("18446744073709551615").unwrap(), u64::MAX);
+        assert!(from_str::<i64>("-9223372036854775809").is_err());
+        assert!(from_str::<i64>("9223372036854775808").is_err());
+        assert!(from_str::<u64>("18446744073709551616").is_err());
+        assert!(from_str::<u8>("256").is_err());
+        assert!(from_str::<i8>("-129").is_err());
+        assert_eq!(from_str::<u8>("0").unwrap(), 0);
     }
 
     #[test]

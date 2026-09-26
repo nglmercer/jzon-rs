@@ -432,6 +432,177 @@ impl<'de> Scanner<'de> {
         self.pos - start
     }
 
+    /// Scan a JSON integer literal into a `u64` in a single pass.
+    ///
+    /// Strictly validates the integer grammar (`0` | `[1-9][0-9]*`, no sign,
+    /// no fraction, no exponent) while accumulating, like serde_json's
+    /// `parse_integer`. Rejects float syntax, leading zeros, and overflow —
+    /// on any error the cursor position is unspecified (callers abort).
+    pub fn read_u64_strict(&mut self) -> Result<u64, Error> {
+        self.skip_whitespace();
+        let mut n: u64;
+        match self.input.get(self.pos) {
+            Some(&b'0') => {
+                self.pos += 1;
+                // Leading zero: next byte must NOT be another digit.
+                if matches!(self.input.get(self.pos), Some(b'0'..=b'9')) {
+                    return Err(Error::InvalidNumber);
+                }
+                n = 0;
+            }
+            Some(&b) if b.is_ascii_digit() => {
+                n = (b - b'0') as u64;
+                self.pos += 1;
+                while let Some(&d) = self.input.get(self.pos) {
+                    if !d.is_ascii_digit() {
+                        break;
+                    }
+                    n = n
+                        .checked_mul(10)
+                        .and_then(|v| v.checked_add((d - b'0') as u64))
+                        .ok_or(Error::InvalidNumber)?;
+                    self.pos += 1;
+                }
+            }
+            _ => return Err(Error::InvalidNumber),
+        }
+        // Integer targets reject float syntax (`1.5`, `1e5`).
+        if matches!(self.input.get(self.pos), Some(b'.' | b'e' | b'E')) {
+            return Err(Error::InvalidNumber);
+        }
+        Ok(n)
+    }
+
+    /// Scan a JSON integer literal into an `i64` in a single pass.
+    ///
+    /// Same strictness as [`read_u64_strict`](Self::read_u64_strict), plus an
+    /// optional `-` sign. Like serde_json, `-0` is treated as float `-0.0`
+    /// and rejected for integer targets; `i64::MIN` is accepted.
+    pub fn read_i64_strict(&mut self) -> Result<i64, Error> {
+        self.skip_whitespace();
+        let neg = self.input.get(self.pos) == Some(&b'-');
+        if neg {
+            self.pos += 1;
+        }
+        // Accumulate magnitude as u64 so i64::MIN (magnitude 2^63) fits.
+        let mut mag: u64;
+        match self.input.get(self.pos) {
+            Some(&b'0') => {
+                self.pos += 1;
+                if matches!(self.input.get(self.pos), Some(b'0'..=b'9')) {
+                    return Err(Error::InvalidNumber);
+                }
+                mag = 0;
+            }
+            Some(&b) if b.is_ascii_digit() => {
+                mag = (b - b'0') as u64;
+                self.pos += 1;
+                while let Some(&d) = self.input.get(self.pos) {
+                    if !d.is_ascii_digit() {
+                        break;
+                    }
+                    mag = mag
+                        .checked_mul(10)
+                        .and_then(|v| v.checked_add((d - b'0') as u64))
+                        .ok_or(Error::InvalidNumber)?;
+                    self.pos += 1;
+                }
+            }
+            _ => return Err(Error::InvalidNumber),
+        }
+        if matches!(self.input.get(self.pos), Some(b'.' | b'e' | b'E')) {
+            return Err(Error::InvalidNumber);
+        }
+        if neg {
+            // `-0` is float -0.0, rejected for integer targets.
+            if mag == 0 {
+                return Err(Error::InvalidNumber);
+            }
+            if mag > i64::MAX as u64 + 1 {
+                return Err(Error::InvalidNumber);
+            }
+            Ok(mag.wrapping_neg() as i64)
+        } else {
+            if mag > i64::MAX as u64 {
+                return Err(Error::InvalidNumber);
+            }
+            Ok(mag as i64)
+        }
+    }
+
+    /// Scan a JSON number into an `f64` in a single pass.
+    ///
+    /// Validates the number head (`-?(0|[1-9]…)` — rejects `+`, `.5`, leading
+    /// zeros, `inf`/`nan`) then delegates the digit scan to
+    /// `fast_float2::parse_partial`, which reports bytes consumed. Overflow
+    /// to infinity errors, like serde_json ("number out of range").
+    pub fn read_f64(&mut self) -> Result<f64, Error> {
+        self.skip_whitespace();
+        let start = self.pos;
+        self.check_number_head()?;
+        let (val, consumed) = fast_float2::parse_partial::<f64, _>(self.remaining_input())
+            .map_err(|_| Error::InvalidNumber)?;
+        // parse_partial is lenient about trailing dots (`1.`, `1.e5`); every
+        // other invalid shape either fails the head check or leaves the
+        // cursor mid-token for a structural error. A `.` must be followed
+        // by a digit — single memchr scan, exits at the first dot.
+        let span = &self.input[start..start + consumed];
+        if let Some(dot) = span.iter().position(|&b| b == b'.') {
+            if !matches!(span.get(dot + 1), Some(b'0'..=b'9')) {
+                return Err(Error::InvalidNumber);
+            }
+        }
+        self.advance_by(consumed);
+        if val.is_infinite() {
+            return Err(Error::InvalidNumber);
+        }
+        Ok(val)
+    }
+
+    /// Scan a JSON number into an `f32` in a single pass (see
+    /// [`read_f64`](Self::read_f64)). Parses directly as `f32`, so values
+    /// overflowing `f32` error rather than saturating.
+    pub fn read_f32(&mut self) -> Result<f32, Error> {
+        self.skip_whitespace();
+        let start = self.pos;
+        self.check_number_head()?;
+        let (val, consumed) = fast_float2::parse_partial::<f32, _>(self.remaining_input())
+            .map_err(|_| Error::InvalidNumber)?;
+        let span = &self.input[start..start + consumed];
+        if let Some(dot) = span.iter().position(|&b| b == b'.') {
+            if !matches!(span.get(dot + 1), Some(b'0'..=b'9')) {
+                return Err(Error::InvalidNumber);
+            }
+        }
+        self.advance_by(consumed);
+        if val.is_infinite() {
+            return Err(Error::InvalidNumber);
+        }
+        Ok(val)
+    }
+
+    /// Validate a JSON number head: optional `-`, then `0` (not followed by a
+    /// digit) or `[1-9]`. Rejects everything `parse_partial` would wrongly
+    /// accept (`+1`, `.5`, `01`, `inf`, `nan`, `-`, …).
+    fn check_number_head(&self) -> Result<(), Error> {
+        let mut i = self.pos;
+        if self.input.get(i) == Some(&b'-') {
+            i += 1;
+        }
+        match self.input.get(i) {
+            Some(&b'0') => {
+                if matches!(self.input.get(i + 1), Some(b'0'..=b'9')) {
+                    return Err(Error::InvalidNumber);
+                }
+                Ok(())
+            }
+            Some(b'1'..=b'9') => Ok(()),
+            _ => Err(Error::InvalidNumber),
+        }
+    }
+}
+
+impl<'de> Scanner<'de> {
     /// Scan a JSON number and return the raw byte slice (zero-copy).
     pub fn read_number_bytes(&mut self) -> Result<&'de [u8], Error> {
         self.skip_whitespace();

@@ -224,28 +224,21 @@ macro_rules! impl_sint {
 
 // ── floats ────────────────────────────────────────────────────────────────────
 //
-// fast-float2 parses the float AND returns bytes consumed in a single pass,
-// eliminating the separate forward-scan that read_number_bytes() does.
+// Shared single-pass readers (`Scanner::read_f64`/`read_f32`): head validation
+// plus fast-float2, with the consumed span checked against the JSON number
+// grammar (rejects `1.`, `+1`, `inf`, …) and overflow-to-infinity rejected.
 
 impl<'de> FromJson<'de> for f64 {
     #[inline]
     fn from_json_scanner(sc: &mut Scanner<'de>) -> Result<Self, Error> {
-        sc.skip_whitespace();
-        let (val, consumed) = fast_float2::parse_partial::<f64, _>(sc.remaining_input())
-            .map_err(|_| Error::InvalidNumber)?;
-        sc.advance_by(consumed);
-        Ok(val)
+        sc.read_f64()
     }
 }
 
 impl<'de> FromJson<'de> for f32 {
     #[inline]
     fn from_json_scanner(sc: &mut Scanner<'de>) -> Result<Self, Error> {
-        sc.skip_whitespace();
-        let (val, consumed) = fast_float2::parse_partial::<f32, _>(sc.remaining_input())
-            .map_err(|_| Error::InvalidNumber)?;
-        sc.advance_by(consumed);
-        Ok(val)
+        sc.read_f32()
     }
 }
 
