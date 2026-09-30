@@ -1,0 +1,35 @@
+   Compiling jzon-rs v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon)
+   Compiling jzon-rs-serde v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_serde)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.49s
+     Running tests/native_errors.rs (target/debug/deps/native_errors-7ffde1738847a8a4)
+
+running 1 test
+test categories_positions_and_public_constructor ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/native_reader.rs (target/debug/deps/native_reader-16274ddf4f848fb0)
+
+running 6 tests
+test callbacks_once_and_error_precedence ... ok
+test errors_and_truncated_io ... ok
+test stream_partial_consumption_and_fused_errors ... ok
+test raw_ignored_and_byte_models ... ok
+test fragmented_values_and_enums ... ok
+test storage_is_not_document_sized ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+     Running tests/pr21_native_map_regressions.rs (target/debug/deps/pr21_native_map_regressions-7cd4bd9b9fc78b99)
+
+running 8 tests
+test bool_callback_requires_complete_lexeme ... ok
+test missing_unit_keys ... ok
+test custom_unit_visitor_consumes_quoted_key ... ok
+test boolean_key_lexemes ... ok
+test non_ascii_boolean_keys_use_slice_oracle ... ok
+test invalid_key_never_invokes_seed ... ok
+test enum_key_grammar ... ok
+test byte_key_callbacks_and_model ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

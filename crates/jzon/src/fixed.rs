@@ -1,6 +1,9 @@
 //! Zero-allocation, stack-based JSON output via const-generic fixed buffers.
 
-use crate::ser::{IoSink, LengthCounter, ToJson};
+use crate::__private::*;
+#[cfg(feature = "std")]
+use crate::ser::IoSink;
+use crate::ser::{LengthCounter, ToJson};
 
 /// Stack-allocated, const-generic byte buffer for zero-allocation JSON output.
 pub struct FixedBuf<const N: usize> {
@@ -10,16 +13,25 @@ pub struct FixedBuf<const N: usize> {
 }
 
 impl<const N: usize> Default for FixedBuf<N> {
-    fn default() -> Self { Self::new() }
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<const N: usize> FixedBuf<N> {
     /// Construct an empty `FixedBuf` (const-fn, lives on the stack).
     pub const fn new() -> Self {
-        FixedBuf { data: [0u8; N], len: 0, overflow: false }
+        FixedBuf {
+            data: [0u8; N],
+            len: 0,
+            overflow: false,
+        }
     }
 
-    #[inline] pub fn as_slice(&self) -> &[u8] { &self.data[..self.len] }
+    #[inline]
+    pub fn as_slice(&self) -> &[u8] {
+        &self.data[..self.len]
+    }
 
     /// # Panics
     /// If content is not valid UTF-8 (never happens for correct `ToJson` impls).
@@ -28,10 +40,23 @@ impl<const N: usize> FixedBuf<N> {
         core::str::from_utf8(self.as_slice()).expect("ToJson always emits valid UTF-8")
     }
 
-    #[inline] pub fn len(&self) -> usize { self.len }
-    #[inline] pub fn is_empty(&self) -> bool { self.len == 0 }
-    #[inline] pub fn remaining(&self) -> usize { N - self.len }
-    #[inline] pub fn clear(&mut self) { self.len = 0; self.overflow = false; }
+    #[inline]
+    pub fn len(&self) -> usize {
+        self.len
+    }
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.len == 0
+    }
+    #[inline]
+    pub fn remaining(&self) -> usize {
+        N - self.len
+    }
+    #[inline]
+    pub fn clear(&mut self) {
+        self.len = 0;
+        self.overflow = false;
+    }
 }
 
 impl<const N: usize> core::fmt::Debug for FixedBuf<N> {
@@ -59,11 +84,11 @@ impl<const N: usize> FixedBuf<N> {
         if self.overflow {
             return;
         }
-        let end = self.len + bs.len();
-        if end > N {
+        if bs.len() > N - self.len {
             self.overflow = true;
             return;
         }
+        let end = self.len + bs.len();
         self.data[self.len..end].copy_from_slice(bs);
         self.len = end;
     }
@@ -84,7 +109,11 @@ pub trait ToJsonExt: ToJson {
     {
         let mut buf = FixedBuf::<N>::new();
         self.json_write_sink(&mut buf);
-        if buf.sink_ok() { Some(buf) } else { None }
+        if buf.sink_ok() {
+            Some(buf)
+        } else {
+            None
+        }
     }
 
     /// Exact serialized byte length without allocating output storage.
@@ -107,6 +136,7 @@ pub trait ToJsonExt: ToJson {
     }
 
     /// Serialize to any `io::Write`.
+    #[cfg(feature = "std")]
     fn json_write_io(&self, w: impl std::io::Write) -> std::io::Result<()>
     where
         Self: Sized,

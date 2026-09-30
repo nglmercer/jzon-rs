@@ -1,106 +1,13 @@
-//! Drop-in `serde_json` replacement routing hot-path functions through the
-//! [`serde_impl`](crate::serde_impl) engine.
-//!
-//! Available as `jzon::compat` with the `compat` cargo feature, or through the
-//! standalone [`jzon-rs-compat`](https://crates.io/crates/jzon-rs-compat) crate
-//! (usable via a dependency rename) which re-exports this module.
-//!
-//! # Correctness contract
-//!
-//! Every function below tries the jzon engine first and, on any engine error,
-//! retries with the real `serde_json`. The retry makes both the value and the
-//! error authoritative: success values, error messages, line/column positions,
-//! and error categories (`is_syntax`/`is_data`/`is_eof`/`is_io`) are always
-//! exactly what `serde_json` produces. The fallback only runs on the cold
-//! error path, so successful parses pay no double-parse cost.
-//!
-//! One deliberate exception: float parsing is always correctly rounded
-//! (equivalent to `serde_json` with `float_roundtrip`), while default
-//! `serde_json` is occasionally off by 1ulp. The engine does not replicate
-//! the approximation; enable `float_roundtrip` on both sides for
-//! bit-identical parses.
-
-use std::io;
-
-pub use serde_json::{Error, Map, Number, Result, Value};
-pub use serde_json::{from_value, to_value};
-pub use serde_json::json;
-pub use serde_json::{Deserializer, Serializer, StreamDeserializer};
-
-pub mod de    { pub use serde_json::de::*; }
-pub mod ser   { pub use serde_json::ser::*; }
-pub mod error { pub use serde_json::error::*; }
-pub mod map   { pub use serde_json::map::*; }
-pub mod value { pub use serde_json::value::*; }
-
-#[inline]
-pub fn from_str<'de, T: serde::Deserialize<'de>>(s: &'de str) -> Result<T> {
-    match crate::serde_impl::from_str(s) {
-        Ok(v) => Ok(v),
-        Err(_) => serde_json::from_str(s),
-    }
-}
-
-#[inline]
-pub fn from_slice<'de, T: serde::Deserialize<'de>>(v: &'de [u8]) -> Result<T> {
-    match crate::serde_impl::from_slice(v) {
-        Ok(v) => Ok(v),
-        Err(_) => serde_json::from_slice(v),
-    }
-}
-
-#[inline]
-pub fn from_reader<R: io::Read, T: serde::de::DeserializeOwned>(mut r: R) -> Result<T> {
-    let mut buf = Vec::new();
-    r.read_to_end(&mut buf).map_err(Error::io)?;
-    from_slice(&buf)
-}
-
-#[inline]
-pub fn to_string<T: serde::Serialize>(v: &T) -> Result<String> {
-    match crate::serde_impl::to_string(v) {
-        Ok(s) => Ok(s),
-        Err(_) => serde_json::to_string(v),
-    }
-}
-
-#[inline]
-pub fn to_string_pretty<T: serde::Serialize>(v: &T) -> Result<String> {
-    serde_json::to_string_pretty(v)
-}
-
-#[inline]
-pub fn to_vec<T: serde::Serialize>(v: &T) -> Result<Vec<u8>> {
-    match crate::serde_impl::to_bytes(v) {
-        Ok(b) => Ok(b),
-        Err(_) => serde_json::to_vec(v),
-    }
-}
-
-#[inline]
-pub fn to_vec_pretty<T: serde::Serialize>(v: &T) -> Result<Vec<u8>> {
-    serde_json::to_vec_pretty(v)
-}
-
-#[inline]
-pub fn to_writer<W: io::Write, T: serde::Serialize>(mut w: W, v: &T) -> Result<()> {
-    // Buffered on the engine path; the retry below streams exactly like
-    // serde_json, reproducing its behavior and error byte-for-byte.
-    match crate::serde_impl::to_bytes(v) {
-        Ok(bytes) => w.write_all(&bytes).map_err(Error::io),
-        Err(_) => serde_json::to_writer(w, v),
-    }
-}
-
-#[inline]
-pub fn to_writer_pretty<W: io::Write, T: serde::Serialize>(w: W, v: &T) -> Result<()> {
-    serde_json::to_writer_pretty(w, v)
-}
+//! Strict std-enabled facade. All operations delegate once to real serde_json.
+//! Native APIs are available separately through `crate::serde_impl`; no user
+//! callback is retried and no native acceleration is claimed by this facade.
+pub use serde_json::*;
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use serde::{Deserialize, Serialize};
+    use std::io;
 
     #[derive(Serialize, Deserialize, Debug, PartialEq)]
     struct User {
@@ -111,7 +18,11 @@ mod tests {
 
     #[test]
     fn roundtrip_via_compat() {
-        let u = User { id: 1, name: "Alice".into(), score: 9.5 };
+        let u = User {
+            id: 1,
+            name: "Alice".into(),
+            score: 9.5,
+        };
         let json = to_string(&u).unwrap();
         let u2: User = from_str(&json).unwrap();
         assert_eq!(u, u2);
@@ -139,7 +50,11 @@ mod tests {
 
     #[test]
     fn to_vec_works() {
-        let u = User { id: 2, name: "Carol".into(), score: 1.0 };
+        let u = User {
+            id: 2,
+            name: "Carol".into(),
+            score: 1.0,
+        };
         let bytes = to_vec(&u).unwrap();
         let u2: User = from_slice(&bytes).unwrap();
         assert_eq!(u, u2);
@@ -156,7 +71,11 @@ mod tests {
 
     #[test]
     fn to_writer_works() {
-        let u = User { id: 4, name: "Eve".into(), score: 2.718 };
+        let u = User {
+            id: 4,
+            name: "Eve".into(),
+            score: 2.75,
+        };
         let mut buf = Vec::new();
         to_writer(&mut buf, &u).unwrap();
         let u2: User = from_slice(&buf).unwrap();
@@ -181,13 +100,17 @@ mod tests {
 
     #[test]
     fn from_value_to_value_roundtrip() {
-        let u = User { id: 99, name: "Zara".into(), score: 100.0 };
+        let u = User {
+            id: 99,
+            name: "Zara".into(),
+            score: 100.0,
+        };
         let v = to_value(&u).unwrap();
         let u2: User = from_value(v).unwrap();
         assert_eq!(u, u2);
     }
 
-    // The fallback contract: every error compat returns — message, position,
+    // The single-delegation contract: every error compat returns — message, position,
     // and category — is byte-identical to what serde_json returns.
     #[test]
     fn errors_match_serde_json_exactly() {
@@ -261,7 +184,7 @@ mod tests {
         let theirs = serde_json::to_string(&m).map_err(|e| e.to_string());
         assert_eq!(ours, theirs);
 
-        // Fallback streams exactly like serde_json, including partial writes.
+        // Delegation streams exactly like serde_json, including partial writes.
         let mut ours = Vec::new();
         let ours_err = to_writer(&mut ours, &m).map_err(|e| e.to_string());
         let mut theirs_buf = Vec::new();
@@ -329,12 +252,15 @@ mod tests {
         assert_eq!(keys, ["b", "a"]);
     }
 
-    // The `unbounded_depth` flag lifts the 128-level recursion limit.
     #[cfg(feature = "unbounded_depth")]
     #[test]
-    fn unbounded_depth_parses_deep_input() {
-        let input = format!("{}{}", "[".repeat(300), "]".repeat(300));
-        let v: Value = from_str(&input).unwrap();
+    fn unbounded_depth_requires_explicit_opt_out() {
+        let input = format!("{}{}", "[".repeat(150), "]".repeat(150));
+        assert!(from_str::<Value>(&input).is_err());
+        let mut de = Deserializer::from_str(&input);
+        de.disable_recursion_limit();
+        let v = Value::deserialize(&mut de).unwrap();
+        de.end().unwrap();
         assert!(v.is_array());
     }
 

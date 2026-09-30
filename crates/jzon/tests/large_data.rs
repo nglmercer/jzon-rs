@@ -39,9 +39,13 @@ fn values_approx_eq(a: &serde_json::Value, b: &serde_json::Value) -> bool {
         (Number(x), Number(y)) => {
             match (x.as_f64(), y.as_f64()) {
                 (Some(fx), Some(fy)) => {
-                    if fx == fy { return true; }
+                    if fx == fy {
+                        return true;
+                    }
                     // Both NaN — treat as equal (shouldn't appear in valid JSON, but just in case)
-                    if fx.is_nan() && fy.is_nan() { return true; }
+                    if fx.is_nan() && fy.is_nan() {
+                        return true;
+                    }
                     // Relative tolerance: accept up to 8 ULPs difference
                     let diff = (fx - fy).abs();
                     let scale = fx.abs().max(fy.abs()).max(1.0);
@@ -51,11 +55,17 @@ fn values_approx_eq(a: &serde_json::Value, b: &serde_json::Value) -> bool {
             }
         }
         (Array(xa), Array(ya)) => {
-            xa.len() == ya.len() && xa.iter().zip(ya.iter()).all(|(a, b)| values_approx_eq(a, b))
+            xa.len() == ya.len()
+                && xa
+                    .iter()
+                    .zip(ya.iter())
+                    .all(|(a, b)| values_approx_eq(a, b))
         }
         (Object(xo), Object(yo)) => {
             xo.len() == yo.len()
-                && xo.iter().all(|(k, v)| yo.get(k).map_or(false, |yv| values_approx_eq(v, yv)))
+                && xo
+                    .iter()
+                    .all(|(k, v)| yo.get(k).is_some_and(|yv| values_approx_eq(v, yv)))
         }
         _ => false,
     }
@@ -78,10 +88,10 @@ fn assert_parse_matches(name: &str, input: &str) {
 /// Parse with jzon_serde, serialize back, re-parse with serde_json, assert
 /// structurally equal (floats tolerate ≤ 8 ULPs difference).
 fn assert_roundtrip(name: &str, input: &str) {
-    let val: serde_json::Value = jzon_serde::from_str(input)
-        .unwrap_or_else(|e| panic!("{name}: parse failed: {e}"));
-    let serialized = jzon_serde::to_string(&val)
-        .unwrap_or_else(|e| panic!("{name}: serialize failed: {e}"));
+    let val: serde_json::Value =
+        jzon_serde::from_str(input).unwrap_or_else(|e| panic!("{name}: parse failed: {e}"));
+    let serialized =
+        jzon_serde::to_string(&val).unwrap_or_else(|e| panic!("{name}: serialize failed: {e}"));
     let val2: serde_json::Value = serde_json::from_str(&serialized)
         .unwrap_or_else(|e| panic!("{name}: re-parse failed: {e}"));
     assert!(
@@ -106,8 +116,8 @@ fn print_throughput(name: &str, bytes: usize, elapsed: std::time::Duration) {
 fn twitter_parse_correctness() {
     let input = read_data("twitter.json");
     let t = Instant::now();
-    let _: serde_json::Value = jzon_serde::from_str(&input)
-        .expect("twitter.json: jzon_serde parse failed");
+    let _: serde_json::Value =
+        jzon_serde::from_str(&input).expect("twitter.json: jzon_serde parse failed");
     let elapsed = t.elapsed();
     print_throughput("twitter.json (jzon_serde)", input.len(), elapsed);
 
@@ -125,8 +135,8 @@ fn twitter_roundtrip() {
 fn canada_parse_correctness() {
     let input = read_data("canada.json");
     let t = Instant::now();
-    let _: serde_json::Value = jzon_serde::from_str(&input)
-        .expect("canada.json: jzon_serde parse failed");
+    let _: serde_json::Value =
+        jzon_serde::from_str(&input).expect("canada.json: jzon_serde parse failed");
     let elapsed = t.elapsed();
     print_throughput("canada.json (jzon_serde)", input.len(), elapsed);
 
@@ -144,8 +154,8 @@ fn canada_roundtrip() {
 fn citm_catalog_parse_correctness() {
     let input = read_data("citm_catalog.json");
     let t = Instant::now();
-    let _: serde_json::Value = jzon_serde::from_str(&input)
-        .expect("citm_catalog.json: jzon_serde parse failed");
+    let _: serde_json::Value =
+        jzon_serde::from_str(&input).expect("citm_catalog.json: jzon_serde parse failed");
     let elapsed = t.elapsed();
     print_throughput("citm_catalog.json (jzon_serde)", input.len(), elapsed);
 
@@ -163,8 +173,8 @@ fn citm_catalog_roundtrip() {
 fn generated_50k_parse_correctness() {
     let input = read_data("generated_50k.json");
     let t = Instant::now();
-    let _: serde_json::Value = jzon_serde::from_str(&input)
-        .expect("generated_50k.json: jzon_serde parse failed");
+    let _: serde_json::Value =
+        jzon_serde::from_str(&input).expect("generated_50k.json: jzon_serde parse failed");
     let elapsed = t.elapsed();
     print_throughput("generated_50k.json (jzon_serde)", input.len(), elapsed);
 
@@ -182,8 +192,8 @@ fn generated_50k_roundtrip() {
 fn mixed_2mb_parse_correctness() {
     let input = read_data("mixed_2mb.json");
     let t = Instant::now();
-    let _: serde_json::Value = jzon_serde::from_str(&input)
-        .expect("mixed_2mb.json: jzon_serde parse failed");
+    let _: serde_json::Value =
+        jzon_serde::from_str(&input).expect("mixed_2mb.json: jzon_serde parse failed");
     let elapsed = t.elapsed();
     print_throughput("mixed_2mb.json (jzon_serde)", input.len(), elapsed);
 
@@ -211,17 +221,20 @@ fn stress_9mb_generated() {
 
     // Parse with jzon_serde
     let t = Instant::now();
-    let jzon_val: serde_json::Value = jzon_serde::from_str(&input)
-        .expect("jzon_serde parse failed on 9 MB file");
+    let jzon_val: serde_json::Value =
+        jzon_serde::from_str(&input).expect("jzon_serde parse failed on 9 MB file");
     let jzon_elapsed = t.elapsed();
 
     // Parse with serde_json for comparison
     let t2 = Instant::now();
-    let serde_val: serde_json::Value = serde_json::from_str(&input)
-        .expect("serde_json parse failed on 9 MB file");
+    let serde_val: serde_json::Value =
+        serde_json::from_str(&input).expect("serde_json parse failed on 9 MB file");
     let serde_elapsed = t2.elapsed();
 
-    assert!(values_approx_eq(&jzon_val, &serde_val), "jzon_serde and serde_json disagree on 9 MB file");
+    assert!(
+        values_approx_eq(&jzon_val, &serde_val),
+        "jzon_serde and serde_json disagree on 9 MB file"
+    );
 
     let mb = input.len() as f64 / 1_048_576.0;
     println!(
@@ -350,7 +363,10 @@ fn canada_typed_roundtrip() {
         .flat_map(|ring| ring.iter())
         .count();
 
-    assert!(total_pts > 1000, "expected >1000 coordinate rings, got {total_pts}");
+    assert!(
+        total_pts > 1000,
+        "expected >1000 coordinate rings, got {total_pts}"
+    );
 
     let json = data.to_json_string();
     println!(
@@ -369,8 +385,7 @@ fn large_generated_parse_and_roundtrip() {
 
     // Timed jzon_serde parse
     let t = Instant::now();
-    let val: serde_json::Value = jzon_serde::from_str(&input)
-        .expect("jzon_serde parse failed");
+    let val: serde_json::Value = jzon_serde::from_str(&input).expect("jzon_serde parse failed");
     let parse_elapsed = t.elapsed();
 
     // Serialize back
@@ -381,7 +396,10 @@ fn large_generated_parse_and_roundtrip() {
     // Re-parse to verify correctness
     let val2: serde_json::Value = serde_json::from_str(&serialized)
         .expect("serde_json re-parse failed after jzon_serde serialization");
-    assert!(values_approx_eq(&val, &val2), "round-trip changed the value");
+    assert!(
+        values_approx_eq(&val, &val2),
+        "round-trip changed the value"
+    );
 
     let mb = input.len() as f64 / 1_048_576.0;
     println!(
@@ -399,25 +417,21 @@ fn large_generated_parse_and_roundtrip() {
 #[test]
 fn verify_data_file_sizes() {
     let expected_min: &[(&str, usize)] = &[
-        ("twitter.json",       500_000),   // ~617 KB
-        ("canada.json",      1_500_000),   // ~2.1 MB
-        ("citm_catalog.json",  1_000_000), // ~1.6 MB
+        ("twitter.json", 500_000),         // ~617 KB
+        ("canada.json", 1_500_000),        // ~2.1 MB
+        ("citm_catalog.json", 1_000_000),  // ~1.6 MB
         ("generated_50k.json", 9_000_000), // ~9.7 MB
-        ("mixed_2mb.json",     1_500_000), // ~2   MB
+        ("mixed_2mb.json", 1_500_000),     // ~2   MB
     ];
 
     for (name, min_bytes) in expected_min {
         let path = data_path(name);
-        let meta = std::fs::metadata(&path)
-            .unwrap_or_else(|_| panic!("cannot stat data/{name}"));
+        let meta = std::fs::metadata(&path).unwrap_or_else(|_| panic!("cannot stat data/{name}"));
         assert!(
             meta.len() as usize >= *min_bytes,
             "data/{name} is only {} bytes, expected >= {min_bytes}",
             meta.len()
         );
-        println!(
-            "  data/{name}: {:.1} MB",
-            meta.len() as f64 / 1_048_576.0
-        );
+        println!("  data/{name}: {:.1} MB", meta.len() as f64 / 1_048_576.0);
     }
 }

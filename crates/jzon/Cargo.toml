@@ -14,10 +14,12 @@ rust-version.workspace = true
 name = "jzon"
 
 [features]
-default    = ["derive"]
+default    = ["std", "derive"]
+std = ["serde?/std", "serde_json?/std", "fast-float2/std"]
+alloc = ["serde?/alloc", "serde_json?/alloc"]
 derive     = ["dep:jzon_derive"]
-serde      = ["dep:serde"]
-compat     = ["serde", "dep:serde_json"]
+serde      = ["dep:serde", "dep:zmij", "alloc"]
+compat     = ["serde", "dep:serde_json", "alloc"]
 simd       = []
 unstable   = []
 simd-intrinsics = ["simd"]
@@ -26,32 +28,33 @@ stats      = []
 # fast-float2 for parsing) are now always on — serde_json parity has no knob.
 fast-float = []
 zmij-float-ser = ["dep:zmij"]
-unbounded_depth = []
+unbounded_depth = ["serde_json?/unbounded_depth"]
 strict     = []
 # serde_json feature mirrors: each flag reproduces the same-named serde_json
 # behavior (engine side where applicable) and forwards to the `serde_json`
 # dependency used by `compat`, so enable these instead of serde_json's flags
 # directly — e.g. `jzon = { features = ["compat", "arbitrary_precision"] }`.
-arbitrary_precision = ["serde_json/arbitrary_precision"]
-preserve_order      = ["serde_json/preserve_order"]
-raw_value           = ["serde_json/raw_value"]
-float_roundtrip     = ["serde_json/float_roundtrip"]
+arbitrary_precision = ["serde_json?/arbitrary_precision"]
+preserve_order      = ["std", "serde_json?/preserve_order"]
+raw_value           = ["serde_json?/raw_value"]
+float_roundtrip     = ["serde_json?/float_roundtrip"]
 
 [dependencies]
-jzon_derive = { package = "jzon-rs-derive", path = "../jzon_derive", version = "0.3", optional = true }
+jzon_derive = { package = "jzon-rs-derive", path = "../jzon_derive", version = "0.4", optional = true }
 ryu         = "1"
-fast-float2 = "0.2"
+fast-float2 = { version = "0.2", default-features = false }
 itoa        = "1"
 zmij = { version = "1", optional = true }
-serde = { version = "1", default-features = false, features = ["std"], optional = true }
-serde_json = { version = "1", optional = true }
+serde = { version = "1", default-features = false, features = ["alloc"], optional = true }
+serde_json = { version = "=1.0.151", path = "../../vendor/serde_json", default-features = false, optional = true }
 
 [dev-dependencies]
+jzon_compat = { package = "jzon-rs-compat", path = "../jzon_compat" }
 sonic-rs   = "0.3"
 simd-json  = { version = "0.13", features = ["serde_impl"] }
 ryu        = "1"
 serde      = { version = "1", features = ["derive"] }
-serde_json = { version = "1", features = ["raw_value"] }
+serde_json = { version = "=1.0.151", path = "../../vendor/serde_json", features = ["raw_value"] }
 jzon_serde = { package = "jzon-rs-serde", path = "../jzon_serde" }
 criterion  = { version = "0.5", features = ["html_reports"] }
 
@@ -83,3 +86,20 @@ name = "json_spec"
 [[test]]
 name = "arb_precision"
 required-features = ["arbitrary_precision"]
+
+[[bench]]
+name = "bench_native_profile"
+harness = false
+
+[[test]]
+name = "upstream_safety"
+required-features = ["compat"]
+
+[[bench]]
+name = "bench_reader"
+harness = false
+required-features = ["serde", "std"]
+
+[[example]]
+name = "reader_allocations"
+required-features = ["std", "serde"]

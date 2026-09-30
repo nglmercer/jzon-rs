@@ -1,0 +1,16 @@
+   Compiling jzon-rs v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon)
+    Finished `release` profile [optimized] target(s) in 0.88s
+     Running `target/release/examples/reader_allocations`
+mode,elements,input_bytes,allocation_calls,total_requested_bytes
+native_incremental,100,291,7,1016
+native_buffered,100,291,7,1299
+patched_reference,100,291,6,1008
+native_ignored,100,291,3,17
+native_incremental,1000,3891,10,8184
+native_buffered,1000,3891,10,12067
+patched_reference,1000,3891,9,8176
+native_ignored,1000,3891,3,17
+native_incremental,10000,48891,14,131064
+native_buffered,10000,48891,14,179947
+patched_reference,10000,48891,13,131056
+native_ignored,10000,48891,3,17

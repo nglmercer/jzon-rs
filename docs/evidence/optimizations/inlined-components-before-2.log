@@ -1,0 +1,185 @@
+    Finished `bench` profile [optimized] target(s) in 0.06s
+     Running benches/bench_native_profile.rs (target/release/deps/bench_native_profile-97f6e02e872508fe)
+Gnuplot not found, using plotters backend
+Benchmarking mode_b/component_parse/integer
+Benchmarking mode_b/component_parse/integer: Warming up for 200.00 ms
+Benchmarking mode_b/component_parse/integer: Collecting 30 samples in estimated 500.02 ms (5.0M iterations)
+Benchmarking mode_b/component_parse/integer: Analyzing
+mode_b/component_parse/integer
+                        time:   [100.67 ns 100.89 ns 101.10 ns]
+                        thrpt:  [188.66 MiB/s 189.04 MiB/s 189.47 MiB/s]
+Found 1 outliers among 30 measurements (3.33%)
+  1 (3.33%) low severe
+Benchmarking mode_b/component_parse/float
+Benchmarking mode_b/component_parse/float: Warming up for 200.00 ms
+Benchmarking mode_b/component_parse/float: Collecting 30 samples in estimated 500.01 ms (11M iterations)
+Benchmarking mode_b/component_parse/float: Analyzing
+mode_b/component_parse/float
+                        time:   [43.352 ns 43.613 ns 44.111 ns]
+                        thrpt:  [475.63 MiB/s 481.07 MiB/s 483.96 MiB/s]
+Found 4 outliers among 30 measurements (13.33%)
+  1 (3.33%) low mild
+  1 (3.33%) high mild
+  2 (6.67%) high severe
+Benchmarking mode_b/component_parse/string/plain
+Benchmarking mode_b/component_parse/string/plain: Warming up for 200.00 ms
+Benchmarking mode_b/component_parse/string/plain: Collecting 30 samples in estimated 500.02 ms (11M iterations)
+Benchmarking mode_b/component_parse/string/plain: Analyzing
+mode_b/component_parse/string/plain
+                        time:   [46.373 ns 46.812 ns 47.188 ns]
+                        thrpt:  [363.78 MiB/s 366.70 MiB/s 370.17 MiB/s]
+Benchmarking mode_b/component_parse/string/late_escape
+Benchmarking mode_b/component_parse/string/late_escape: Warming up for 200.00 ms
+Benchmarking mode_b/component_parse/string/late_escape: Collecting 30 samples in estimated 500.00 ms (8.5M iterations)
+Benchmarking mode_b/component_parse/string/late_escape: Analyzing
+mode_b/component_parse/string/late_escape
+                        time:   [57.920 ns 58.170 ns 58.474 ns]
+                        thrpt:  [309.88 MiB/s 311.50 MiB/s 312.84 MiB/s]
+Benchmarking mode_b/component_parse/string/dense
+Benchmarking mode_b/component_parse/string/dense: Warming up for 200.00 ms
+Benchmarking mode_b/component_parse/string/dense: Collecting 30 samples in estimated 500.01 ms (6.2M iterations)
+Benchmarking mode_b/component_parse/string/dense: Analyzing
+mode_b/component_parse/string/dense
+                        time:   [77.742 ns 78.877 ns 80.325 ns]
+                        thrpt:  [237.45 MiB/s 241.81 MiB/s 245.34 MiB/s]
+Found 4 outliers among 30 measurements (13.33%)
+  3 (10.00%) high mild
+  1 (3.33%) high severe
+Benchmarking mode_b/component_parse/string/unicode
+Benchmarking mode_b/component_parse/string/unicode: Warming up for 200.00 ms
+Benchmarking mode_b/component_parse/string/unicode: Collecting 30 samples in estimated 500.00 ms (4.6M iterations)
+Benchmarking mode_b/component_parse/string/unicode: Analyzing
+mode_b/component_parse/string/unicode
+                        time:   [107.64 ns 109.19 ns 111.12 ns]
+                        thrpt:  [223.14 MiB/s 227.09 MiB/s 230.36 MiB/s]
+Found 2 outliers among 30 measurements (6.67%)
+  2 (6.67%) high mild
+Benchmarking mode_b/component_parse/string/borrowed
+Benchmarking mode_b/component_parse/string/borrowed: Warming up for 200.00 ms
+Benchmarking mode_b/component_parse/string/borrowed: Collecting 30 samples in estimated 500.00 ms (16M iterations)
+Benchmarking mode_b/component_parse/string/borrowed: Analyzing
+mode_b/component_parse/string/borrowed
+                        time:   [28.812 ns 29.284 ns 29.802 ns]
+                        thrpt:  [576.01 MiB/s 586.19 MiB/s 595.81 MiB/s]
+Found 2 outliers among 30 measurements (6.67%)
+  2 (6.67%) high mild
+Benchmarking mode_b/component_parse/wide/field_dispatch
+Benchmarking mode_b/component_parse/wide/field_dispatch: Warming up for 200.00 ms
+Benchmarking mode_b/component_parse/wide/field_dispatch: Collecting 30 samples in estimated 500.10 ms (552k iterations)
+Benchmarking mode_b/component_parse/wide/field_dispatch: Analyzing
+mode_b/component_parse/wide/field_dispatch
+                        time:   [899.98 ns 908.99 ns 919.90 ns]
+                        thrpt:  [107.82 MiB/s 109.11 MiB/s 110.20 MiB/s]
+Found 4 outliers among 30 measurements (13.33%)
+  4 (13.33%) high severe
+
+Benchmarking mode_b/component_serialize/integers/fresh
+Benchmarking mode_b/component_serialize/integers/fresh: Warming up for 200.00 ms
+Benchmarking mode_b/component_serialize/integers/fresh: Collecting 30 samples in estimated 500.15 ms (287k iterations)
+Benchmarking mode_b/component_serialize/integers/fresh: Analyzing
+mode_b/component_serialize/integers/fresh
+                        time:   [1.7005 µs 1.7204 µs 1.7496 µs]
+                        thrpt:  [842.68 MiB/s 856.98 MiB/s 867.00 MiB/s]
+Found 2 outliers among 30 measurements (6.67%)
+  2 (6.67%) high severe
+Benchmarking mode_b/component_serialize/floats/fresh
+Benchmarking mode_b/component_serialize/floats/fresh: Warming up for 200.00 ms
+Benchmarking mode_b/component_serialize/floats/fresh: Collecting 30 samples in estimated 500.66 ms (128k iterations)
+Benchmarking mode_b/component_serialize/floats/fresh: Analyzing
+mode_b/component_serialize/floats/fresh
+                        time:   [3.7257 µs 3.7336 µs 3.7471 µs]
+                        thrpt:  [538.29 MiB/s 540.23 MiB/s 541.39 MiB/s]
+Found 7 outliers among 30 measurements (23.33%)
+  2 (6.67%) high mild
+  5 (16.67%) high severe
+Benchmarking mode_b/component_serialize/string/plain
+Benchmarking mode_b/component_serialize/string/plain: Warming up for 200.00 ms
+Benchmarking mode_b/component_serialize/string/plain: Collecting 30 samples in estimated 500.01 ms (18M iterations)
+Benchmarking mode_b/component_serialize/string/plain: Analyzing
+mode_b/component_serialize/string/plain
+                        time:   [27.678 ns 27.792 ns 27.937 ns]
+                        thrpt:  [614.47 MiB/s 617.67 MiB/s 620.21 MiB/s]
+Found 3 outliers among 30 measurements (10.00%)
+  1 (3.33%) high mild
+  2 (6.67%) high severe
+Benchmarking mode_b/component_serialize/string/escaped
+Benchmarking mode_b/component_serialize/string/escaped: Warming up for 200.00 ms
+Benchmarking mode_b/component_serialize/string/escaped: Collecting 30 samples in estimated 500.01 ms (15M iterations)
+Benchmarking mode_b/component_serialize/string/escaped: Analyzing
+mode_b/component_serialize/string/escaped
+                        time:   [32.425 ns 33.383 ns 34.646 ns]
+                        thrpt:  [412.90 MiB/s 428.52 MiB/s 441.17 MiB/s]
+Found 3 outliers among 30 measurements (10.00%)
+  3 (10.00%) high severe
+Benchmarking mode_b/component_serialize/wide/fresh
+Benchmarking mode_b/component_serialize/wide/fresh: Warming up for 200.00 ms
+Benchmarking mode_b/component_serialize/wide/fresh: Collecting 30 samples in estimated 500.12 ms (1.7M iterations)
+Benchmarking mode_b/component_serialize/wide/fresh: Analyzing
+mode_b/component_serialize/wide/fresh
+                        time:   [281.79 ns 287.02 ns 294.29 ns]
+                        thrpt:  [337.02 MiB/s 345.56 MiB/s 351.97 MiB/s]
+Found 2 outliers among 30 measurements (6.67%)
+  1 (3.33%) high mild
+  1 (3.33%) high severe
+Benchmarking mode_b/component_serialize/wide/buffered_writer
+Benchmarking mode_b/component_serialize/wide/buffered_writer: Warming up for 200.00 ms
+Benchmarking mode_b/component_serialize/wide/buffered_writer: Collecting 30 samples in estimated 500.11 ms (1.6M iterations)
+Benchmarking mode_b/component_serialize/wide/buffered_writer: Analyzing
+mode_b/component_serialize/wide/buffered_writer
+                        time:   [296.10 ns 299.28 ns 304.65 ns]
+                        thrpt:  [325.56 MiB/s 331.40 MiB/s 334.96 MiB/s]
+Found 2 outliers among 30 measurements (6.67%)
+  1 (3.33%) high mild
+  1 (3.33%) high severe
+Benchmarking mode_b/component_serialize/wide/direct_reuse
+Benchmarking mode_b/component_serialize/wide/direct_reuse: Warming up for 200.00 ms
+Benchmarking mode_b/component_serialize/wide/direct_reuse: Collecting 30 samples in estimated 500.00 ms (1.7M iterations)
+Benchmarking mode_b/component_serialize/wide/direct_reuse: Analyzing
+mode_b/component_serialize/wide/direct_reuse
+                        time:   [277.47 ns 279.41 ns 282.35 ns]
+                        thrpt:  [351.27 MiB/s 354.97 MiB/s 357.45 MiB/s]
+Found 5 outliers among 30 measurements (16.67%)
+  5 (16.67%) high severe
+
+Benchmarking mode_b/depth/public_guard
+Benchmarking mode_b/depth/public_guard: Warming up for 200.00 ms
+Benchmarking mode_b/depth/public_guard: Collecting 30 samples in estimated 500.01 ms (22M iterations)
+Benchmarking mode_b/depth/public_guard: Analyzing
+mode_b/depth/public_guard
+                        time:   [22.708 ns 22.731 ns 22.765 ns]
+Found 1 outliers among 30 measurements (3.33%)
+  1 (3.33%) high mild
+Benchmarking mode_b/depth/native/1
+Benchmarking mode_b/depth/native/1: Warming up for 200.00 ms
+Benchmarking mode_b/depth/native/1: Collecting 30 samples in estimated 500.03 ms (5.3M iterations)
+Benchmarking mode_b/depth/native/1: Analyzing
+mode_b/depth/native/1   time:   [85.649 ns 87.731 ns 90.920 ns]
+                        thrpt:  [62.935 MiB/s 65.222 MiB/s 66.808 MiB/s]
+Found 3 outliers among 30 measurements (10.00%)
+  3 (10.00%) high severe
+Benchmarking mode_b/depth/native/16
+Benchmarking mode_b/depth/native/16: Warming up for 200.00 ms
+Benchmarking mode_b/depth/native/16: Collecting 30 samples in estimated 500.23 ms (673k iterations)
+Benchmarking mode_b/depth/native/16: Analyzing
+mode_b/depth/native/16  time:   [753.67 ns 764.01 ns 776.36 ns]
+                        thrpt:  [44.222 MiB/s 44.937 MiB/s 45.554 MiB/s]
+Found 5 outliers among 30 measurements (16.67%)
+  5 (16.67%) high severe
+Benchmarking mode_b/depth/native/64
+Benchmarking mode_b/depth/native/64: Warming up for 200.00 ms
+Benchmarking mode_b/depth/native/64: Collecting 30 samples in estimated 501.46 ms (119k iterations)
+Benchmarking mode_b/depth/native/64: Analyzing
+mode_b/depth/native/64  time:   [4.0063 µs 4.0725 µs 4.1599 µs]
+                        thrpt:  [30.261 MiB/s 30.911 MiB/s 31.422 MiB/s]
+Found 2 outliers among 30 measurements (6.67%)
+  2 (6.67%) high severe
+Benchmarking mode_b/depth/native/127
+Benchmarking mode_b/depth/native/127: Warming up for 200.00 ms
+Benchmarking mode_b/depth/native/127: Collecting 30 samples in estimated 502.05 ms (55k iterations)
+Benchmarking mode_b/depth/native/127: Analyzing
+mode_b/depth/native/127 time:   [8.7778 µs 8.8077 µs 8.8492 µs]
+                        thrpt:  [27.805 MiB/s 27.936 MiB/s 28.031 MiB/s]
+Found 5 outliers among 30 measurements (16.67%)
+  4 (13.33%) high mild
+  1 (3.33%) high severe
+

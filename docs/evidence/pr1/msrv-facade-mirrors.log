@@ -1,0 +1,11 @@
+ Downloading crates ...
+  Downloaded indexmap v2.2.3
+  Downloaded hashbrown v0.14.5
+    Checking equivalent v1.0.2
+    Checking hashbrown v0.14.5
+   Compiling serde_json v1.0.151 (/home/meme/Documentos/GitHub/jzon-rs/vendor/serde_json)
+warning: cargo:rustc-check-cfg requires -Zcheck-cfg=output flag
+    Checking indexmap v2.2.3
+    Checking jzon-rs-compat v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_compat)
+    Checking facade-consumer v0.0.0 (/home/meme/Documentos/GitHub/jzon-rs/fixtures/facade)
+    Finished dev [unoptimized + debuginfo] target(s) in 4.83s

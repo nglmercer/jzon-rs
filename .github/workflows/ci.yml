@@ -1,26 +1,73 @@
 name: CI
-
 on:
   push:
     branches: [main]
   pull_request:
-
+  workflow_dispatch:
+permissions:
+  contents: read
 jobs:
-  test:
+  quality:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       - uses: dtolnay/rust-toolchain@stable
-      - run: cargo test
-      - run: cargo test --features "simd,simd-intrinsics,fast-float,zmij-float-ser,stats"
-
-  test-nightly:
+        with:
+          components: rustfmt, clippy
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      - run: cargo doc --workspace --no-deps
+      - run: cargo test --workspace --doc
+      - run: rustup target add thumbv7em-none-eabi
+      - run: cargo check --manifest-path fixtures/alloc/Cargo.toml --locked --target thumbv7em-none-eabi
+      - run: python3 tools/check-consumers.py
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test --workspace
+      - run: cargo test -p jzon-rs --features 'compat,raw_value,preserve_order,arbitrary_precision,float_roundtrip,unbounded_depth'
+      - run: cargo test -p jzon-rs --features 'compat,simd,simd-intrinsics,stats,zmij-float-ser'
+      - run: cargo check -p jzon-rs-serde --no-default-features
+      - run: cargo check -p jzon-rs-compat --no-default-features --features alloc
+      - run: python3 tools/check-consumers.py
+  msrv:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      - uses: dtolnay/rust-toolchain@1.71.0
+      - run: cargo check --manifest-path fixtures/facade/Cargo.toml --locked
+      - run: cargo check --manifest-path fixtures/native/Cargo.toml --locked
+      - run: cargo check --manifest-path fixtures/alloc/Cargo.toml --locked
+      - run: cargo check --manifest-path fixtures/derive/Cargo.toml --locked
+  safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@nightly
-      - run: cargo test --features "simd,simd-intrinsics,unstable,fast-float,zmij-float-ser,stats"
+        with:
+          components: miri
+      - run: cargo miri setup
+      - run: cargo miri test -p jzon-rs --test depth_safety --test readiness --test optimizations --test pr21_native_map_regressions
+        env:
+          MIRIFLAGS: -Zmiri-strict-provenance
+      - run: cargo test --workspace --features 'simd,unstable'
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo install cargo-audit --locked
+      - run: cargo generate-lockfile
+      - run: cargo audit
+  release-dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo package --workspace

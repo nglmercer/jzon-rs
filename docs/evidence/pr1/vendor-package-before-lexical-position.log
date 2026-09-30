@@ -1,0 +1,10 @@
+   Packaging serde_json v1.0.151 (/home/meme/Documentos/GitHub/jzon-rs/vendor/serde_json)
+    Updating crates.io index
+    Packaged 88 files, 728.3KiB (152.3KiB compressed)
+   Verifying serde_json v1.0.151 (/home/meme/Documentos/GitHub/jzon-rs/vendor/serde_json)
+   Compiling zmij v1.0.23
+   Compiling serde_core v1.0.229
+   Compiling serde_json v1.0.151 (/home/meme/Documentos/GitHub/jzon-rs/vendor/serde_json/target/package/serde_json-1.0.151)
+   Compiling memchr v2.8.3
+   Compiling itoa v1.0.18
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.33s

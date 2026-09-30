@@ -1,0 +1,174 @@
+[
+  {
+    "label": "components-before-1",
+    "command": [
+      "cargo",
+      "bench",
+      "-p",
+      "jzon-rs",
+      "--bench",
+      "bench_native_profile",
+      "--features",
+      "float_roundtrip",
+      "--",
+      "--sample-size",
+      "30",
+      "--warm-up-time",
+      "0.2",
+      "--measurement-time",
+      "0.5"
+    ],
+    "cwd": "/tmp/jzon-optimization-baseline-947",
+    "exit_status": 0,
+    "elapsed_seconds": 34.881824270999914,
+    "log": "/tmp/jzon-optimizations/final-benchmarks/components-before-1.log"
+  },
+  {
+    "label": "components-after-1",
+    "command": [
+      "cargo",
+      "bench",
+      "-p",
+      "jzon-rs",
+      "--bench",
+      "bench_native_profile",
+      "--features",
+      "float_roundtrip",
+      "--",
+      "--sample-size",
+      "30",
+      "--warm-up-time",
+      "0.2",
+      "--measurement-time",
+      "0.5"
+    ],
+    "cwd": "/home/meme/Documentos/GitHub/jzon-rs",
+    "exit_status": 0,
+    "elapsed_seconds": 41.56856926499995,
+    "log": "/tmp/jzon-optimizations/final-benchmarks/components-after-1.log"
+  },
+  {
+    "label": "serialize-before-1",
+    "command": [
+      "cargo",
+      "bench",
+      "-p",
+      "jzon-rs",
+      "--bench",
+      "bench_cmp",
+      "--features",
+      "float_roundtrip",
+      "--",
+      "^serialize/(twitter|canada)"
+    ],
+    "cwd": "/tmp/jzon-optimization-baseline-947",
+    "exit_status": 0,
+    "elapsed_seconds": 57.722795726000186,
+    "log": "/tmp/jzon-optimizations/final-benchmarks/serialize-before-1.log"
+  },
+  {
+    "label": "serialize-after-1",
+    "command": [
+      "cargo",
+      "bench",
+      "-p",
+      "jzon-rs",
+      "--bench",
+      "bench_cmp",
+      "--features",
+      "float_roundtrip",
+      "--",
+      "^serialize/(twitter|canada)"
+    ],
+    "cwd": "/home/meme/Documentos/GitHub/jzon-rs",
+    "exit_status": 0,
+    "elapsed_seconds": 56.615505745000064,
+    "log": "/tmp/jzon-optimizations/final-benchmarks/serialize-after-1.log"
+  },
+  {
+    "label": "components-before-2",
+    "command": [
+      "cargo",
+      "bench",
+      "-p",
+      "jzon-rs",
+      "--bench",
+      "bench_native_profile",
+      "--features",
+      "float_roundtrip",
+      "--",
+      "--sample-size",
+      "30",
+      "--warm-up-time",
+      "0.2",
+      "--measurement-time",
+      "0.5"
+    ],
+    "cwd": "/tmp/jzon-optimization-baseline-947",
+    "exit_status": 0,
+    "elapsed_seconds": 35.457195197000146,
+    "log": "/tmp/jzon-optimizations/final-benchmarks/components-before-2.log"
+  },
+  {
+    "label": "components-after-2",
+    "command": [
+      "cargo",
+      "bench",
+      "-p",
+      "jzon-rs",
+      "--bench",
+      "bench_native_profile",
+      "--features",
+      "float_roundtrip",
+      "--",
+      "--sample-size",
+      "30",
+      "--warm-up-time",
+      "0.2",
+      "--measurement-time",
+      "0.5"
+    ],
+    "cwd": "/home/meme/Documentos/GitHub/jzon-rs",
+    "exit_status": 0,
+    "elapsed_seconds": 39.308025355000154,
+    "log": "/tmp/jzon-optimizations/final-benchmarks/components-after-2.log"
+  },
+  {
+    "label": "serialize-before-2",
+    "command": [
+      "cargo",
+      "bench",
+      "-p",
+      "jzon-rs",
+      "--bench",
+      "bench_cmp",
+      "--features",
+      "float_roundtrip",
+      "--",
+      "^serialize/(twitter|canada)"
+    ],
+    "cwd": "/tmp/jzon-optimization-baseline-947",
+    "exit_status": 0,
+    "elapsed_seconds": 59.280990744000064,
+    "log": "/tmp/jzon-optimizations/final-benchmarks/serialize-before-2.log"
+  },
+  {
+    "label": "serialize-after-2",
+    "command": [
+      "cargo",
+      "bench",
+      "-p",
+      "jzon-rs",
+      "--bench",
+      "bench_cmp",
+      "--features",
+      "float_roundtrip",
+      "--",
+      "^serialize/(twitter|canada)"
+    ],
+    "cwd": "/home/meme/Documentos/GitHub/jzon-rs",
+    "exit_status": 0,
+    "elapsed_seconds": 56.92252526900029,
+    "log": "/tmp/jzon-optimizations/final-benchmarks/serialize-after-2.log"
+  }
+]

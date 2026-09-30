@@ -1,0 +1,38 @@
+    Finished `bench` profile [optimized] target(s) in 0.38s
+     Running benches/bench_reader.rs (target/release/deps/bench_reader-dc1423d082c94073)
+Gnuplot not found, using plotters backend
+Benchmarking reader_full_u32_array/native_incremental
+Benchmarking reader_full_u32_array/native_incremental: Warming up for 1.0000 s
+Benchmarking reader_full_u32_array/native_incremental: Collecting 30 samples in estimated 2.0380 s (1860 iterations)
+Benchmarking reader_full_u32_array/native_incremental: Analyzing
+reader_full_u32_array/native_incremental
+                        time:   [1.0768 ms 1.1338 ms 1.1902 ms]
+                        thrpt:  [39.174 MiB/s 41.125 MiB/s 43.300 MiB/s]
+                 change:
+                        time:   [-24.986% -17.927% -11.256%] (p = 0.00 < 0.05)
+                        thrpt:  [+12.684% +21.843% +33.309%]
+                        Performance has improved.
+Benchmarking reader_full_u32_array/native_buffered
+Benchmarking reader_full_u32_array/native_buffered: Warming up for 1.0000 s
+Benchmarking reader_full_u32_array/native_buffered: Collecting 30 samples in estimated 2.1416 s (4650 iterations)
+Benchmarking reader_full_u32_array/native_buffered: Analyzing
+reader_full_u32_array/native_buffered
+                        time:   [506.36 µs 523.76 µs 543.06 µs]
+                        thrpt:  [85.858 MiB/s 89.022 MiB/s 92.080 MiB/s]
+                 change:
+                        time:   [-3.9200% -0.2063% +4.1021%] (p = 0.93 > 0.05)
+                        thrpt:  [-3.9405% +0.2067% +4.0800%]
+                        No change in performance detected.
+Found 1 outliers among 30 measurements (3.33%)
+  1 (3.33%) high severe
+Benchmarking reader_full_u32_array/patched_reference
+Benchmarking reader_full_u32_array/patched_reference: Warming up for 1.0000 s
+Benchmarking reader_full_u32_array/patched_reference: Collecting 30 samples in estimated 2.1043 s (6045 iterations)
+Benchmarking reader_full_u32_array/patched_reference: Analyzing
+reader_full_u32_array/patched_reference
+                        time:   [309.82 µs 317.92 µs 326.29 µs]
+                        thrpt:  [142.90 MiB/s 146.66 MiB/s 150.50 MiB/s]
+                 change:
+                        time:   [-27.409% -23.175% -19.076%] (p = 0.00 < 0.05)
+                        thrpt:  [+23.573% +30.166% +37.758%]
+                        Performance has improved.

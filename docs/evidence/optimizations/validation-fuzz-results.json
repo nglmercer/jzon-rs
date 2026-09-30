@@ -1,0 +1,72 @@
+[
+  {
+    "command": "cargo +nightly fuzz run native  -- -max_total_time=5 -max_len=4096 -rss_limit_mb=512",
+    "cwd": "fuzz",
+    "exit_status": 0,
+    "elapsed_seconds": 11.587,
+    "log": "/tmp/jzon-optimizations/verified/fuzz-00.log"
+  },
+  {
+    "command": "cargo +nightly fuzz run skip  -- -max_total_time=5 -max_len=4096 -rss_limit_mb=512",
+    "cwd": "fuzz",
+    "exit_status": 0,
+    "elapsed_seconds": 6.624,
+    "log": "/tmp/jzon-optimizations/verified/fuzz-01.log"
+  },
+  {
+    "command": "cargo +nightly fuzz run raw  -- -max_total_time=5 -max_len=4096 -rss_limit_mb=512",
+    "cwd": "fuzz",
+    "exit_status": 0,
+    "elapsed_seconds": 6.718,
+    "log": "/tmp/jzon-optimizations/verified/fuzz-02.log"
+  },
+  {
+    "command": "cargo +nightly fuzz run roundtrip  -- -max_total_time=5 -max_len=4096 -rss_limit_mb=512",
+    "cwd": "fuzz",
+    "exit_status": 0,
+    "elapsed_seconds": 8.138,
+    "log": "/tmp/jzon-optimizations/verified/fuzz-03.log"
+  },
+  {
+    "command": "cargo +nightly fuzz run simd  -- -max_total_time=5 -max_len=4096 -rss_limit_mb=512",
+    "cwd": "fuzz",
+    "exit_status": 0,
+    "elapsed_seconds": 6.63,
+    "log": "/tmp/jzon-optimizations/verified/fuzz-04.log"
+  },
+  {
+    "command": "cargo +nightly fuzz run native --features roundtrip_policy -- -max_total_time=5 -max_len=4096 -rss_limit_mb=512",
+    "cwd": "fuzz",
+    "exit_status": 0,
+    "elapsed_seconds": 10.429,
+    "log": "/tmp/jzon-optimizations/verified/fuzz-05.log"
+  },
+  {
+    "command": "cargo +nightly fuzz run skip --features roundtrip_policy -- -max_total_time=5 -max_len=4096 -rss_limit_mb=512",
+    "cwd": "fuzz",
+    "exit_status": 0,
+    "elapsed_seconds": 6.625,
+    "log": "/tmp/jzon-optimizations/verified/fuzz-06.log"
+  },
+  {
+    "command": "cargo +nightly fuzz run raw --features roundtrip_policy -- -max_total_time=5 -max_len=4096 -rss_limit_mb=512",
+    "cwd": "fuzz",
+    "exit_status": 0,
+    "elapsed_seconds": 6.721,
+    "log": "/tmp/jzon-optimizations/verified/fuzz-07.log"
+  },
+  {
+    "command": "cargo +nightly fuzz run roundtrip --features roundtrip_policy -- -max_total_time=5 -max_len=4096 -rss_limit_mb=512",
+    "cwd": "fuzz",
+    "exit_status": 0,
+    "elapsed_seconds": 8.719,
+    "log": "/tmp/jzon-optimizations/verified/fuzz-08.log"
+  },
+  {
+    "command": "cargo +nightly fuzz run simd --features roundtrip_policy -- -max_total_time=5 -max_len=4096 -rss_limit_mb=512",
+    "cwd": "fuzz",
+    "exit_status": 0,
+    "elapsed_seconds": 6.635,
+    "log": "/tmp/jzon-optimizations/verified/fuzz-09.log"
+  }
+]

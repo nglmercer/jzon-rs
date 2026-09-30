@@ -29,7 +29,7 @@ pub mod neon {
             let quote = vdupq_n_u8(b'"');
             let slash = vdupq_n_u8(b'\\');
 
-            while i + 16 <= len {
+            while len.saturating_sub(i) >= 16 {
                 let chunk = vld1q_u8(ptr.add(i));
                 let m_q = vceqq_u8(chunk, quote);
                 let m_s = vceqq_u8(chunk, slash);
@@ -61,7 +61,7 @@ pub mod neon {
             let quote = vdupq_n_u8(b'"');
             let slash = vdupq_n_u8(b'\\');
 
-            while i + 64 <= len {
+            while len.saturating_sub(i) >= 64 {
                 let c0 = vld1q_u8(ptr.add(i));
                 let c1 = vld1q_u8(ptr.add(i + 16));
                 let c2 = vld1q_u8(ptr.add(i + 32));
@@ -99,16 +99,28 @@ pub mod neon {
             let slash = vdupq_n_u8(b'\\');
             let ctrl = vdupq_n_u8(0x20);
 
-            while i + 64 <= len {
+            while len.saturating_sub(i) >= 64 {
                 let c0 = vld1q_u8(ptr.add(i));
                 let c1 = vld1q_u8(ptr.add(i + 16));
                 let c2 = vld1q_u8(ptr.add(i + 32));
                 let c3 = vld1q_u8(ptr.add(i + 48));
 
-                let m0 = vorrq_u8(vorrq_u8(vceqq_u8(c0, quote), vceqq_u8(c0, slash)), vcltq_u8(c0, ctrl));
-                let m1 = vorrq_u8(vorrq_u8(vceqq_u8(c1, quote), vceqq_u8(c1, slash)), vcltq_u8(c1, ctrl));
-                let m2 = vorrq_u8(vorrq_u8(vceqq_u8(c2, quote), vceqq_u8(c2, slash)), vcltq_u8(c2, ctrl));
-                let m3 = vorrq_u8(vorrq_u8(vceqq_u8(c3, quote), vceqq_u8(c3, slash)), vcltq_u8(c3, ctrl));
+                let m0 = vorrq_u8(
+                    vorrq_u8(vceqq_u8(c0, quote), vceqq_u8(c0, slash)),
+                    vcltq_u8(c0, ctrl),
+                );
+                let m1 = vorrq_u8(
+                    vorrq_u8(vceqq_u8(c1, quote), vceqq_u8(c1, slash)),
+                    vcltq_u8(c1, ctrl),
+                );
+                let m2 = vorrq_u8(
+                    vorrq_u8(vceqq_u8(c2, quote), vceqq_u8(c2, slash)),
+                    vcltq_u8(c2, ctrl),
+                );
+                let m3 = vorrq_u8(
+                    vorrq_u8(vceqq_u8(c3, quote), vceqq_u8(c3, slash)),
+                    vcltq_u8(c3, ctrl),
+                );
 
                 let any = vorrq_u8(vorrq_u8(m0, m1), vorrq_u8(m2, m3));
                 if vmaxvq_u8(any) == 0 {
@@ -134,7 +146,7 @@ pub mod neon {
             let slash = vdupq_n_u8(b'\\');
             let ctrl = vdupq_n_u8(0x20);
 
-            while i + 16 <= len {
+            while len.saturating_sub(i) >= 16 {
                 let chunk = vld1q_u8(ptr.add(i));
                 let m_q = vceqq_u8(chunk, quote);
                 let m_s = vceqq_u8(chunk, slash);
@@ -176,16 +188,28 @@ pub mod neon {
             let ctrl = vdupq_n_u8(0x20);
             let high = vdupq_n_u8(0x80);
 
-            while i + 64 <= len {
+            while len.saturating_sub(i) >= 64 {
                 let c0 = vld1q_u8(ptr.add(i));
                 let c1 = vld1q_u8(ptr.add(i + 16));
                 let c2 = vld1q_u8(ptr.add(i + 32));
                 let c3 = vld1q_u8(ptr.add(i + 48));
 
-                let m0 = vorrq_u8(vorrq_u8(vceqq_u8(c0, quote), vceqq_u8(c0, slash)), vcltq_u8(c0, ctrl));
-                let m1 = vorrq_u8(vorrq_u8(vceqq_u8(c1, quote), vceqq_u8(c1, slash)), vcltq_u8(c1, ctrl));
-                let m2 = vorrq_u8(vorrq_u8(vceqq_u8(c2, quote), vceqq_u8(c2, slash)), vcltq_u8(c2, ctrl));
-                let m3 = vorrq_u8(vorrq_u8(vceqq_u8(c3, quote), vceqq_u8(c3, slash)), vcltq_u8(c3, ctrl));
+                let m0 = vorrq_u8(
+                    vorrq_u8(vceqq_u8(c0, quote), vceqq_u8(c0, slash)),
+                    vcltq_u8(c0, ctrl),
+                );
+                let m1 = vorrq_u8(
+                    vorrq_u8(vceqq_u8(c1, quote), vceqq_u8(c1, slash)),
+                    vcltq_u8(c1, ctrl),
+                );
+                let m2 = vorrq_u8(
+                    vorrq_u8(vceqq_u8(c2, quote), vceqq_u8(c2, slash)),
+                    vcltq_u8(c2, ctrl),
+                );
+                let m3 = vorrq_u8(
+                    vorrq_u8(vceqq_u8(c3, quote), vceqq_u8(c3, slash)),
+                    vcltq_u8(c3, ctrl),
+                );
 
                 let any = vorrq_u8(vorrq_u8(m0, m1), vorrq_u8(m2, m3));
                 if vmaxvq_u8(any) == 0 {
@@ -218,7 +242,7 @@ pub mod neon {
             let ctrl = vdupq_n_u8(0x20);
             let high = vdupq_n_u8(0x80);
 
-            while i + 16 <= len {
+            while len.saturating_sub(i) >= 16 {
                 let chunk = vld1q_u8(ptr.add(i));
                 let m_q = vceqq_u8(chunk, quote);
                 let m_s = vceqq_u8(chunk, slash);
@@ -263,7 +287,11 @@ pub mod x86 {
             1 => true,
             2 => false,
             _ => {
-                let tier = if is_x86_feature_detected!("avx2") { 1 } else { 2 };
+                #[cfg(feature = "std")]
+                let detected = std::is_x86_feature_detected!("avx2");
+                #[cfg(not(feature = "std"))]
+                let detected = cfg!(target_feature = "avx2");
+                let tier = if detected { 1 } else { 2 };
                 AVX2_TIER.store(tier, Ordering::Relaxed);
                 tier == 1
             }
@@ -283,7 +311,7 @@ pub mod x86 {
             let quote = _mm_set1_epi8(b'"' as i8);
             let slash = _mm_set1_epi8(b'\\' as i8);
 
-            while i + 16 <= len {
+            while len.saturating_sub(i) >= 16 {
                 let chunk = _mm_loadu_si128(ptr.add(i) as *const __m128i);
                 let m_q = _mm_cmpeq_epi8(chunk, quote);
                 let m_s = _mm_cmpeq_epi8(chunk, slash);
@@ -317,7 +345,7 @@ pub mod x86 {
             let ctrl_thresh = _mm_set1_epi8(0x1f);
             let zero = _mm_setzero_si128();
 
-            while i + 16 <= len {
+            while len.saturating_sub(i) >= 16 {
                 let chunk = _mm_loadu_si128(ptr.add(i) as *const __m128i);
                 let m_q = _mm_cmpeq_epi8(chunk, quote);
                 let m_s = _mm_cmpeq_epi8(chunk, slash);
@@ -356,7 +384,7 @@ pub mod x86 {
             let quote = _mm256_set1_epi8(b'"' as i8);
             let slash = _mm256_set1_epi8(b'\\' as i8);
 
-            while i + 32 <= len {
+            while len.saturating_sub(i) >= 32 {
                 let chunk = _mm256_loadu_si256(ptr.add(i) as *const __m256i);
                 let m_q = _mm256_cmpeq_epi8(chunk, quote);
                 let m_s = _mm256_cmpeq_epi8(chunk, slash);
@@ -386,7 +414,7 @@ pub mod x86 {
             let ctrl_thresh = _mm256_set1_epi8(0x1f);
             let zero = _mm256_setzero_si256();
 
-            while i + 32 <= len {
+            while len.saturating_sub(i) >= 32 {
                 let chunk = _mm256_loadu_si256(ptr.add(i) as *const __m256i);
                 let m_q = _mm256_cmpeq_epi8(chunk, quote);
                 let m_s = _mm256_cmpeq_epi8(chunk, slash);
@@ -437,7 +465,11 @@ pub mod x86 {
 
     #[target_feature(enable = "sse2")]
     #[inline]
-    unsafe fn scan_string_run_sse2(input: &[u8], start: usize, mut ascii_only: bool) -> (usize, bool) {
+    unsafe fn scan_string_run_sse2(
+        input: &[u8],
+        start: usize,
+        mut ascii_only: bool,
+    ) -> (usize, bool) {
         let mut i = start;
         let len = input.len();
         let ptr = input.as_ptr();
@@ -449,7 +481,7 @@ pub mod x86 {
             let zero = _mm_setzero_si128();
             let high = _mm_set1_epi8(0x80u8 as i8);
 
-            while i + 16 <= len {
+            while len.saturating_sub(i) >= 16 {
                 let chunk = _mm_loadu_si128(ptr.add(i) as *const __m128i);
                 let m_q = _mm_cmpeq_epi8(chunk, quote);
                 let m_s = _mm_cmpeq_epi8(chunk, slash);
@@ -476,7 +508,11 @@ pub mod x86 {
 
     #[target_feature(enable = "avx2")]
     #[inline]
-    unsafe fn scan_string_run_avx2(input: &[u8], start: usize, mut ascii_only: bool) -> (usize, bool) {
+    unsafe fn scan_string_run_avx2(
+        input: &[u8],
+        start: usize,
+        mut ascii_only: bool,
+    ) -> (usize, bool) {
         let mut i = start;
         let len = input.len();
         let ptr = input.as_ptr();
@@ -488,7 +524,7 @@ pub mod x86 {
             let zero = _mm256_setzero_si256();
             let high = _mm256_set1_epi8(0x80u8 as i8);
 
-            while i + 32 <= len {
+            while len.saturating_sub(i) >= 32 {
                 let chunk = _mm256_loadu_si256(ptr.add(i) as *const __m256i);
                 let m_q = _mm256_cmpeq_epi8(chunk, quote);
                 let m_s = _mm256_cmpeq_epi8(chunk, slash);

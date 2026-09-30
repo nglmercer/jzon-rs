@@ -114,10 +114,10 @@ fn de_null() {
 
 #[test]
 fn de_bool() {
-    assert_eq!(from_str::<bool>("true").unwrap(), true);
-    assert_eq!(from_str::<bool>(" true ").unwrap(), true);
-    assert_eq!(from_str::<bool>("false").unwrap(), false);
-    assert_eq!(from_str::<bool>(" false ").unwrap(), false);
+    assert!(from_str::<bool>("true").unwrap());
+    assert!(from_str::<bool>(" true ").unwrap());
+    assert!(!from_str::<bool>("false").unwrap());
+    assert!(!from_str::<bool>(" false ").unwrap());
 }
 
 #[test]
@@ -219,9 +219,18 @@ impl<'de> Deserialize<'de> for AnyNumberKind {
 
 #[test]
 fn de_any_number_routes_to_expected_visitor_kinds() {
-    assert_eq!(from_str::<AnyNumberKind>("-42").unwrap(), AnyNumberKind::I64(-42));
-    assert_eq!(from_str::<AnyNumberKind>("0").unwrap(), AnyNumberKind::U64(0));
-    assert_eq!(from_str::<AnyNumberKind>("42").unwrap(), AnyNumberKind::U64(42));
+    assert_eq!(
+        from_str::<AnyNumberKind>("-42").unwrap(),
+        AnyNumberKind::I64(-42)
+    );
+    assert_eq!(
+        from_str::<AnyNumberKind>("0").unwrap(),
+        AnyNumberKind::U64(0)
+    );
+    assert_eq!(
+        from_str::<AnyNumberKind>("42").unwrap(),
+        AnyNumberKind::U64(42)
+    );
     #[cfg(not(feature = "arbitrary_precision"))]
     {
         assert_eq!(
@@ -303,7 +312,10 @@ fn de_string_unicode_escape() {
     assert_eq!(from_str::<String>("\"\\u12ab\"").unwrap(), "\u{12ab}");
     assert_eq!(from_str::<String>("\"\\uAB12\"").unwrap(), "\u{AB12}");
     // surrogate pair
-    assert_eq!(from_str::<String>("\"\\uD83C\\uDF95\"").unwrap(), "\u{1F395}");
+    assert_eq!(
+        from_str::<String>("\"\\uD83C\\uDF95\"").unwrap(),
+        "\u{1F395}"
+    );
 }
 
 #[test]
@@ -443,7 +455,11 @@ fn ser_enum_struct_variant() {
 #[test]
 fn ser_enum_newtype_vec_variant() {
     assert_eq!(
-        to_string(&Animal::AntHive(vec!["Bob".to_string(), "Stuart".to_string()])).unwrap(),
+        to_string(&Animal::AntHive(vec![
+            "Bob".to_string(),
+            "Stuart".to_string()
+        ]))
+        .unwrap(),
         r#"{"AntHive":["Bob","Stuart"]}"#
     );
 }
@@ -470,7 +486,10 @@ fn de_enum_tuple_variant() {
 fn de_enum_struct_variant() {
     assert_eq!(
         from_str::<Animal>(r#"{"Cat":{"age":5,"name":"Kate"}}"#).unwrap(),
-        Animal::Cat { age: 5, name: "Kate".to_string() }
+        Animal::Cat {
+            age: 5,
+            name: "Kate".to_string()
+        }
     );
 }
 
@@ -487,8 +506,7 @@ fn de_enum_unknown_variant_error() {
 #[test]
 fn de_enum_deny_unknown_fields() {
     // Cat has deny_unknown_fields via the Animal enum
-    let err =
-        from_str::<Animal>(r#"{"Cat":{"age":5,"name":"Kate","foo":"bar"}}"#).unwrap_err();
+    let err = from_str::<Animal>(r#"{"Cat":{"age":5,"name":"Kate","foo":"bar"}}"#).unwrap_err();
     let msg = err.to_string();
     assert!(
         msg.contains("unknown field") || msg.contains("unknown"),
@@ -502,7 +520,10 @@ fn roundtrip_animal_supported_variants() {
     // Frog (multi-field tuple variant) is ignored separately.
     for animal in &[
         Animal::Dog,
-        Animal::Cat { age: 5, name: "Kate".to_string() },
+        Animal::Cat {
+            age: 5,
+            name: "Kate".to_string(),
+        },
         Animal::AntHive(vec!["Bob".to_string()]),
     ] {
         assert_eq!(&roundtrip(animal), animal);
@@ -514,7 +535,10 @@ fn roundtrip_all_animal_variants() {
     for animal in &[
         Animal::Dog,
         Animal::Frog("Henry".to_string(), vec![1, 2, 3]),
-        Animal::Cat { age: 5, name: "Kate".to_string() },
+        Animal::Cat {
+            age: 5,
+            name: "Kate".to_string(),
+        },
         Animal::AntHive(vec!["Bob".to_string()]),
     ] {
         assert_eq!(&roundtrip(animal), animal);
@@ -534,10 +558,19 @@ struct Renamed {
 
 #[test]
 fn serde_attr_rename_ser() {
-    let r = Renamed { name: "Alice".to_string(), age: 30 };
+    let r = Renamed {
+        name: "Alice".to_string(),
+        age: 30,
+    };
     let json = to_string(&r).unwrap();
-    assert!(json.contains("\"full_name\""), "expected 'full_name' in: {json}");
-    assert!(!json.contains("\"name\""), "unexpected 'name' key in: {json}");
+    assert!(
+        json.contains("\"full_name\""),
+        "expected 'full_name' in: {json}"
+    );
+    assert!(
+        !json.contains("\"name\""),
+        "unexpected 'name' key in: {json}"
+    );
 }
 
 #[test]
@@ -567,10 +600,19 @@ struct CamelCase {
 
 #[test]
 fn serde_attr_rename_all_camel_case_ser() {
-    let v = CamelCase { first_name: "John".to_string(), last_name: "Doe".to_string() };
+    let v = CamelCase {
+        first_name: "John".to_string(),
+        last_name: "Doe".to_string(),
+    };
     let json = to_string(&v).unwrap();
-    assert!(json.contains("\"firstName\""), "expected 'firstName' in: {json}");
-    assert!(json.contains("\"lastName\""), "expected 'lastName' in: {json}");
+    assert!(
+        json.contains("\"firstName\""),
+        "expected 'firstName' in: {json}"
+    );
+    assert!(
+        json.contains("\"lastName\""),
+        "expected 'lastName' in: {json}"
+    );
 }
 
 #[test]
@@ -589,10 +631,19 @@ struct WithSkip {
 
 #[test]
 fn serde_attr_skip_in_ser() {
-    let v = WithSkip { kept: 1, skipped: 99 };
+    let v = WithSkip {
+        kept: 1,
+        skipped: 99,
+    };
     let json = to_string(&v).unwrap();
-    assert!(!json.contains("skipped"), "skipped field must not appear in: {json}");
-    assert!(json.contains("\"kept\""), "kept field must appear in: {json}");
+    assert!(
+        !json.contains("skipped"),
+        "skipped field must not appear in: {json}"
+    );
+    assert!(
+        json.contains("\"kept\""),
+        "kept field must appear in: {json}"
+    );
 }
 
 #[test]
@@ -611,9 +662,15 @@ struct WithSkipSerIf {
 
 #[test]
 fn serde_attr_skip_serializing_if_none() {
-    let v = WithSkipSerIf { name: "Alice".to_string(), nickname: None };
+    let v = WithSkipSerIf {
+        name: "Alice".to_string(),
+        nickname: None,
+    };
     let json = to_string(&v).unwrap();
-    assert!(!json.contains("nickname"), "nickname must be absent when None: {json}");
+    assert!(
+        !json.contains("nickname"),
+        "nickname must be absent when None: {json}"
+    );
 }
 
 #[test]
@@ -623,8 +680,14 @@ fn serde_attr_skip_serializing_if_some() {
         nickname: Some("Ali".to_string()),
     };
     let json = to_string(&v).unwrap();
-    assert!(json.contains("\"nickname\""), "nickname must be present when Some: {json}");
-    assert!(json.contains("\"Ali\""), "nickname value must be present: {json}");
+    assert!(
+        json.contains("\"nickname\""),
+        "nickname must be present when Some: {json}"
+    );
+    assert!(
+        json.contains("\"Ali\""),
+        "nickname value must be present: {json}"
+    );
 }
 
 #[derive(Debug, PartialEq, Deserialize)]
@@ -710,7 +773,10 @@ fn internally_tagged_ser_circle() {
     let s = Shape::Circle { radius: 2.5 };
     let json = to_string(&s).unwrap();
     assert!(json.contains("\"type\""), "must contain type tag: {json}");
-    assert!(json.contains("\"Circle\""), "must contain variant name: {json}");
+    assert!(
+        json.contains("\"Circle\""),
+        "must contain variant name: {json}"
+    );
     assert!(json.contains("\"radius\""), "must contain field: {json}");
 }
 
@@ -725,7 +791,13 @@ fn internally_tagged_de_circle() {
 #[test]
 fn internally_tagged_de_rectangle() {
     let s: Shape = from_str(r#"{"type":"Rectangle","width":3.0,"height":4.0}"#).unwrap();
-    assert_eq!(s, Shape::Rectangle { width: 3.0, height: 4.0 });
+    assert_eq!(
+        s,
+        Shape::Rectangle {
+            width: 3.0,
+            height: 4.0
+        }
+    );
 }
 
 #[cfg(not(feature = "arbitrary_precision"))]
@@ -733,7 +805,10 @@ fn internally_tagged_de_rectangle() {
 fn internally_tagged_roundtrip() {
     for shape in &[
         Shape::Circle { radius: 1.0 },
-        Shape::Rectangle { width: 2.0, height: 3.0 },
+        Shape::Rectangle {
+            width: 2.0,
+            height: 3.0,
+        },
     ] {
         assert_eq!(&roundtrip(shape), shape);
     }
@@ -750,9 +825,12 @@ fn internally_tagged_under_arb_matches_native() {
         r#"{"type":"Circle","radius":2.5}"#,
         r#"{"type":"Rectangle","width":3.0,"height":4.0}"#,
     ] {
-        let ours = from_str::<Shape>(src).map_err(|e| e.to_string());
+        let ours = from_str::<Shape>(src);
         let theirs = serde_json::from_str::<Shape>(src).map_err(|e| e.to_string());
-        assert_eq!(ours.unwrap_err(), "invalid type: map, expected f64");
+        let error = ours.unwrap_err();
+        assert_eq!(error.cause().to_string(), "invalid type: map, expected f64");
+        assert!(error.is_data());
+        assert!(error.line() > 0 && error.column() > 0);
         assert!(theirs
             .unwrap_err()
             .contains("invalid type: map, expected f64"));
@@ -862,14 +940,20 @@ fn error_missing_required_field() {
     }
     let err = from_str::<Foo>("{}").unwrap_err();
     let msg = err.to_string();
-    assert!(msg.contains("missing field"), "expected 'missing field' in: {msg}");
+    assert!(
+        msg.contains("missing field"),
+        "expected 'missing field' in: {msg}"
+    );
 }
 
 #[test]
 fn error_unknown_field_with_deny() {
     let err = from_str::<Strict>(r#"{"x":1,"y":2,"extra":true}"#).unwrap_err();
     let msg = err.to_string();
-    assert!(msg.contains("unknown field"), "expected 'unknown field' in: {msg}");
+    assert!(
+        msg.contains("unknown field"),
+        "expected 'unknown field' in: {msg}"
+    );
 }
 
 #[test]
@@ -983,26 +1067,50 @@ struct WithOptionalField {
 #[test]
 fn option_field_missing_becomes_none() {
     let v: WithOptionalField = from_str(r#"{"required":1}"#).unwrap();
-    assert_eq!(v, WithOptionalField { required: 1, optional: None });
+    assert_eq!(
+        v,
+        WithOptionalField {
+            required: 1,
+            optional: None
+        }
+    );
 }
 
 #[test]
 fn option_field_null_becomes_none() {
     let v: WithOptionalField = from_str(r#"{"required":1,"optional":null}"#).unwrap();
-    assert_eq!(v, WithOptionalField { required: 1, optional: None });
+    assert_eq!(
+        v,
+        WithOptionalField {
+            required: 1,
+            optional: None
+        }
+    );
 }
 
 #[test]
 fn option_field_present_becomes_some() {
     let v: WithOptionalField = from_str(r#"{"required":1,"optional":"hello"}"#).unwrap();
-    assert_eq!(v, WithOptionalField { required: 1, optional: Some("hello".to_string()) });
+    assert_eq!(
+        v,
+        WithOptionalField {
+            required: 1,
+            optional: Some("hello".to_string())
+        }
+    );
 }
 
 #[test]
 fn option_field_ser_none_outputs_null() {
-    let v = WithOptionalField { required: 1, optional: None };
+    let v = WithOptionalField {
+        required: 1,
+        optional: None,
+    };
     let json = to_string(&v).unwrap();
-    assert!(json.contains("\"optional\":null"), "expected null for None: {json}");
+    assert!(
+        json.contains("\"optional\":null"),
+        "expected null for None: {json}"
+    );
 }
 
 // ============================================================
@@ -1042,7 +1150,10 @@ struct FlatOuter {
 
 #[test]
 fn flatten_roundtrip() {
-    let v = FlatOuter { base: FlatBase { id: 1 }, extra: "hi".to_string() };
+    let v = FlatOuter {
+        base: FlatBase { id: 1 },
+        extra: "hi".to_string(),
+    };
     assert_eq!(roundtrip(&v), v);
 }
 

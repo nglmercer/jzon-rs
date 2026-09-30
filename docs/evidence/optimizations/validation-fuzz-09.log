@@ -1,0 +1,14 @@
+   Compiling jzon-fuzz v0.0.0 (/home/meme/Documentos/GitHub/jzon-rs/fuzz)
+    Finished `release` profile [optimized + debuginfo] target(s) in 0.40s
+    Finished `release` profile [optimized + debuginfo] target(s) in 0.01s
+     Running `target/x86_64-unknown-linux-gnu/release/simd -artifact_prefix=/home/meme/Documentos/GitHub/jzon-rs/fuzz/artifacts/simd/ -max_total_time=5 -max_len=4096 -rss_limit_mb=512 /home/meme/Documentos/GitHub/jzon-rs/fuzz/corpus/simd`
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 2972585257
+INFO: Loaded 1 modules   (698 inline 8-bit counters): 698 [0x55a1aa30c510, 0x55a1aa30c7ca), 
+INFO: Loaded 1 PC tables (698 PCs): 698 [0x55a1aa30c7d0,0x55a1aa30f370), 
+INFO:      318 files found in /home/meme/Documentos/GitHub/jzon-rs/fuzz/corpus/simd
+INFO: seed corpus: files: 318 min: 1b max: 2786b total: 37176b rss: 43Mb
+#319	INITED cov: 197 ft: 490 corp: 131/11071b exec/s: 0 rss: 51Mb
+#524288	pulse  cov: 197 ft: 490 corp: 131/11071b lim: 4096 exec/s: 174762 rss: 173Mb
+#933884	DONE   cov: 197 ft: 490 corp: 131/11071b lim: 4096 exec/s: 155647 rss: 265Mb
+Done 933884 runs in 6 second(s)

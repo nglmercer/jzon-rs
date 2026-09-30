@@ -1,0 +1,26 @@
+   Compiling jzon-rs v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon)
+   Compiling jzon-rs-serde v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_serde)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.30s
+     Running tests/native_errors.rs (target/debug/deps/native_errors-7ffde1738847a8a4)
+
+running 2 tests
+test categories_positions_and_public_constructor ... ok
+test valid_wrong_types_are_data_errors ... FAILED
+
+failures:
+
+---- valid_wrong_types_are_data_errors stdout ----
+
+thread 'valid_wrong_types_are_data_errors' (469999) panicked at crates/jzon/tests/native_errors.rs:44:9:
+assertion `left == right` failed: []: invalid type: sequence, expected a boolean at line 1 column 1
+  left: (1, 1)
+ right: (1, 0)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    valid_wrong_types_are_data_errors
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p jzon-rs --test native_errors`

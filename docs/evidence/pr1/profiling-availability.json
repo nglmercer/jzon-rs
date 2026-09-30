@@ -1,0 +1,8 @@
+{
+  "checks": {
+    "perf": null,
+    "valgrind": null,
+    "taskset": "/usr/bin/taskset"
+  },
+  "scope": "No CPU-callgraph timing optimization attempted. Allocation counters and equivalent reader timing were measured separately."
+}

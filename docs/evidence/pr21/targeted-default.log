@@ -1,0 +1,15 @@
+   Compiling jzon-rs v0.3.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.95s
+     Running tests/pr21_native_map_regressions.rs (target/debug/deps/pr21_native_map_regressions-c6ed029d887f6828)
+
+running 7 tests
+test bool_callback_requires_complete_lexeme ... ok
+test invalid_key_never_invokes_seed ... ok
+test custom_unit_visitor_consumes_quoted_key ... ok
+test enum_key_grammar ... ok
+test missing_unit_keys ... ok
+test boolean_key_lexemes ... ok
+test byte_key_callbacks_and_model ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

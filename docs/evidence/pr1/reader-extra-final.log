@@ -1,0 +1,29 @@
+    Blocking waiting for file lock on build directory
+   Compiling jzon-rs v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.51s
+     Running tests/native_errors.rs (target/debug/deps/native_errors-70873dd2ac45f6ce)
+
+running 2 tests
+test categories_positions_and_public_constructor ... ok
+test valid_wrong_types_are_data_errors ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/native_reader.rs (target/debug/deps/native_reader-03bdabf8f2f3d657)
+
+running 13 tests
+test callbacks_once_and_error_precedence ... ok
+test fragmented_values_and_enums ... ok
+test borrowed_slice_stream ... ok
+test ignored_token_errors_keep_their_local_position ... ok
+test raw_ignored_and_byte_models ... ok
+test errors_and_truncated_io ... ok
+test early_container_visitors_do_not_hide_remaining_input ... ok
+test reader_bytes_are_transient_and_match_reference ... ok
+test reader_custom_key_visitors ... ok
+test reader_budget_recovers_after_visitor_unwind ... ok
+test stream_partial_consumption_and_fused_errors ... ok
+test streams_validate_primitive_boundaries ... ok
+test storage_is_not_document_sized ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s

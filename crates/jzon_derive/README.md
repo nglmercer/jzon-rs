@@ -29,3 +29,9 @@ struct Point {
 ## License
 
 MIT
+
+## Supported attribute subset
+
+Mode A supports rename, rename_all, aliases, skip/skip_serializing/skip_deserializing, skip_serializing_if, default, flatten, deny_unknown_fields, transparent, tag/content, untagged, other, and automatic borrowed string fields. `rjson(trie_dispatch)` and native rjson serialize_with/deserialize_with hooks are extensions. `borrow` is accepted as metadata; plain unescaped &str fields already borrow without it.
+
+Serde custom hook attributes, remote/from/try_from/into, custom bound/expecting metadata, rename_all_fields and other unsupported attributes fail compilation. These derives do not implement every Serde semantic. Enum and flatten combinations need independent validation; consult [readiness](../../docs/replacement-readiness.md). Without strict, Mode A retains its documented trailing-comma leniency, distinct from native Serde's unconditional container syntax validation.

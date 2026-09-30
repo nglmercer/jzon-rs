@@ -1,0 +1,30 @@
+[
+  {
+    "command": "cargo +1.71.0 check --manifest-path fixtures/facade/Cargo.toml --locked",
+    "cwd": ".",
+    "exit_status": 0,
+    "elapsed_seconds": 0.83,
+    "log": "/tmp/jzon-optimizations/verified/msrv-00.log"
+  },
+  {
+    "command": "cargo +1.71.0 check --manifest-path fixtures/native/Cargo.toml --locked",
+    "cwd": ".",
+    "exit_status": 0,
+    "elapsed_seconds": 1.748,
+    "log": "/tmp/jzon-optimizations/verified/msrv-01.log"
+  },
+  {
+    "command": "cargo +1.71.0 check --manifest-path fixtures/alloc/Cargo.toml --locked",
+    "cwd": ".",
+    "exit_status": 0,
+    "elapsed_seconds": 0.181,
+    "log": "/tmp/jzon-optimizations/verified/msrv-02.log"
+  },
+  {
+    "command": "cargo +1.71.0 check --manifest-path fixtures/derive/Cargo.toml --locked",
+    "cwd": ".",
+    "exit_status": 0,
+    "elapsed_seconds": 0.816,
+    "log": "/tmp/jzon-optimizations/verified/msrv-03.log"
+  }
+]

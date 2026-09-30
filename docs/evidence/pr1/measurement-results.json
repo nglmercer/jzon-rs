@@ -1,0 +1,79 @@
+{
+  "benchmark_cpu": 10,
+  "miri_excluded_from_cpu_10_pids": [
+    535347,
+    539855,
+    600197,
+    604223
+  ],
+  "scope": "Equivalent full readers, Vec<u32> 0..10000, input 48891 bytes; no CPU-callgraph profiler available. Other host load cannot be excluded. Early measurements 1/2 are exploratory.",
+  "source_manifest_sha256": "6196f9e2dc7fc5634ba461ac249bfd95521007aad4cfd7547af79db0f1f997cb",
+  "results": [
+    {
+      "name": "reader-benchmark-3",
+      "command": [
+        "taskset",
+        "-c",
+        "10",
+        "cargo",
+        "bench",
+        "-p",
+        "jzon-rs",
+        "--bench",
+        "bench_reader",
+        "--features",
+        "serde",
+        "--",
+        "--warm-up-time",
+        "1",
+        "--measurement-time",
+        "2",
+        "--sample-size",
+        "30"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 56.24
+    },
+    {
+      "name": "reader-benchmark-4",
+      "command": [
+        "taskset",
+        "-c",
+        "10",
+        "cargo",
+        "bench",
+        "-p",
+        "jzon-rs",
+        "--bench",
+        "bench_reader",
+        "--features",
+        "serde",
+        "--",
+        "--warm-up-time",
+        "1",
+        "--measurement-time",
+        "2",
+        "--sample-size",
+        "30"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 41.86
+    },
+    {
+      "name": "reader-allocations-final",
+      "command": [
+        "cargo",
+        "run",
+        "--release",
+        "-p",
+        "jzon-rs",
+        "--features",
+        "serde",
+        "--example",
+        "reader_allocations"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.07
+    }
+  ]
+}

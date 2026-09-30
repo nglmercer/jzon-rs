@@ -1,5 +1,6 @@
 //! `FromJson<'de>` trait and primitive implementations.
 
+use crate::__private::*;
 use crate::{Error, Scanner};
 
 // ── digit lookup table (branchless, no per-byte range-check) ─────────────────
@@ -346,8 +347,10 @@ impl<'de> FromJson<'de> for () {
 
 // ── HashMap<String, V> and HashMap<&'de str, V> ───────────────────────────────
 
+#[cfg(feature = "std")]
 use std::collections::HashMap;
 
+#[cfg(feature = "std")]
 impl<'de, V: FromJson<'de>> FromJson<'de> for HashMap<String, V> {
     #[inline]
     fn from_json_scanner(sc: &mut Scanner<'de>) -> Result<Self, Error> {
@@ -387,6 +390,7 @@ impl<'de, V: FromJson<'de>> FromJson<'de> for HashMap<String, V> {
     }
 }
 
+#[cfg(feature = "std")]
 impl<'de, V: FromJson<'de>> FromJson<'de> for HashMap<&'de str, V> {
     fn from_json_scanner(sc: &mut Scanner<'de>) -> Result<Self, Error> {
         let _depth = sc.enter_depth()?;
@@ -427,7 +431,7 @@ impl<'de, V: FromJson<'de>> FromJson<'de> for HashMap<&'de str, V> {
 
 // ── BTreeMap<String, V> ───────────────────────────────────────────────────────
 
-use std::collections::BTreeMap;
+use alloc::collections::BTreeMap;
 
 impl<'de, V: FromJson<'de>> FromJson<'de> for BTreeMap<String, V> {
     #[inline]
