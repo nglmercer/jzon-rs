@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [native, skip, raw, roundtrip, simd]
+        target: [native, map_keys, skip, raw, roundtrip, simd]
         policy: [default, roundtrip]
     steps:
       - uses: actions/checkout@v4

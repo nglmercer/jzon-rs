@@ -1,0 +1,89 @@
+     Locking 11 packages to latest compatible versions
+   Compiling zmij v1.0.23
+   Compiling serde_core v1.0.229
+   Compiling serde_json v1.0.151
+   Compiling memchr v2.8.3
+   Compiling itoa v1.0.18
+   Compiling pr21-oracle-probe v0.0.0 (/tmp/jzon-pr21-oracle)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.67s
+     Running `/home/meme/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/bin/cargo-miri runner /tmp/jzon-pr21-oracle/target/miri/x86_64-unknown-linux-gnu/debug/pr21-oracle-probe`
+error: Undefined Behavior: entering unreachable code
+  --> /home/meme/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/str/validations.rs:48:23
+   |
+48 |     let y = unsafe { *bytes.next().unwrap_unchecked() };
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Undefined Behavior occurred here
+   |
+   = help: this indicates a bug in the program: it performed an invalid operation, and caused Undefined Behavior
+   = help: see https://doc.rust-lang.org/nightly/reference/behavior-considered-undefined.html for further information
+   = note: stack backtrace:
+           0: core::str::validations::next_code_point::<'_, std::slice::Iter<'_, u8>>
+               at /home/meme/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/str/validations.rs:48:23: 48:54
+           1: <std::str::Chars<'_> as std::iter::Iterator>::next
+               at /home/meme/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/str/iter.rs:42:18: 42:49
+           2: <str as std::fmt::Debug>::fmt
+               at /home/meme/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/mod.rs:2942:30: 2942:42
+           3: <&str as std::fmt::Debug>::fmt
+               at /home/meme/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/mod.rs:2872:62: 2872:82
+           4: core::fmt::rt::Argument::<'_>::fmt
+               at /home/meme/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/rt.rs:152:76: 152:95
+           5: std::fmt::write
+               at /home/meme/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/mod.rs:1685:17: 1687:80
+           6: std::fmt::Formatter::<'_>::write_fmt
+               at /home/meme/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/mod.rs:2132:13: 2132:33
+           7: <serde_core::de::Unexpected<'_> as std::fmt::Display>::fmt
+               at /home/meme/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/macros/mod.rs:610:9: 610:55
+           8: <serde_json::error::JsonUnexpected<'_> as std::fmt::Display>::fmt
+               at /home/meme/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.151/src/error.rs:476:22: 476:53
+           9: core::fmt::rt::Argument::<'_>::fmt
+               at /home/meme/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/rt.rs:152:76: 152:95
+           10: std::fmt::write
+               at /home/meme/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/mod.rs:1685:17: 1687:80
+           11: <&mut std::string::String as std::fmt::Write::write_fmt::SpecWriteFmt>::spec_write_fmt
+               at /home/meme/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/mod.rs:238:21: 238:38
+           12: <std::string::String as std::fmt::Write>::write_fmt
+               at /home/meme/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/fmt/mod.rs:243:9: 243:34
+           13: std::fmt::format::format_inner
+               at /home/meme/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/fmt.rs:653:9: 654:29
+           14: std::fmt::format::{closure#0}
+               at /home/meme/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/fmt.rs:659:34: 659:52
+           15: std::option::Option::<&str>::map_or_else::<std::string::String, {closure@std::fmt::format::{closure#0}}, for<'a> fn(&'a str) -> <str as std::borrow::ToOwned>::Owned {<str as std::borrow::ToOwned>::to_owned}>
+               at /home/meme/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs:1276:21: 1276:30
+           16: std::fmt::format
+               at /home/meme/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/fmt.rs:659:5: 659:87
+           17: <std::fmt::Arguments<'_> as std::string::SpecToString>::spec_to_string
+               at /home/meme/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/string.rs:3115:9: 3115:34
+           18: <std::fmt::Arguments<'_> as std::string::ToString>::to_string
+               at /home/meme/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/string.rs:2931:9: 2931:53
+           19: <serde_json::Error as serde_core::de::Error>::custom::<std::fmt::Arguments<'_>>
+               at /home/meme/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.151/src/error.rs:436:20: 436:35
+           20: <serde_json::Error as serde_core::de::Error>::invalid_type
+               at /home/meme/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.151/src/error.rs:441:9: 445:11
+           21: <serde_json::de::MapKey<'_, serde_json::de::StrRead<'_>> as serde_core::de::Deserializer<'_>>::deserialize_bool::<serde_core::de::impls::BoolVisitor>
+               at /home/meme/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.151/src/de.rs:2268:21: 2268:75
+           22: serde_core::de::impls::<impl serde_core::de::Deserialize<'_> for bool>::deserialize::<serde_json::de::MapKey<'_, serde_json::de::StrRead<'_>>>
+               at /home/meme/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_core-1.0.229/src/de/impls.rs:75:9: 75:51
+           23: <std::marker::PhantomData<bool> as serde_core::de::DeserializeSeed<'_>>::deserialize::<serde_json::de::MapKey<'_, serde_json::de::StrRead<'_>>>
+               at /home/meme/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_core-1.0.229/src/de/mod.rs:825:9: 825:37
+           24: <serde_json::de::MapAccess<'_, serde_json::de::StrRead<'_>> as serde_core::de::MapAccess<'_>>::next_key_seed::<std::marker::PhantomData<bool>>
+               at /home/meme/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.151/src/de.rs:2021:26: 2021:72
+           25: <serde_json::de::MapAccess<'_, serde_json::de::StrRead<'_>> as serde_core::de::MapAccess<'_>>::next_entry_seed::<std::marker::PhantomData<bool>, std::marker::PhantomData<u8>>
+               at /home/meme/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_core-1.0.229/src/de/mod.rs:1882:20: 1882:45
+           26: <serde_json::de::MapAccess<'_, serde_json::de::StrRead<'_>> as serde_core::de::MapAccess<'_>>::next_entry::<bool, u8>
+               at /home/meme/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_core-1.0.229/src/de/mod.rs:1932:9: 1932:55
+           27: <serde_core::de::impls::<impl serde_core::de::Deserialize<'de> for std::collections::BTreeMap<K, V>>::deserialize::MapVisitor<bool, u8> as serde_core::de::Visitor<'_>>::visit_map::<serde_json::de::MapAccess<'_, serde_json::de::StrRead<'_>>>
+               at /home/meme/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_core-1.0.229/src/de/impls.rs:1542:61: 1542:81
+           28: <&mut serde_json::Deserializer<serde_json::de::StrRead<'_>> as serde_core::de::Deserializer<'_>>::deserialize_map::<serde_core::de::impls::<impl serde_core::de::Deserialize<'de> for std::collections::BTreeMap<K, V>>::deserialize::MapVisitor<bool, u8>>
+               at /home/meme/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.151/src/de.rs:1803:31: 1803:70
+           29: serde_core::de::impls::<impl serde_core::de::Deserialize<'_> for std::collections::BTreeMap<bool, u8>>::deserialize::<&mut serde_json::Deserializer<serde_json::de::StrRead<'_>>>
+               at /home/meme/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_core-1.0.229/src/de/impls.rs:1551:17: 1551:54
+           30: serde_json::de::from_trait::<'_, serde_json::de::StrRead<'_>, std::collections::BTreeMap<bool, u8>>
+               at /home/meme/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.151/src/de.rs:2513:22: 2513:59
+           31: serde_json::from_str::<'_, std::collections::BTreeMap<bool, u8>>
+               at /home/meme/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.151/src/de.rs:2713:5: 2713:38
+           32: main
+               at src/main.rs:3:18: 3:74
+
+note: some details are omitted, run with `MIRIFLAGS=-Zmiri-backtrace=full` for a verbose backtrace
+
+error: aborting due to 1 previous error
+

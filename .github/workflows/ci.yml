@@ -53,7 +53,7 @@ jobs:
         with:
           components: miri
       - run: cargo miri setup
-      - run: cargo miri test -p jzon-rs --test depth_safety --test readiness --test optimizations
+      - run: cargo miri test -p jzon-rs --test depth_safety --test readiness --test optimizations --test pr21_native_map_regressions
         env:
           MIRIFLAGS: -Zmiri-strict-provenance
       - run: cargo test --workspace --features 'simd,unstable'

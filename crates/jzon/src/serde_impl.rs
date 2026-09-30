@@ -1819,6 +1819,13 @@ impl<'de, 'a> MapAccess<'de> for JsonMapAccess<'a, 'de> {
                 return Err(Error::Scanner(crate::Error::TrailingComma));
             }
         }
+        // All key types (including custom seeds, enums and raw tokens) must
+        // enter through a quoted JSON key. Leave the quote for the key reader.
+        match self.de.scanner.peek_byte() {
+            Ok(b'"') => {}
+            Ok(_) => return Err(Error::Scanner(crate::Error::UnexpectedToken)),
+            Err(_) => return Err(Error::Scanner(crate::Error::UnexpectedEof)),
+        }
         self.first = false;
         self.pending_value = true;
         let key = seed.deserialize(MapKeyDeserializer { de: &mut *self.de })?;
@@ -1891,34 +1898,40 @@ impl<'de, 'a> de_trait::Deserializer<'de> for MapKeyDeserializer<'a, 'de> {
     numeric_key!(deserialize_u64);
     numeric_key!(deserialize_u128);
     fn deserialize_bool<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, Error> {
-        self.de.with_str(false, |s| {
-            let text = match s {
-                DecodedStr::Borrowed(b) | DecodedStr::Transient(b) => b,
-            };
-            let b = text
-                .parse()
-                .map_err(|_| Error::Scanner(crate::Error::UnexpectedToken))?;
-            visitor.visit_bool(b)
-        })
+        self.de.scanner.expect_byte(b'"')?;
+        // Boolean keys are lexical literals, not unescaped strings. Validate
+        // the closing quote before invoking user code, as serde_json does.
+        let value = match self.de.scanner.peek_byte()? {
+            b't' => {
+                self.de.scanner.expect_bytes(b"true\"")?;
+                true
+            }
+            b'f' => {
+                self.de.scanner.expect_bytes(b"false\"")?;
+                false
+            }
+            _ => return Err(Error::Scanner(crate::Error::UnexpectedToken)),
+        };
+        visitor.visit_bool(value)
     }
     fn deserialize_bytes<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, Error> {
-        self.deserialize_str(visitor)
+        de_trait::Deserializer::deserialize_bytes(&mut *self.de, visitor)
     }
     fn deserialize_byte_buf<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, Error> {
-        self.deserialize_str(visitor)
+        de_trait::Deserializer::deserialize_bytes(&mut *self.de, visitor)
     }
     fn deserialize_option<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, Error> {
         visitor.visit_some(self)
     }
     fn deserialize_unit<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, Error> {
-        visitor.visit_unit()
+        self.deserialize_str(visitor)
     }
     fn deserialize_unit_struct<V: Visitor<'de>>(
         self,
         _: &'static str,
         visitor: V,
     ) -> Result<V::Value, Error> {
-        visitor.visit_unit()
+        self.deserialize_str(visitor)
     }
     fn deserialize_newtype_struct<V: Visitor<'de>>(
         self,

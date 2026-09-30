@@ -12,7 +12,7 @@ roundtrip_policy = ["jzon/float_roundtrip", "reference_json/float_roundtrip"]
 libfuzzer-sys = "0.4"
 jzon = { package = "jzon-rs", path = "../crates/jzon", default-features = false, features = ["serde", "raw_value", "simd", "simd-intrinsics"] }
 reference_json = { package = "serde_json", version = "=1.0.151", features = ["raw_value"] }
-serde = "1"
+serde = { version = "1", features = ["derive"] }
 
 [[bin]]
 name = "native"
@@ -45,6 +45,13 @@ bench = false
 [[bin]]
 name = "simd"
 path = "fuzz_targets/simd.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "map_keys"
+path = "fuzz_targets/map_keys.rs"
 test = false
 doc = false
 bench = false
