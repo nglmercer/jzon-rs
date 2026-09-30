@@ -1,0 +1,8 @@
+[package]
+name = "native-consumer"
+version = "0.0.0"
+edition = "2021"
+[workspace]
+[dependencies]
+jzon_serde = { package = "jzon-rs-serde", path = "../../crates/jzon_serde" }
+serde = "1"

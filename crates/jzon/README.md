@@ -2,7 +2,7 @@
 
 [![crates.io](https://img.shields.io/crates/v/jzon-rs.svg)](https://crates.io/crates/jzon-rs)
 [![docs.rs](https://docs.rs/jzon-rs/badge.svg)](https://docs.rs/jzon-rs)
-[![CI](https://github.com/Rajaniraiyn/jzon-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/Rajaniraiyn/jzon-rs/actions)
+[![CI](https://github.com/nglmercer/jzon-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/nglmercer/jzon-rs/actions)
 [![MSRV](https://img.shields.io/badge/rustc-1.71%2B-blue.svg)](https://blog.rust-lang.org/2022/11/03/Rust-1.71.0.html)
 
 Zero-copy JSON for Rust with compile-time generated parsers.
@@ -91,10 +91,10 @@ let v: serde_json::Value = serde_json::from_str(src).unwrap();
 ## Performance
 
 <!-- bench:speedups-start -->
-Up to **3.9× serde_json**, **2.4× sonic-rs**, **3.7× simd-json** on real-world workloads.
+Performance claims from the earlier benchmark pipeline are withdrawn. See [current methodology and measurements](../../BENCHMARKS.md).
 <!-- bench:speedups-end -->
 <!-- bench:top-ser-start -->
-Top: **57.70 GiB/s** twitter serialize
+Current mode-specific results are reported with emitted bytes and time per operation
 <!-- bench:top-ser-end -->.
 Full matrix: [`BENCHMARKS.md`](../../BENCHMARKS.md).
 
@@ -112,3 +112,23 @@ MIT
 ---
 
 Made with ❤️ by [Rajaniraiyn](https://github.com/rajaniraiyn)
+
+## Migration scope and readiness
+
+Read [replacement readiness](../../docs/replacement-readiness.md) before migration.
+Mode C preserves upstream types, callbacks, error construction and streaming by
+re-exporting upstream once; it retains the serde_json dependency and claims no
+native acceleration. Mode B is an independent native parser/serializer with its
+own errors; reader/writer helpers buffer the complete document. Mode A implements
+an explicit attribute subset and accepts some trailing commas without `strict`.
+Unescaped strings can borrow; escaped strings allocate. Byte strings, ignored
+values and RawValue intentionally have different Unicode validation rules.
+
+DepthGuard now owns shared counter state and has no lifetime parameter. It is
+safe to move/drop the scanner before the guard. Unwind restores the budget;
+leaking a guard conservatively reduces it. The first composite parse lazily allocates counter state; scalar parsing
+and unescaped string borrowing need no counter allocation. Enabling `unbounded_depth` does not disable the default limit:
+call the deserializer/scanner method explicitly and manage stack safety yourself.
+Statistics fields are now `decoded_strings` and `number_bytes_scanned` to avoid
+implying total allocation or total scan counts. These API/feature changes warrant
+a minor version bump for this pre-1.0 project. No release has been published.

@@ -18,7 +18,7 @@
 //! | `simd + unstable` | | `std::simd` portable SIMD (32–64 B/iter, nightly) |
 //! | `fast-float` | | no-op (exact `ryu` / `fast-float2` backends are always on) |
 //! | `zmij-float-ser` | | `zmij` float serialization instead of `ryu` |
-//! | `stats` | | `ScannerStats` allocation/cache-hit counters |
+//! | `stats` | | `ScannerStats` decoded-string/numeric-byte/cache-hit events |
 //!
 //! For serde integration see [`jzon-rs-serde`](https://crates.io/crates/jzon-rs-serde).
 //! For a `serde_json` drop-in see [`jzon-rs-compat`](https://crates.io/crates/jzon-rs-compat).
@@ -35,15 +35,15 @@
 //! matches the struct definition — the common case — almost every key dispatch
 //! is O(1) without hashing.
 //!
-//! ## Minimal audited unsafe
+//! ## Unsafe scope
 //!
 //! Most of the crate is safe Rust.  The small unsafe surface is limited to
-//! architecture-specific SIMD kernels and `from_utf8_unchecked` after the
-//! scanner has proven a string run is ASCII-only.
+//! architecture-specific SIMD kernels. UTF-8 conversion and depth management
+//! use safe Rust. See the readiness report for the scope of executed checks.
 //!
 //! # Quick start
 //!
-//! ```rust,ignore
+//! ```rust
 //! use jzon::{ToJson, FromJson};
 //!
 //! #[derive(ToJson, FromJson, Debug, PartialEq)]
@@ -65,26 +65,28 @@
 // Enable `std::simd` portable SIMD on nightly when both features are set.
 #![cfg_attr(all(feature = "simd", feature = "unstable"), feature(portable_simd))]
 
+#[cfg(feature = "compat")]
+pub mod compat;
+pub mod de;
 pub mod error;
+pub mod fixed;
+#[cfg(all(feature = "serde", not(feature = "float_roundtrip")))]
+mod native_number;
 pub mod scanner;
 pub mod ser;
-pub mod de;
+#[cfg(feature = "serde")]
+pub mod serde_impl;
 pub mod simd;
 #[cfg(feature = "simd-intrinsics")]
 pub mod simd_arch;
-pub mod fixed;
 #[cfg(feature = "stats")]
 pub mod stats;
-#[cfg(feature = "serde")]
-pub mod serde_impl;
-#[cfg(feature = "compat")]
-pub mod compat;
 
+pub use de::FromJson;
 pub use error::Error;
+pub use fixed::{json_str_len, FixedBuf, ToJsonExt};
 pub use scanner::{DepthGuard, JsonStr, Scanner};
 pub use ser::{IoSink, JsonSink, LengthCounter, ToJson, VecSink};
-pub use de::FromJson;
-pub use fixed::{FixedBuf, ToJsonExt, json_str_len};
 
 #[cfg(feature = "derive")]
 pub use jzon_derive::{FromJson, ToJson};
@@ -93,6 +95,8 @@ pub use jzon_derive::{FromJson, ToJson};
 // are re-exported at the crate root. (`serde_impl::Error` keeps its module
 // path to avoid clashing with [`Error`].)
 #[cfg(feature = "serde")]
-pub use serde_impl::{from_reader, from_slice, from_str, to_bytes, to_string, to_writer};
+pub use serde_impl::{
+    from_reader, from_slice, from_str, to_bytes, to_bytes_in, to_string, to_writer,
+};
 #[cfg(all(feature = "serde", feature = "stats"))]
 pub use serde_impl::{from_reader_with_stats, from_slice_with_stats, from_str_with_stats};

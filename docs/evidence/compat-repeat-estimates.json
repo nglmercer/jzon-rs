@@ -1,0 +1,788 @@
+{
+  "mode_c_full_value_immutable_input/reference/new/benchmark.json": {
+    "group_id": "mode_c/full_value/immutable_input",
+    "function_id": "reference",
+    "value_str": null,
+    "throughput": {
+      "Bytes": 631514
+    },
+    "full_id": "mode_c/full_value/immutable_input/reference",
+    "directory_name": "mode_c_full_value_immutable_input/reference",
+    "title": "mode_c/full_value/immutable_input/reference"
+  },
+  "mode_c_full_value_immutable_input/reference/new/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 2920737.874867131,
+        "upper_bound": 2979796.0275683366
+      },
+      "point_estimate": 2948538.6102661695,
+      "standard_error": 15110.913096897748
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 2909057.052631579,
+        "upper_bound": 2962904.807692308
+      },
+      "point_estimate": 2933257.404853129,
+      "standard_error": 13767.361052484644
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 34448.7869550786,
+        "upper_bound": 103847.34134452377
+      },
+      "point_estimate": 52937.66524016875,
+      "standard_error": 17284.440519050433
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 2933832.4732936057,
+        "upper_bound": 3034304.6869945284
+      },
+      "point_estimate": 2980080.1201480697,
+      "standard_error": 26249.70498364725
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 50700.991712890995,
+        "upper_bound": 109792.34231653309
+      },
+      "point_estimate": 83997.08539958281,
+      "standard_error": 15252.647687254199
+    }
+  },
+  "mode_c_full_value_immutable_input/reference/new/sample.json": {
+    "sampling_mode": "Linear",
+    "iters": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0,
+      7.0,
+      8.0,
+      9.0,
+      10.0,
+      11.0,
+      12.0,
+      13.0,
+      14.0,
+      15.0,
+      16.0,
+      17.0,
+      18.0,
+      19.0,
+      20.0,
+      21.0,
+      22.0,
+      23.0,
+      24.0,
+      25.0,
+      26.0,
+      27.0,
+      28.0,
+      29.0,
+      30.0
+    ],
+    "times": [
+      2851603.0,
+      5927199.0,
+      8725923.0,
+      11407350.0,
+      15166345.0,
+      17810279.0,
+      20934862.0,
+      22779919.0,
+      25949569.0,
+      30552072.0,
+      31464988.0,
+      34393514.0,
+      38566047.0,
+      40174851.0,
+      43828536.0,
+      46833418.0,
+      49272261.0,
+      53012600.0,
+      55279989.0,
+      57939358.0,
+      64168538.0,
+      65551897.0,
+      67205229.0,
+      70670452.0,
+      78675312.0,
+      77017463.0,
+      79294430.0,
+      82774922.0,
+      84960838.0,
+      96196385.0
+    ]
+  },
+  "mode_c_full_value_immutable_input/reference/new/tukey.json": [
+    2685453.1191176474,
+    2791385.5588235296,
+    3073872.064705882,
+    3179804.5044117644
+  ],
+  "mode_c_full_value_immutable_input/facade/new/benchmark.json": {
+    "group_id": "mode_c/full_value/immutable_input",
+    "function_id": "facade",
+    "value_str": null,
+    "throughput": {
+      "Bytes": 631514
+    },
+    "full_id": "mode_c/full_value/immutable_input/facade",
+    "directory_name": "mode_c_full_value_immutable_input/facade",
+    "title": "mode_c/full_value/immutable_input/facade"
+  },
+  "mode_c_full_value_immutable_input/facade/new/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 2807681.6297074654,
+        "upper_bound": 2855436.9605366136
+      },
+      "point_estimate": 2830685.426687843,
+      "standard_error": 12196.499175307748
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 2808430.125,
+        "upper_bound": 2846213.230769231
+      },
+      "point_estimate": 2825546.3958333335,
+      "standard_error": 9658.844230400586
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 25294.051288440594,
+        "upper_bound": 65221.39520458854
+      },
+      "point_estimate": 42962.59930784947,
+      "standard_error": 10121.423315077296
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 2811719.430152639,
+        "upper_bound": 2866826.2050907942
+      },
+      "point_estimate": 2837180.8343733475,
+      "standard_error": 14350.74364187337
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 42501.02260889578,
+        "upper_bound": 87346.58007898787
+      },
+      "point_estimate": 68420.77314267601,
+      "standard_error": 11408.544109416976
+    }
+  },
+  "mode_c_full_value_immutable_input/facade/new/sample.json": {
+    "sampling_mode": "Linear",
+    "iters": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      6.0,
+      7.0,
+      8.0,
+      9.0,
+      10.0,
+      11.0,
+      12.0,
+      13.0,
+      14.0,
+      15.0,
+      16.0,
+      17.0,
+      18.0,
+      19.0,
+      20.0,
+      21.0,
+      22.0,
+      23.0,
+      24.0,
+      25.0,
+      26.0,
+      27.0,
+      28.0,
+      29.0,
+      30.0
+    ],
+    "times": [
+      2764023.0,
+      5624971.0,
+      8092071.0,
+      11370428.0,
+      14965178.0,
+      17166933.0,
+      19524377.0,
+      24068423.0,
+      24667670.0,
+      28349205.0,
+      30715434.0,
+      33900799.0,
+      37047653.0,
+      39592890.0,
+      42865522.0,
+      43631170.0,
+      47507933.0,
+      51584649.0,
+      54190003.0,
+      56152615.0,
+      59903341.0,
+      62248865.0,
+      64805237.0,
+      67824629.0,
+      69418427.0,
+      73039967.0,
+      75585521.0,
+      78678357.0,
+      86059941.0,
+      86630888.0
+    ]
+  },
+  "mode_c_full_value_immutable_input/facade/new/tukey.json": [
+    2625922.4501613523,
+    2710863.3029673863,
+    2937372.2437834777,
+    3022313.096589512
+  ],
+  "mode_c_full_value_serialize/reference_reuse/new/benchmark.json": {
+    "group_id": "mode_c/full_value/serialize",
+    "function_id": "reference/reuse",
+    "value_str": null,
+    "throughput": {
+      "Bytes": 466906
+    },
+    "full_id": "mode_c/full_value/serialize/reference/reuse",
+    "directory_name": "mode_c_full_value_serialize/reference_reuse",
+    "title": "mode_c/full_value/serialize/reference/reuse"
+  },
+  "mode_c_full_value_serialize/reference_reuse/new/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 817401.8152852488,
+        "upper_bound": 1048412.2276841683
+      },
+      "point_estimate": 932159.965397546,
+      "standard_error": 59217.227348496
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 607042.7000835421,
+        "upper_bound": 1238832.2388888889
+      },
+      "point_estimate": 899166.4106002555,
+      "standard_error": 161746.80048857862
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 87602.35759379991,
+        "upper_bound": 531773.6582641304
+      },
+      "point_estimate": 493969.2951673419,
+      "standard_error": 121459.72772498139
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 735183.7522631122,
+        "upper_bound": 943860.7578281825
+      },
+      "point_estimate": 837192.1894235854,
+      "standard_error": 53286.03550649872
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 284723.1694788412,
+        "upper_bound": 355089.2124161378
+      },
+      "point_estimate": 329102.52059505123,
+      "standard_error": 17970.829542090476
+    }
+  },
+  "mode_c_full_value_serialize/reference_reuse/new/sample.json": {
+    "sampling_mode": "Linear",
+    "iters": [
+      3.0,
+      6.0,
+      9.0,
+      12.0,
+      15.0,
+      18.0,
+      21.0,
+      24.0,
+      27.0,
+      30.0,
+      33.0,
+      36.0,
+      39.0,
+      42.0,
+      45.0,
+      48.0,
+      51.0,
+      54.0,
+      57.0,
+      60.0,
+      63.0,
+      66.0,
+      69.0,
+      72.0,
+      75.0,
+      78.0,
+      81.0,
+      84.0,
+      87.0,
+      90.0
+    ],
+    "times": [
+      3941549.0,
+      7848978.0,
+      11854658.0,
+      15625225.0,
+      20460262.0,
+      19767895.0,
+      13621338.0,
+      12878397.0,
+      15284869.0,
+      17542477.0,
+      18601149.0,
+      39649929.0,
+      54346715.0,
+      54088012.0,
+      55363474.0,
+      60873512.0,
+      65493420.0,
+      67357713.0,
+      34909405.0,
+      33952266.0,
+      37903301.0,
+      35764807.0,
+      39727064.0,
+      41127498.0,
+      41501904.0,
+      65214234.0,
+      69546606.0,
+      70965503.0,
+      81756749.0,
+      94260479.0
+    ]
+  },
+  "mode_c_full_value_serialize/reference_reuse/new/tukey.json": [
+    -1528551.3277280475,
+    -475274.05317561794,
+    2333465.345630861,
+    3386742.6201832904
+  ],
+  "mode_c_full_value_serialize/facade_reuse/new/benchmark.json": {
+    "group_id": "mode_c/full_value/serialize",
+    "function_id": "facade/reuse",
+    "value_str": null,
+    "throughput": {
+      "Bytes": 466906
+    },
+    "full_id": "mode_c/full_value/serialize/facade/reuse",
+    "directory_name": "mode_c_full_value_serialize/facade_reuse",
+    "title": "mode_c/full_value/serialize/facade/reuse"
+  },
+  "mode_c_full_value_serialize/facade_reuse/new/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 562535.6430324647,
+        "upper_bound": 589075.2380207797
+      },
+      "point_estimate": 574883.8882990198,
+      "standard_error": 6793.35961012871
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 553631.8920940171,
+        "upper_bound": 576966.2175925926
+      },
+      "point_estimate": 570493.1770833333,
+      "standard_error": 6631.366216283495
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 12921.605772903338,
+        "upper_bound": 46649.33967805864
+      },
+      "point_estimate": 27512.793036550283,
+      "standard_error": 8535.567862776234
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 558399.4477646396,
+        "upper_bound": 591828.7894827898
+      },
+      "point_estimate": 573792.851507139,
+      "standard_error": 8670.32205855123
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 21233.018587130802,
+        "upper_bound": 51423.40805179577
+      },
+      "point_estimate": 37865.75850875607,
+      "standard_error": 7958.5563192058935
+    }
+  },
+  "mode_c_full_value_serialize/facade_reuse/new/sample.json": {
+    "sampling_mode": "Linear",
+    "iters": [
+      4.0,
+      8.0,
+      12.0,
+      16.0,
+      20.0,
+      24.0,
+      28.0,
+      32.0,
+      36.0,
+      40.0,
+      44.0,
+      48.0,
+      52.0,
+      56.0,
+      60.0,
+      64.0,
+      68.0,
+      72.0,
+      76.0,
+      80.0,
+      84.0,
+      88.0,
+      92.0,
+      96.0,
+      100.0,
+      104.0,
+      108.0,
+      112.0,
+      116.0,
+      120.0
+    ],
+    "times": [
+      2517969.0,
+      4616150.0,
+      8474090.0,
+      9840570.0,
+      11336436.0,
+      14089473.0,
+      16094384.0,
+      17312263.0,
+      19888672.0,
+      21329972.0,
+      25493884.0,
+      26838594.0,
+      28849635.0,
+      30640924.0,
+      34418043.0,
+      34795245.0,
+      37003407.0,
+      42449570.0,
+      41079338.0,
+      45873250.0,
+      45399578.0,
+      54303229.0,
+      49732954.0,
+      54486790.0,
+      54558215.0,
+      58508158.0,
+      62306678.0,
+      64564099.0,
+      66957231.0,
+      78413290.0
+    ]
+  },
+  "mode_c_full_value_serialize/facade_reuse/new/tukey.json": [
+    447328.1529500674,
+    496652.3023678909,
+    628183.3674820869,
+    677507.5168999103
+  ],
+  "mode_c_full_value_serialize/reference_fresh/new/benchmark.json": {
+    "group_id": "mode_c/full_value/serialize",
+    "function_id": "reference/fresh",
+    "value_str": null,
+    "throughput": {
+      "Bytes": 466906
+    },
+    "full_id": "mode_c/full_value/serialize/reference/fresh",
+    "directory_name": "mode_c_full_value_serialize/reference_fresh",
+    "title": "mode_c/full_value/serialize/reference/fresh"
+  },
+  "mode_c_full_value_serialize/reference_fresh/new/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 635167.2967212277,
+        "upper_bound": 694118.2553799598
+      },
+      "point_estimate": 660222.1241946998,
+      "standard_error": 15300.530252356042
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 624644.4406565656,
+        "upper_bound": 666015.4852941176
+      },
+      "point_estimate": 648668.4434523811,
+      "standard_error": 10022.764819391758
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 21170.124449155086,
+        "upper_bound": 57169.16699287337
+      },
+      "point_estimate": 37447.49469142404,
+      "standard_error": 8904.55863042926
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 626456.9634906045,
+        "upper_bound": 651650.7237657782
+      },
+      "point_estimate": 638474.9230565839,
+      "standard_error": 6436.804168443274
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 32193.365845726956,
+        "upper_bound": 132887.7472838472
+      },
+      "point_estimate": 85242.5091847298,
+      "standard_error": 30642.674045461314
+    }
+  },
+  "mode_c_full_value_serialize/reference_fresh/new/sample.json": {
+    "sampling_mode": "Linear",
+    "iters": [
+      4.0,
+      8.0,
+      12.0,
+      16.0,
+      20.0,
+      24.0,
+      28.0,
+      32.0,
+      36.0,
+      40.0,
+      44.0,
+      48.0,
+      52.0,
+      56.0,
+      60.0,
+      64.0,
+      68.0,
+      72.0,
+      76.0,
+      80.0,
+      84.0,
+      88.0,
+      92.0,
+      96.0,
+      100.0,
+      104.0,
+      108.0,
+      112.0,
+      116.0,
+      120.0
+    ],
+    "times": [
+      4201626.0,
+      6134255.0,
+      8604423.0,
+      9914069.0,
+      10915348.0,
+      16744330.0,
+      19047930.0,
+      20567632.0,
+      23782268.0,
+      23346184.0,
+      29503382.0,
+      32340527.0,
+      32066246.0,
+      36418785.0,
+      39876870.0,
+      37899588.0,
+      45384320.0,
+      45988750.0,
+      50026168.0,
+      49859600.0,
+      54348121.0,
+      55046698.0,
+      60817215.0,
+      65959964.0,
+      59293451.0,
+      69859130.0,
+      67365888.0,
+      68407742.0,
+      75023468.0,
+      74367437.0
+    ]
+  },
+  "mode_c_full_value_serialize/reference_fresh/new/tukey.json": [
+    468156.95952797227,
+    544382.3453889862,
+    747650.0410183566,
+    823875.4268793705
+  ],
+  "mode_c_full_value_serialize/facade_fresh/new/benchmark.json": {
+    "group_id": "mode_c/full_value/serialize",
+    "function_id": "facade/fresh",
+    "value_str": null,
+    "throughput": {
+      "Bytes": 466906
+    },
+    "full_id": "mode_c/full_value/serialize/facade/fresh",
+    "directory_name": "mode_c_full_value_serialize/facade_fresh",
+    "title": "mode_c/full_value/serialize/facade/fresh"
+  },
+  "mode_c_full_value_serialize/facade_fresh/new/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 639739.4069086629,
+        "upper_bound": 694208.5900711903
+      },
+      "point_estimate": 664495.9354064249,
+      "standard_error": 13956.060155486477
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 637017.2932291667,
+        "upper_bound": 664279.9660364145
+      },
+      "point_estimate": 652736.4229166666,
+      "standard_error": 8114.535555711819
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 19623.267004117402,
+        "upper_bound": 62502.20046258636
+      },
+      "point_estimate": 45792.24746226547,
+      "standard_error": 11528.212759019769
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 636459.8278183767,
+        "upper_bound": 670364.5443909914
+      },
+      "point_estimate": 650406.8430195664,
+      "standard_error": 8622.817348846238
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 37422.4238768511,
+        "upper_bound": 109470.28899642505
+      },
+      "point_estimate": 78044.16362803281,
+      "standard_error": 19030.27853250497
+    }
+  },
+  "mode_c_full_value_serialize/facade_fresh/new/sample.json": {
+    "sampling_mode": "Linear",
+    "iters": [
+      4.0,
+      8.0,
+      12.0,
+      16.0,
+      20.0,
+      24.0,
+      28.0,
+      32.0,
+      36.0,
+      40.0,
+      44.0,
+      48.0,
+      52.0,
+      56.0,
+      60.0,
+      64.0,
+      68.0,
+      72.0,
+      76.0,
+      80.0,
+      84.0,
+      88.0,
+      92.0,
+      96.0,
+      100.0,
+      104.0,
+      108.0,
+      112.0,
+      116.0,
+      120.0
+    ],
+    "times": [
+      2799850.0,
+      4635569.0,
+      8653264.0,
+      8849808.0,
+      16962761.0,
+      16124603.0,
+      16699579.0,
+      21935789.0,
+      23424408.0,
+      30571951.0,
+      25409061.0,
+      32313707.0,
+      36265965.0,
+      53199569.0,
+      38455958.0,
+      40518525.0,
+      45288694.0,
+      44613787.0,
+      48751086.0,
+      51311654.0,
+      55654177.0,
+      54490969.0,
+      60395653.0,
+      62503006.0,
+      66142364.0,
+      64866933.0,
+      66490004.0,
+      74104627.0,
+      71639723.0,
+      78527984.0
+    ]
+  },
+  "mode_c_full_value_serialize/facade_fresh/new/tukey.json": [
+    464029.44190705125,
+    542343.258613782,
+    751180.103165064,
+    829493.9198717948
+  ]
+}

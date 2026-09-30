@@ -1,0 +1,64 @@
+[
+  {
+    "name": "profile",
+    "command": [
+      "cargo",
+      "bench",
+      "-p",
+      "jzon-rs",
+      "--bench",
+      "bench_native_profile",
+      "--features",
+      "float_roundtrip",
+      "--",
+      "--sample-size",
+      "30",
+      "--warm-up-time",
+      "0.2",
+      "--measurement-time",
+      "0.5"
+    ],
+    "exit_status": 0,
+    "metadata": "/tmp/jzon-readiness-evidence/profile-validated-metadata.json",
+    "criterion_home": "/tmp/jzon-readiness-evidence/criterion-profile-validated"
+  },
+  {
+    "name": "native",
+    "command": [
+      "cargo",
+      "bench",
+      "-p",
+      "jzon-rs",
+      "--bench",
+      "bench_cmp",
+      "--features",
+      "float_roundtrip",
+      "--",
+      "^serialize/(twitter|canada)"
+    ],
+    "exit_status": 0,
+    "metadata": "/tmp/jzon-readiness-evidence/native-validated-metadata.json",
+    "criterion_home": "/tmp/jzon-readiness-evidence/criterion-native-validated"
+  },
+  {
+    "name": "compat",
+    "command": [
+      "cargo",
+      "bench",
+      "-p",
+      "jzon-rs-compat",
+      "--bench",
+      "bench_compat",
+      "--",
+      "--sample-size",
+      "30",
+      "--warm-up-time",
+      "0.5",
+      "--measurement-time",
+      "1"
+    ],
+    "exit_status": 0,
+    "metadata": "/tmp/jzon-readiness-evidence/compat-validated-metadata.json",
+    "criterion_home": "/tmp/jzon-readiness-evidence/criterion-compat-validated"
+  }
+]

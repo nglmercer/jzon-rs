@@ -1,0 +1,50 @@
+[package]
+name = "jzon-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+[workspace]
+[package.metadata]
+cargo-fuzz = true
+[features]
+roundtrip_policy = ["jzon/float_roundtrip", "reference_json/float_roundtrip"]
+[dependencies]
+libfuzzer-sys = "0.4"
+jzon = { package = "jzon-rs", path = "../crates/jzon", default-features = false, features = ["serde", "raw_value", "simd", "simd-intrinsics"] }
+reference_json = { package = "serde_json", version = "=1.0.151", features = ["raw_value"] }
+serde = "1"
+
+[[bin]]
+name = "native"
+path = "fuzz_targets/native.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "skip"
+path = "fuzz_targets/skip.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "raw"
+path = "fuzz_targets/raw.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "roundtrip"
+path = "fuzz_targets/roundtrip.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "simd"
+path = "fuzz_targets/simd.rs"
+test = false
+doc = false
+bench = false

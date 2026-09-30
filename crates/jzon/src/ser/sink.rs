@@ -50,7 +50,8 @@ impl<'a> JsonSink for VecSink<'a> {
     }
 }
 
-/// Count serialized bytes without allocating output storage.
+/// Count serialized bytes without allocating output storage. The count
+/// saturates at usize::MAX if a user implementation requests more bytes.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct LengthCounter {
     len: usize,
@@ -78,12 +79,12 @@ impl sealed::Sealed for LengthCounter {}
 impl JsonSink for LengthCounter {
     #[inline]
     fn push(&mut self, _b: u8) {
-        self.len += 1;
+        self.len = self.len.saturating_add(1);
     }
 
     #[inline]
     fn extend(&mut self, bs: &[u8]) {
-        self.len += bs.len();
+        self.len = self.len.saturating_add(bs.len());
     }
 }
 
@@ -97,7 +98,11 @@ pub struct IoSink<'a, W: io::Write + ?Sized> {
 impl<'a, W: io::Write + ?Sized> IoSink<'a, W> {
     #[inline]
     pub fn new(w: &'a mut W) -> Self {
-        Self { w, ok: true, err: None }
+        Self {
+            w,
+            ok: true,
+            err: None,
+        }
     }
 
     /// Complete the write and return the first I/O error, if any.

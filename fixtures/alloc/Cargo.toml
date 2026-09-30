@@ -1,0 +1,7 @@
+[package]
+name = "alloc-consumer"
+version = "0.0.0"
+edition = "2021"
+[workspace]
+[dependencies]
+serde_json = { package = "jzon-rs-compat", path = "../../crates/jzon_compat", default-features = false, features = ["alloc", "raw_value"] }

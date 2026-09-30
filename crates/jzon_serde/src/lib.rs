@@ -1,14 +1,16 @@
 //! `jzon_serde` — serde-compatible JSON serializer/deserializer backed by jzon's
 //! SIMD string escaping and zero-copy scanner.
 //!
-//! Works with **any** type that derives `serde::Serialize` / `serde::Deserialize`.
+//! Uses existing Serde traits. This native engine has its own errors and
+//! buffered reader/writer helpers; assess its documented contract separately
+//! from the delegated compatibility facade.
 //! This crate re-exports the engine from
 //! [`jzon`](https://crates.io/crates/jzon-rs) (feature `serde`); it exists so
 //! `Mode B` users only depend on one small crate.
 //!
 //! # Usage
 //!
-//! ```rust,ignore
+//! ```rust
 //! use jzon_serde::{to_string, from_str};
 //! use serde::{Serialize, Deserialize};
 //!

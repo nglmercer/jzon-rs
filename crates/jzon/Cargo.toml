@@ -16,7 +16,7 @@ name = "jzon"
 [features]
 default    = ["derive"]
 derive     = ["dep:jzon_derive"]
-serde      = ["dep:serde"]
+serde      = ["dep:serde", "dep:zmij"]
 compat     = ["serde", "dep:serde_json"]
 simd       = []
 unstable   = []
@@ -26,7 +26,7 @@ stats      = []
 # fast-float2 for parsing) are now always on — serde_json parity has no knob.
 fast-float = []
 zmij-float-ser = ["dep:zmij"]
-unbounded_depth = []
+unbounded_depth = ["serde_json?/unbounded_depth"]
 strict     = []
 # serde_json feature mirrors: each flag reproduces the same-named serde_json
 # behavior (engine side where applicable) and forwards to the `serde_json`
@@ -44,7 +44,7 @@ fast-float2 = "0.2"
 itoa        = "1"
 zmij = { version = "1", optional = true }
 serde = { version = "1", default-features = false, features = ["std"], optional = true }
-serde_json = { version = "1", optional = true }
+serde_json = { version = "=1.0.151", optional = true }
 
 [dev-dependencies]
 sonic-rs   = "0.3"
@@ -83,3 +83,7 @@ name = "json_spec"
 [[test]]
 name = "arb_precision"
 required-features = ["arbitrary_precision"]
+
+[[bench]]
+name = "bench_native_profile"
+harness = false

@@ -13,6 +13,8 @@ rust-version.workspace = true
 [features]
 default    = []
 simd       = ["jzon/simd"]
+simd-intrinsics = ["jzon/simd-intrinsics"]
+zmij-float-ser = ["jzon/zmij-float-ser"]
 fast-float = ["jzon/fast-float"]
 unstable   = ["jzon/unstable"]
 stats      = ["jzon/stats"]
@@ -20,6 +22,8 @@ stats      = ["jzon/stats"]
 # the serde_json you deserialize into has its own `arbitrary_precision` on,
 # so out-of-range numbers visit as exact digit strings instead of f64.
 arbitrary_precision = ["jzon/arbitrary_precision"]
+float_roundtrip = ["jzon/float_roundtrip"]
+raw_value = ["jzon/raw_value"]
 unbounded_depth     = ["jzon/unbounded_depth"]
 
 [dependencies]

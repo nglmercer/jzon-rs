@@ -24,10 +24,14 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
         Data::Struct(s) => match &s.fields {
             Fields::Named(f) => {
                 if container.transparent {
-                    let active: Vec<_> = f.named.iter().filter(|field| {
-                        let fa = attrs::parse_field_attrs(&field.attrs).unwrap_or_default();
-                        !fa.skip && !fa.skip_serializing
-                    }).collect();
+                    let active: Vec<_> = f
+                        .named
+                        .iter()
+                        .filter(|field| {
+                            let fa = attrs::parse_field_attrs(&field.attrs).unwrap_or_default();
+                            !fa.skip && !fa.skip_serializing
+                        })
+                        .collect();
                     if active.len() != 1 {
                         return Err(Error::new_spanned(
                             ident,
@@ -112,15 +116,21 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
                 }
                 let indices: Vec<syn::Index> = (0..n).map(syn::Index::from).collect();
                 let first_idx = &indices[0];
-                let rest_writes: Vec<TokenStream> = indices[1..].iter().map(|i| {
-                    quote! {
-                        w.push(b',');
-                        ::jzon::ToJson::json_write_sink(&self.#i, w);
-                    }
-                }).collect();
-                let hint_parts: Vec<TokenStream> = indices.iter().map(|i| {
-                    quote! { ::jzon::ToJson::json_size_hint(&self.#i) }
-                }).collect();
+                let rest_writes: Vec<TokenStream> = indices[1..]
+                    .iter()
+                    .map(|i| {
+                        quote! {
+                            w.push(b',');
+                            ::jzon::ToJson::json_write_sink(&self.#i, w);
+                        }
+                    })
+                    .collect();
+                let hint_parts: Vec<TokenStream> = indices
+                    .iter()
+                    .map(|i| {
+                        quote! { ::jzon::ToJson::json_size_hint(&self.#i) }
+                    })
+                    .collect();
                 return Ok(quote! {
                     #[automatically_derived]
                     impl #impl_generics ::jzon::ToJson for #ident #ty_generics #where_clause {
@@ -222,10 +232,8 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
             let fname = fi.fname;
             let key_literal = format!("\"{}\":", fi.json_key);
             let key_lit_bytes = proc_macro2::Literal::byte_string(key_literal.as_bytes());
-            let const_name = proc_macro2::Ident::new(
-                &format!("_K{}", idx),
-                proc_macro2::Span::call_site(),
-            );
+            let const_name =
+                proc_macro2::Ident::new(&format!("_K{}", idx), proc_macro2::Span::call_site());
             let key_overhead = fi.json_key.len() + 3;
             let write_value = &fi.write_value;
             let value_hint: TokenStream = if fi.serialize_with {
@@ -286,10 +294,8 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
             let fname = fi.fname;
             let json_key = &fi.json_key;
             let write_value = &fi.write_value;
-            let const_name = proc_macro2::Ident::new(
-                &format!("_K{}", idx),
-                proc_macro2::Span::call_site(),
-            );
+            let const_name =
+                proc_macro2::Ident::new(&format!("_K{}", idx), proc_macro2::Span::call_site());
             let value_hint: TokenStream = if fi.serialize_with {
                 quote! { #SERIALIZE_WITH_HINT }
             } else {
@@ -350,9 +356,9 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
     }
 
     let inline_attr = match serializable_field_count {
-        0..=4  => quote! { #[inline(always)] },
+        0..=4 => quote! { #[inline(always)] },
         5..=16 => quote! { #[inline] },
-        _      => quote! {},
+        _ => quote! {},
     };
 
     Ok(quote! {
@@ -431,16 +437,17 @@ fn expand_enum(input: &DeriveInput) -> Result<TokenStream> {
                     // already written when variant fields start, so conditional
                     // fields must begin with a separator pending.
                     let tag_prefix_written = tag.is_some() && content.is_none();
-                    let (field_writes, has_conditional) = build_variant_field_writes(
-                        f.named.iter(),
-                        &container,
-                        tag_prefix_written,
-                    )?;
+                    let (field_writes, has_conditional) =
+                        build_variant_field_writes(f.named.iter(), &container, tag_prefix_written)?;
                     let arm = if let Some(tag_key) = tag {
                         if let Some(content_key) = content {
-                            let tag_payload = format!("{{\"{}\":\"{}\",\"{}\":", tag_key, variant_name, content_key);
+                            let tag_payload = format!(
+                                "{{\"{}\":\"{}\",\"{}\":",
+                                tag_key, variant_name, content_key
+                            );
                             let tag_lit = proc_macro2::Literal::byte_string(tag_payload.as_bytes());
-                            let field_names: Vec<&syn::Ident> = f.named.iter().map(|f| f.ident.as_ref().unwrap()).collect();
+                            let field_names: Vec<&syn::Ident> =
+                                f.named.iter().map(|f| f.ident.as_ref().unwrap()).collect();
                             quote! {
                                 Self::#vident { #(#field_names),* } => {
                                     w.extend(#tag_lit);
@@ -454,7 +461,8 @@ fn expand_enum(input: &DeriveInput) -> Result<TokenStream> {
                             // starting from a pending comma after the tag pair.
                             let tag_payload = format!("{{\"{}\":\"{}\"", tag_key, variant_name);
                             let tag_lit = proc_macro2::Literal::byte_string(tag_payload.as_bytes());
-                            let field_names: Vec<&syn::Ident> = f.named.iter().map(|f| f.ident.as_ref().unwrap()).collect();
+                            let field_names: Vec<&syn::Ident> =
+                                f.named.iter().map(|f| f.ident.as_ref().unwrap()).collect();
                             quote! {
                                 Self::#vident { #(#field_names),* } => {
                                     w.extend(#tag_lit);
@@ -467,7 +475,8 @@ fn expand_enum(input: &DeriveInput) -> Result<TokenStream> {
                             // pair instead of leaving a trailing comma.
                             let tag_payload = format!("{{\"{}\":\"{}\"}}", tag_key, variant_name);
                             let tag_lit = proc_macro2::Literal::byte_string(tag_payload.as_bytes());
-                            let field_names: Vec<&syn::Ident> = f.named.iter().map(|f| f.ident.as_ref().unwrap()).collect();
+                            let field_names: Vec<&syn::Ident> =
+                                f.named.iter().map(|f| f.ident.as_ref().unwrap()).collect();
                             quote! {
                                 Self::#vident { #(#field_names),* } => {
                                     w.extend(#tag_lit);
@@ -476,7 +485,8 @@ fn expand_enum(input: &DeriveInput) -> Result<TokenStream> {
                         } else {
                             let tag_payload = format!("{{\"{}\":\"{}\",", tag_key, variant_name);
                             let tag_lit = proc_macro2::Literal::byte_string(tag_payload.as_bytes());
-                            let field_names: Vec<&syn::Ident> = f.named.iter().map(|f| f.ident.as_ref().unwrap()).collect();
+                            let field_names: Vec<&syn::Ident> =
+                                f.named.iter().map(|f| f.ident.as_ref().unwrap()).collect();
                             quote! {
                                 Self::#vident { #(#field_names),* } => {
                                     w.extend(#tag_lit);
@@ -486,7 +496,8 @@ fn expand_enum(input: &DeriveInput) -> Result<TokenStream> {
                             }
                         }
                     } else if untagged {
-                        let field_names: Vec<&syn::Ident> = f.named.iter().map(|f| f.ident.as_ref().unwrap()).collect();
+                        let field_names: Vec<&syn::Ident> =
+                            f.named.iter().map(|f| f.ident.as_ref().unwrap()).collect();
                         quote! {
                             Self::#vident { #(#field_names),* } => {
                                 w.push(b'{');
@@ -497,7 +508,8 @@ fn expand_enum(input: &DeriveInput) -> Result<TokenStream> {
                     } else {
                         let tag_payload = format!("{{\"{}\":{{", variant_name);
                         let tag_lit = proc_macro2::Literal::byte_string(tag_payload.as_bytes());
-                        let field_names: Vec<&syn::Ident> = f.named.iter().map(|f| f.ident.as_ref().unwrap()).collect();
+                        let field_names: Vec<&syn::Ident> =
+                            f.named.iter().map(|f| f.ident.as_ref().unwrap()).collect();
                         quote! {
                             Self::#vident { #(#field_names),* } => {
                                 w.extend(#tag_lit);
@@ -618,10 +630,8 @@ fn build_variant_field_writes<'a>(
     for (field_idx, vf) in vfields.iter().enumerate() {
         let key_literal = format!("\"{}\":", vf.json_key);
         let key_lit = proc_macro2::Literal::byte_string(key_literal.as_bytes());
-        let const_name = proc_macro2::Ident::new(
-            &format!("_VK{}", field_idx),
-            proc_macro2::Span::call_site(),
-        );
+        let const_name =
+            proc_macro2::Ident::new(&format!("_VK{}", field_idx), proc_macro2::Span::call_site());
         let fname = vf.fname;
         // Match bindings on `&self` are already references, so the predicate
         // takes the binding directly (struct code passes `&self.#fname`).

@@ -1,30 +1,9 @@
-//! Drop-in `serde_json` replacement routing hot-path functions through `jzon`'s
-//! SIMD engine.
-//!
-//! This crate re-exports [`jzon`](https://crates.io/crates/jzon-rs) (feature
-//! `compat`). Use it via a **dependency rename** — one line per crate, zero
-//! code changes:
-//!
-//! ```toml
-//! [dependencies]
-//! serde_json = { package = "jzon-rs-compat", version = "0.3" }
-//! ```
-//!
-//! Types are `serde_json`'s own (re-exported), so values cross freely between
-//! renamed crates and third-party crates still on real `serde_json`, and
-//! every function falls back to real `serde_json` on engine error, making
-//! values, error messages, and line/column positions authoritative.
-//!
-//! Note: `[patch.crates-io]` cannot express this replacement — cargo silently
-//! ignores renamed patches, and a same-name vendored patch is ignored too
-//! because this crate itself depends on real `serde_json` (fallback + type
-//! re-exports). Rename per crate instead; see the crate README.
-
-pub use jzon::compat::{
-    de, error, from_reader, from_slice, from_str, from_value, json, map, ser, to_string,
-    to_string_pretty, to_value, to_vec, to_vec_pretty, to_writer, to_writer_pretty, value,
-    Deserializer, Error, Map, Number, Result, Serializer, StreamDeserializer, Value,
-};
+//! Strict dependency-renamable facade for serde_json 1.0.151.
+//! All operations and types are upstream re-exports; each callback runs once.
+//! Supports std (default) or no_std with alloc. Native performance options are
+//! legacy no-ops here; use jzon-rs-serde to select the independent native engine.
+#![cfg_attr(not(feature = "std"), no_std)]
+pub use serde_json::*;
 
 #[cfg(test)]
 mod tests {

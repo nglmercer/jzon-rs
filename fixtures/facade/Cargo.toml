@@ -1,0 +1,10 @@
+[package]
+name = "facade-consumer"
+version = "0.0.0"
+edition = "2021"
+[workspace]
+[features]
+mirrors = ["serde_json/raw_value", "serde_json/preserve_order", "serde_json/arbitrary_precision", "serde_json/float_roundtrip", "serde_json/unbounded_depth"]
+[dependencies]
+serde_json = { package = "jzon-rs-compat", path = "../../crates/jzon_compat" }
+serde = { version = "1", features = ["derive"] }

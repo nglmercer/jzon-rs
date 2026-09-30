@@ -9,34 +9,34 @@ use crate::attrs::RenameAll;
 /// Apply a rename rule to a **snake_case** Rust field name.
 pub fn apply(name: &str, rule: RenameAll) -> String {
     match rule {
-        RenameAll::LowerCase          => name.to_ascii_lowercase(),
-        RenameAll::UpperCase          => name.to_ascii_uppercase(),
-        RenameAll::SnakeCase          => name.to_owned(),
-        RenameAll::ScreamingSnakeCase => name.to_ascii_uppercase(),
-        RenameAll::KebabCase          => name.replace('_', "-"),
-        RenameAll::ScreamingKebabCase => name.to_ascii_uppercase().replace('_', "-"),
-        RenameAll::CamelCase          => snake_to_camel(name, false),
-        RenameAll::PascalCase         => snake_to_camel(name, true),
+        RenameAll::Lower => name.to_ascii_lowercase(),
+        RenameAll::Upper => name.to_ascii_uppercase(),
+        RenameAll::Snake => name.to_owned(),
+        RenameAll::ScreamingSnake => name.to_ascii_uppercase(),
+        RenameAll::Kebab => name.replace('_', "-"),
+        RenameAll::ScreamingKebab => name.to_ascii_uppercase().replace('_', "-"),
+        RenameAll::Camel => snake_to_camel(name, false),
+        RenameAll::Pascal => snake_to_camel(name, true),
     }
 }
 
 /// Apply a rename rule to a **PascalCase** Rust enum variant name.
 pub fn apply_variant(name: &str, rule: RenameAll) -> String {
     match rule {
-        RenameAll::LowerCase          => name.to_ascii_lowercase(),
-        RenameAll::UpperCase          => name.to_ascii_uppercase(),
-        RenameAll::PascalCase         => name.to_owned(),
-        RenameAll::CamelCase          => {
+        RenameAll::Lower => name.to_ascii_lowercase(),
+        RenameAll::Upper => name.to_ascii_uppercase(),
+        RenameAll::Pascal => name.to_owned(),
+        RenameAll::Camel => {
             let mut chars = name.chars();
             match chars.next() {
                 None => String::new(),
                 Some(c) => c.to_ascii_lowercase().to_string() + chars.as_str(),
             }
         }
-        RenameAll::SnakeCase          => pascal_to_snake(name),
-        RenameAll::ScreamingSnakeCase => pascal_to_snake(name).to_ascii_uppercase(),
-        RenameAll::KebabCase          => pascal_to_snake(name).replace('_', "-"),
-        RenameAll::ScreamingKebabCase => pascal_to_snake(name).to_ascii_uppercase().replace('_', "-"),
+        RenameAll::Snake => pascal_to_snake(name),
+        RenameAll::ScreamingSnake => pascal_to_snake(name).to_ascii_uppercase(),
+        RenameAll::Kebab => pascal_to_snake(name).replace('_', "-"),
+        RenameAll::ScreamingKebab => pascal_to_snake(name).to_ascii_uppercase().replace('_', "-"),
     }
 }
 

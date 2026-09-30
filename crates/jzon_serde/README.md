@@ -54,3 +54,15 @@ Feature flags mirror those of [jzon-rs](https://crates.io/crates/jzon-rs).
 ## License
 
 MIT
+
+## Native contract and migration
+
+This wrapper exposes the independent std-enabled native engine. It is separate from the delegated compatibility facade. Native errors have their own messages and no upstream line/column guarantee. `from_reader` uses read_to_end and `to_writer` serializes fully before writing; choose Mode C for upstream streaming/error ordering.
+
+`to_string`, `to_bytes`, `to_writer` and `to_bytes_in` accept `Serialize + ?Sized`. `to_bytes_in(value, &mut buffer)` appends directly with no intermediate copy; clear the buffer for reset semantics. Failure retains partial output, including during panic unwinding.
+
+Default native float parsing reproduces the pinned reference's significand/scaling policy; `float_roundtrip` selects correctly rounded fast-float2 parsing and direct f32 rounding. Serialization uses zmij, matching serde_json 1.0.151's formatter. Mode A has its own policies. Non-finite values serialize to null; native Serde preserves signed zero.
+
+`unbounded_depth` keeps the default limit. Construct `Deserializer::from_str`/`from_slice`, call `disable_recursion_limit()` explicitly, deserialize once, then call `end()`. Deep parsing and destruction require adequate stack management.
+
+Native options include `simd`, `simd-intrinsics`, nightly `unstable`, `stats`, `raw_value`, `arbitrary_precision`, and `float_roundtrip`. Core/native no_std support remains unimplemented. See [readiness](../../docs/replacement-readiness.md) for executed evidence and remaining compatibility gates.

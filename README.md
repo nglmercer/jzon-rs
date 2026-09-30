@@ -2,7 +2,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/jzon-rs.svg)](https://crates.io/crates/jzon-rs)
 [![Docs.rs](https://docs.rs/jzon-rs/badge.svg)](https://docs.rs/jzon-rs)
-[![CI](https://github.com/Rajaniraiyn/jzon-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/Rajaniraiyn/jzon-rs/actions)
+[![CI](https://github.com/nglmercer/jzon-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/nglmercer/jzon-rs/actions)
 [![MSRV](https://img.shields.io/badge/rustc-1.71%2B-blue.svg)](https://blog.rust-lang.org/2022/11/03/Rust-1.71.0.html)
 
 Zero-copy JSON for Rust. A proc-macro generates a typed, monomorphised
@@ -11,7 +11,7 @@ no intermediate `Value`, no unnecessary allocations.
 
 ## Three modes
 
-### Mode A — custom derive (fastest)
+### Mode A — custom typed derives
 
 Add `jzon-rs`. The `derive` feature is on by default.
 
@@ -71,7 +71,7 @@ serde_json = { package = "jzon-rs-compat", version = "0.3" }
 (`arbitrary_precision`, `preserve_order`, `raw_value`, `float_roundtrip`,
 `unbounded_depth`). Note: `[patch.crates-io]` cannot express this swap —
 cargo silently ignores renamed patches, and this crate itself depends on real
-`serde_json` (fallback + type re-exports). See the
+`serde_json` (single-invocation delegation + type re-exports). See the
 [`jzon-rs-compat` README](crates/jzon_compat/README.md) for the verified
 details.
 
@@ -83,49 +83,40 @@ details.
 |---------|---------|-------------|
 | `derive` | ✓ | `#[derive(ToJson, FromJson)]` proc-macros |
 | `serde` | | `jzon::from_str` / `to_string` for any serde type (Mode B engine) |
-| `compat` | | `jzon::compat` — `serde_json`-compatible API (engine + fallback) |
+| `compat` | | `jzon::compat` — `serde_json`-compatible API (upstream delegation) |
 | `simd` | | u128 SWAR (16 bytes/iter) |
 | `simd-intrinsics` | | Hand-written `std::arch` kernels — aarch64 NEON, x86_64 SSE2/AVX2 |
 | `simd + unstable` | | `std::simd` portable SIMD, 32–64 bytes/iter (nightly) |
 | `fast-float` | | no-op (exact float backends are always on) |
-| `zmij-float-ser` | | [zmij](https://crates.io/crates/zmij) (Schubfach+yy) float ser instead of ryu. ~30 % faster on Linux, ~10 % slower on Apple Silicon. MSRV 1.71. |
-| `stats` | | per-parse allocation counters on Scanner |
+| `zmij-float-ser` | | [zmij](https://crates.io/crates/zmij) (Schubfach+yy) float ser instead of ryu. Mode A formatter option; Mode B always uses zmij to match the pinned reference. |
+| `stats` | | scanner event counters; not allocator totals |
 | `strict` | | core `parse` rejects trailing commas (serde paths always do) |
-| `unbounded_depth` | | lift the 128-level recursion limit |
+| `unbounded_depth` | | expose explicit `disable_recursion_limit`; default limit remains |
 | `arbitrary_precision` | | exact big numbers + forward to `serde_json` |
 | `preserve_order` | | forward to `serde_json` (insertion-ordered `Map`) |
 | `raw_value` | | forward to `serde_json` (`RawValue` API) |
-| `float_roundtrip` | | forward to `serde_json` (exact fallback parsing) |
+| `float_roundtrip` | | forward to `serde_json` (matching float_roundtrip policy) |
 
 ### jzon-rs-serde / jzon-rs-compat
 
-Both crates forward the perf flags: `simd`, `fast-float`, `unstable`,
-`stats`. `jzon-rs-compat` has `fast-float` **on by default** (sensible for a
-drop-in replacement). `jzon-rs-serde` additionally forwards the
-engine-affecting mirrors `arbitrary_precision` and `unbounded_depth`;
-`jzon-rs-compat` mirrors the full `serde_json` set (`arbitrary_precision`,
-`preserve_order`, `raw_value`, `float_roundtrip`, `unbounded_depth`, plus
-`std`/`alloc` no-ops) so renames stay total — enable these instead of
-`serde_json`'s flags directly.
+`jzon-rs-serde` forwards native scanning options and the `arbitrary_precision`,
+`raw_value`, `float_roundtrip`, and `unbounded_depth` policies. It requires std.
+`jzon-rs-compat` delegates every operation to pinned upstream serde_json 1.0.151.
+It defaults to `std`, supports genuine `no_std + alloc`, and forwards upstream
+features. Its legacy performance flags are explicit no-ops. `jzon::compat` is
+also delegated, but the core crate still requires std.
 
 ## Benchmarks
 
 <!-- bench:speedups-start -->
-Up to **3.9× serde_json**, **2.4× sonic-rs**, **3.7× simd-json** on real-world workloads.
+Performance claims from the earlier benchmark pipeline are withdrawn. See [current methodology and measurements](BENCHMARKS.md).
 <!-- bench:speedups-end -->
 <!-- bench:top-ser-start -->
-Top: **57.70 GiB/s** twitter serialize
+Current mode-specific results are reported with emitted bytes and time per operation
 <!-- bench:top-ser-end -->.
 
 <!-- bench:headline-start -->
-| Platform | twitter de | twitter ser | citm de | canada ser |
-|---|--:|--:|--:|--:|
-| x86_64 Linux (AVX2)          | 1.58 GiB/s | 57.70 GiB/s | 2.57 GiB/s |  734 MiB/s |
-| aarch64 Linux (Graviton)     | 1.27 GiB/s | 39.5 GiB/s | 2.36 GiB/s |  916 MiB/s |
-| Apple Silicon (macOS)        | 1.35 GiB/s | 55.92 GiB/s | 2.66 GiB/s |  901 MiB/s |
-| x86_64 Windows (AVX2)        | 1.35 GiB/s | 43.72 GiB/s | 2.16 GiB/s |  492 MiB/s |
-| Windows on ARM               | 1.15 GiB/s | 38.58 GiB/s | 2.33 GiB/s |  642 MiB/s |
-| **Best across platforms** | 1.58 GiB/s | 57.70 GiB/s | 2.66 GiB/s |  916 MiB/s |
+Historical throughput tables are excluded from current readiness conclusions. See `docs/benchmark-history.md` for the archived, unvalidated figures.
 <!-- bench:headline-end -->
 
 Full matrix + competitor comparison + workloads where we lose:
@@ -139,7 +130,7 @@ Full matrix + competitor comparison + workloads where we lose:
 - **Zero-copy** — `&'de str` fields borrow directly from input bytes;
   no allocation unless the string has escapes.
 - **Hand-written SIMD** — aarch64 NEON + x86_64 SSE2/AVX2 intrinsics
-  for `find_quote_or_backslash` and `find_escape`. Up to 5.6× over u128 SWAR.
+  for `find_quote_or_backslash` and `find_escape`. Runtime CPU dispatch is tested separately from workload performance.
 - **`fast_float2`** for parsing, **`ryu`** or **`zmij`** for serializing.
 
 ## Serde attributes supported
@@ -155,3 +146,23 @@ newtype structs, tuple structs, enum struct variants.
 ---
 
 Made with ❤️ by [Rajaniraiyn](https://github.com/rajaniraiyn)
+
+## Migration scope and readiness
+
+Read [replacement readiness](docs/replacement-readiness.md) before migration.
+Mode C preserves upstream types, callbacks, error construction and streaming by
+re-exporting upstream once; it retains the serde_json dependency and claims no
+native acceleration. Mode B is an independent native parser/serializer with its
+own errors; reader/writer helpers buffer the complete document. Mode A implements
+an explicit attribute subset and accepts some trailing commas without `strict`.
+Unescaped strings can borrow; escaped strings allocate. Byte strings, ignored
+values and RawValue intentionally have different Unicode validation rules.
+
+DepthGuard now owns shared counter state and has no lifetime parameter. It is
+safe to move/drop the scanner before the guard. Unwind restores the budget;
+leaking a guard conservatively reduces it. The first composite parse lazily allocates counter state; scalar parsing
+and unescaped string borrowing need no counter allocation. Enabling `unbounded_depth` does not disable the default limit:
+call the deserializer/scanner method explicitly and manage stack safety yourself.
+Statistics fields are now `decoded_strings` and `number_bytes_scanned` to avoid
+implying total allocation or total scan counts. These API/feature changes warrant
+a minor version bump for this pre-1.0 project. No release has been published.

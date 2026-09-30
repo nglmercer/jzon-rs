@@ -1,0 +1,6 @@
+[package]
+name = "real-json-user"
+version = "0.0.0"
+edition = "2021"
+[dependencies]
+serde_json = { version = "=1.0.151", features = ["raw_value", "preserve_order", "arbitrary_precision", "float_roundtrip", "unbounded_depth"] }

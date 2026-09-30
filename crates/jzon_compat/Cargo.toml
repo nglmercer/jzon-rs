@@ -4,32 +4,37 @@ repository.workspace = true
 homepage.workspace = true
 keywords.workspace = true
 categories.workspace = true
-description = "Drop-in serde_json replacement powered by jzon (dependency rename)"
+description = "Strict serde_json compatibility facade with single-invocation upstream delegation"
 name = "jzon-rs-compat"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 
 [features]
-default    = ["fast-float"]
-simd       = ["jzon/simd"]
-fast-float = ["jzon/fast-float"]
-unstable   = ["jzon/unstable"]
-stats      = ["jzon/stats"]
-# serde_json feature mirrors, forwarded to the engine and the `serde_json`
-# dependency together. Enable these instead of serde_json's flags directly.
-arbitrary_precision = ["jzon/arbitrary_precision"]
-preserve_order      = ["jzon/preserve_order"]
-raw_value           = ["jzon/raw_value"]
-float_roundtrip     = ["jzon/float_roundtrip"]
-unbounded_depth     = ["jzon/unbounded_depth"]
-# Always-on platform surface: this crate is std-only, so both names exist as
-# no-ops to keep `serde_json` -> `jzon-rs-compat` feature renames total.
-std   = []
-alloc = []
+default = ["std"]
+std = ["serde_json/std"]
+alloc = ["serde_json/alloc"]
+arbitrary_precision = ["serde_json/arbitrary_precision"]
+preserve_order = ["serde_json/preserve_order"]
+raw_value = ["serde_json/raw_value"]
+float_roundtrip = ["serde_json/float_roundtrip"]
+unbounded_depth = ["serde_json/unbounded_depth"]
+# Accepted legacy flags. This strict facade always delegates; these flags do
+# not enable native acceleration. Use jzon-rs-serde for native engine options.
+simd = []
+simd-intrinsics = ["simd"]
+zmij-float-ser = []
+fast-float = []
+unstable = []
+stats = []
 
 [dependencies]
-jzon = { package = "jzon-rs", path = "../jzon", version = "0.3", default-features = false, features = ["compat"] }
+serde_json = { version = "=1.0.151", default-features = false }
 
 [dev-dependencies]
+criterion = "0.5"
 serde = { version = "1", features = ["derive"] }
+
+[[bench]]
+name = "bench_compat"
+harness = false

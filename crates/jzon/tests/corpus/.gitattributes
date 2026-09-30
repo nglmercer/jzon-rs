@@ -1,0 +1,2 @@
+# Conformance fixtures preserve intentional valid/invalid whitespace bytes.
+*.json -whitespace

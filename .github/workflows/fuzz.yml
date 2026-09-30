@@ -1,0 +1,40 @@
+name: Fuzz
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 3 * * 1'
+permissions:
+  contents: read
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [native, skip, raw, roundtrip, simd]
+        policy: [default, roundtrip]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+      - run: cargo install cargo-fuzz --locked
+      - run: python3 tools/seed-fuzz.py
+      - name: Bounded campaign
+        working-directory: fuzz
+        env:
+          EVENT: ${{ github.event_name }}
+          TARGET: ${{ matrix.target }}
+          POLICY: ${{ matrix.policy }}
+        run: |
+          seconds=10
+          if [ "$EVENT" != pull_request ]; then seconds=300; fi
+          if [ "$POLICY" = roundtrip ]; then
+            cargo fuzz run "$TARGET" --features roundtrip_policy -- -max_total_time="$seconds" -max_len=4096 -rss_limit_mb=512
+          else
+            cargo fuzz run "$TARGET" -- -max_total_time="$seconds" -max_len=4096 -rss_limit_mb=512
+          fi
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: fuzz-${{ matrix.target }}-${{ matrix.policy }}
+          path: fuzz/artifacts

@@ -26,7 +26,7 @@ fn btreemap_borrowed_keys_are_zero_copy() {
     use std::collections::BTreeMap;
     let json = r#"{"alpha":1}"#;
     let m: BTreeMap<&str, u64> = FromJson::from_json_str(json).unwrap();
-    let key: &str = *m.keys().next().unwrap();
+    let key: &str = m.keys().next().unwrap();
     assert_eq!(key, "alpha");
     let key_ptr = key.as_ptr() as usize;
     let base = json.as_ptr() as usize;
@@ -435,7 +435,7 @@ mod serde_feature {
         assert_eq!(user.id, 1);
         // Two object keys plus the borrowed `name` value.
         assert_eq!(stats.zero_copy_borrows, 3);
-        assert_eq!(stats.heap_allocations, 0);
+        assert_eq!(stats.decoded_strings, 0);
     }
 }
 
