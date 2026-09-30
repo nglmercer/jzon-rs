@@ -40,9 +40,9 @@ Feature flags mirror those of [jzon-rs](https://crates.io/crates/jzon-rs).
 | Flag | Default | Description |
 |------|---------|-------------|
 | `simd` | off | u128 SWAR (16 bytes/iter) scanning |
-| `fast-float` | off | `ryu` float serialization, `fast_float2` parsing |
+| `fast-float` | off | Compatibility no-op; use `float_roundtrip` for the named parsing policy |
 | `unstable` | off | `std::simd` portable SIMD 32–64 bytes/iter (nightly only) |
-| `stats` | off | Allocation counters on the underlying Scanner |
+| `stats` | off | Scanner decoded-string and number-byte counters; not total allocator activity |
 
 ## Part of the jzon family
 
@@ -57,7 +57,7 @@ MIT
 
 ## Native contract and migration
 
-This wrapper exposes the independent std-enabled native engine. It is separate from the delegated compatibility facade. Native errors have their own messages and no upstream line/column guarantee. `from_reader` uses read_to_end and `to_writer` serializes fully before writing; choose Mode C for upstream streaming/error ordering.
+This wrapper exposes the independent std-enabled native engine. It is separate from the delegated compatibility facade. Native errors have their own messages and no upstream line/column guarantee. `from_reader` uses read_to_end. `to_writer` now streams directly, propagates I/O failures immediately, and preserves partial output. `to_writer_buffered` retains the earlier buffer-before-I/O behavior. Mode C retains upstream error types and reader semantics.
 
 `to_string`, `to_bytes`, `to_writer` and `to_bytes_in` accept `Serialize + ?Sized`. `to_bytes_in(value, &mut buffer)` appends directly with no intermediate copy; clear the buffer for reset semantics. Failure retains partial output, including during panic unwinding.
 
@@ -66,3 +66,15 @@ Default native float parsing reproduces the pinned reference's significand/scali
 `unbounded_depth` keeps the default limit. Construct `Deserializer::from_str`/`from_slice`, call `disable_recursion_limit()` explicitly, deserialize once, then call `end()`. Deep parsing and destruction require adequate stack management.
 
 Native options include `simd`, `simd-intrinsics`, nightly `unstable`, `stats`, `raw_value`, `arbitrary_precision`, and `float_roundtrip`. Core/native no_std support remains unimplemented. See [readiness](../../docs/replacement-readiness.md) for executed evidence and remaining compatibility gates.
+
+Reusable native serializers use `Serializer::new()`, `with_capacity(n)`, or
+`from_vec(buffer)`; `serialize(&value)` appends, `clear()` resets length while
+retaining capacity, and `into_inner()` returns the buffer. User failures and
+panics retain emitted bytes. `Serializer::from_writer(writer)` writes directly;
+`into_inner().into_inner()` recovers that writer.
+
+Native decoding preserves `visit_borrowed_str` for plain input and `visit_str`
+for escaped input. Transient decoding scratch is reused, with retained capacity
+bounded at 64 KiB after return/error/unwind. `Deserializer::clear_scratch()`
+releases it explicitly. The native depth guard exclusively borrows the whole
+parser and restores its local budget on success/error/unwind without atomics.

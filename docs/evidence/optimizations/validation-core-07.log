@@ -1,0 +1,25 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.23s
+     Running unittests src/lib.rs (target/debug/deps/jzon_rs_compat-776dc181dc443f77)
+
+running 2 tests
+test tests::shim_roundtrip ... ok
+test tests::shim_value_and_macro ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/contracts.rs (target/debug/deps/contracts-7ea4292704d43640)
+
+running 4 tests
+test serializer_callbacks_run_once ... ok
+test streaming_writer_partial_output_and_callbacks ... ok
+test deserializer_callbacks_run_once ... ok
+test streaming_reader_error_precedence ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests jzon_rs_compat
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

@@ -114,11 +114,26 @@ fn profile(c: &mut Criterion) {
         b.iter(|| native::to_bytes(black_box(&wide)).unwrap())
     });
     let mut buffer = Vec::with_capacity(bytes.len());
-    serialize.bench_function("wide/buffered_writer", |b| {
+    serialize.bench_function("wide/streaming_to_vec", |b| {
         b.iter(|| {
             buffer.clear();
             native::to_writer(&mut buffer, black_box(&wide)).unwrap();
             black_box(&buffer);
+        })
+    });
+    serialize.bench_function("wide/buffered_writer", |b| {
+        b.iter(|| {
+            buffer.clear();
+            native::to_writer_buffered(&mut buffer, black_box(&wide)).unwrap();
+            black_box(&buffer);
+        })
+    });
+    let mut reusable = native::Serializer::with_capacity(native::to_bytes(&wide).unwrap().len());
+    serialize.bench_function("wide/reusable_serializer", |b| {
+        b.iter(|| {
+            reusable.clear();
+            reusable.serialize(black_box(&wide)).unwrap();
+            black_box(reusable.buffer());
         })
     });
     serialize.bench_function("wide/direct_reuse", |b| {
@@ -130,5 +145,24 @@ fn profile(c: &mut Criterion) {
     });
     serialize.finish();
 }
-criterion_group!(benches, profile);
+fn depth_profile(c: &mut Criterion) {
+    let mut group = c.benchmark_group("mode_b/depth");
+    let mut scanner = jzon::Scanner::new(b"null");
+    group.bench_function("public_guard", |b| {
+        b.iter(|| black_box(scanner.enter_depth().unwrap()));
+    });
+    for depth in [1, 16, 64, 127] {
+        let input = format!("{}null{}", "[".repeat(depth), "]".repeat(depth));
+        assert_eq!(
+            native::from_str::<serde_json::Value>(&input).unwrap(),
+            serde_json::from_str::<serde_json::Value>(&input).unwrap()
+        );
+        group.throughput(Throughput::Bytes(input.len() as u64));
+        group.bench_function(format!("native/{depth}"), |b| {
+            b.iter(|| native::from_str::<serde_json::Value>(black_box(&input)).unwrap());
+        });
+    }
+    group.finish();
+}
+criterion_group!(benches, profile, depth_profile);
 criterion_main!(benches);

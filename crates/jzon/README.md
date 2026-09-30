@@ -119,7 +119,8 @@ Read [replacement readiness](../../docs/replacement-readiness.md) before migrati
 Mode C preserves upstream types, callbacks, error construction and streaming by
 re-exporting upstream once; it retains the serde_json dependency and claims no
 native acceleration. Mode B is an independent native parser/serializer with its
-own errors; reader/writer helpers buffer the complete document. Mode A implements
+own errors; its reader buffers input, while `to_writer` streams output directly.
+`to_writer_buffered` retains explicit complete-output buffering. Mode A implements
 an explicit attribute subset and accepts some trailing commas without `strict`.
 Unescaped strings can borrow; escaped strings allocate. Byte strings, ignored
 values and RawValue intentionally have different Unicode validation rules.
@@ -127,8 +128,15 @@ values and RawValue intentionally have different Unicode validation rules.
 DepthGuard now owns shared counter state and has no lifetime parameter. It is
 safe to move/drop the scanner before the guard. Unwind restores the budget;
 leaking a guard conservatively reduces it. The first composite parse lazily allocates counter state; scalar parsing
-and unescaped string borrowing need no counter allocation. Enabling `unbounded_depth` does not disable the default limit:
+and unescaped string borrowing need no counter allocation. Native Serde uses a
+private scoped borrow of the entire parser for depth restoration, avoiding
+atomic counter operations; public Scanner guards retain independent ownership. Enabling `unbounded_depth` does not disable the default limit:
 call the deserializer/scanner method explicitly and manage stack safety yourself.
 Statistics fields are now `decoded_strings` and `number_bytes_scanned` to avoid
 implying total allocation or total scan counts. These API/feature changes warrant
 a minor version bump for this pre-1.0 project. No release has been published.
+
+Native reusable output: `Serializer::with_capacity(n)`, `serialize(value)`,
+`clear()` (retain capacity), and `into_inner()`. Calls append; errors/panics
+retain partial bytes. Escaped-string scratch reuses up to 64 KiB and releases
+larger buffers on return or unwind. See [optimization progress](../../docs/optimization-progress.md).

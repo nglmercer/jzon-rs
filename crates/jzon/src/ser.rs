@@ -2,7 +2,7 @@
 
 mod sink;
 
-pub use sink::{IoSink, JsonSink, LengthCounter, VecSink};
+pub use sink::{IoSink, JsonSink, LengthCounter, SerializeSink, VecSink, WriterSink};
 
 use std::collections::{BTreeMap, HashMap};
 
@@ -70,57 +70,95 @@ pub fn write_escaped_str(s: &str, w: &mut Vec<u8>) {
 
 #[inline]
 pub fn write_escaped_str_sink<S: JsonSink>(s: &str, w: &mut S) {
-    w.push(b'"');
-    // Pre-reserve: common case is no escaping, so reserve s.len() + 1 (closing quote).
-    // Avoids all reallocations in the fast (no-escape) path.
-    w.reserve(s.len() + 1);
+    // This adapter cannot produce I/O errors; capacity errors retain the
+    // existing JsonSink contract. Monomorphization removes Result handling.
+    try_write_escaped_str_sink(s, &mut sink::InfallibleSink(w))
+        .expect("infallible JSON sink adapter");
+}
+
+#[inline]
+pub fn try_write_escaped_str_sink<S: SerializeSink>(s: &str, w: &mut S) -> std::io::Result<()> {
+    write_quoted_sink(s, w, b"\"")
+}
+
+#[inline(always)]
+pub(crate) fn try_write_escaped_key_sink<S: SerializeSink>(
+    s: &str,
+    w: &mut S,
+) -> std::io::Result<()> {
+    let bytes = s.as_bytes();
+    // Validate every byte even for static names supplied by custom Serialize
+    // implementations. This fast path trusts neither field syntax nor ASCII.
+    // The whole UTF-8 key is copied, so no character boundary can be split.
+    if bytes.len() <= 32 && crate::simd::find_escape_scalar(bytes, 0) == bytes.len() {
+        let mut key = [0u8; 35];
+        key[0] = b'"';
+        key[1..bytes.len() + 1].copy_from_slice(bytes);
+        key[bytes.len() + 1] = b'"';
+        key[bytes.len() + 2] = b':';
+        w.write_bytes(&key[..bytes.len() + 3])
+    } else {
+        write_quoted_sink(s, w, b"\":")
+    }
+}
+
+#[inline]
+fn write_quoted_sink<S: SerializeSink>(s: &str, w: &mut S, suffix: &[u8]) -> std::io::Result<()> {
+    w.reserve_bytes(s.len().saturating_add(1).saturating_add(suffix.len()));
+    w.push_byte(b'"')?;
     let bytes = s.as_bytes();
     let mut start = 0usize; // start of current unescaped run
 
     let mut i = start;
     while i < bytes.len() {
         // Find the next byte that needs escaping using the widest available path.
-        let stop = crate::simd::find_escape(bytes, i);
+        let stop = if bytes.len() - i < 16 {
+            crate::simd::find_escape_scalar(bytes, i)
+        } else {
+            crate::simd::find_escape(bytes, i)
+        };
         if stop >= bytes.len() {
             // No more bytes need escaping; flush the rest in one go.
             break;
         }
         // Flush safe bytes [start..stop], then emit the escape sequence.
-        w.extend(&bytes[start..stop]);
-        escape_one(bytes[stop], w);
+        w.write_bytes(&bytes[start..stop])?;
+        escape_one(bytes[stop], w)?;
         i = stop + 1;
         start = i;
     }
 
     // Flush the final safe run.
-    w.extend(&bytes[start..]);
-    w.push(b'"');
+    w.write_bytes(&bytes[start..])?;
+    w.write_bytes(suffix)?;
+    Ok(())
 }
 
 #[inline(always)]
-fn escape_one<S: JsonSink>(b: u8, w: &mut S) {
+fn escape_one<S: SerializeSink>(b: u8, w: &mut S) -> std::io::Result<()> {
     match b {
-        b'"' => w.extend(b"\\\""),
-        b'\\' => w.extend(b"\\\\"),
-        b'\n' => w.extend(b"\\n"),
-        b'\r' => w.extend(b"\\r"),
-        b'\t' => w.extend(b"\\t"),
-        0x08 => w.extend(b"\\b"),
-        0x0C => w.extend(b"\\f"),
+        b'"' => w.write_bytes(b"\\\"")?,
+        b'\\' => w.write_bytes(b"\\\\")?,
+        b'\n' => w.write_bytes(b"\\n")?,
+        b'\r' => w.write_bytes(b"\\r")?,
+        b'\t' => w.write_bytes(b"\\t")?,
+        0x08 => w.write_bytes(b"\\b")?,
+        0x0C => w.write_bytes(b"\\f")?,
         b => {
             // Other control characters as \u00XX
             let hi = b >> 4;
             let lo = b & 0xF;
-            w.extend(&[
+            w.write_bytes(&[
                 b'\\',
                 b'u',
                 b'0',
                 b'0',
                 if hi < 10 { b'0' + hi } else { b'a' + hi - 10 },
                 if lo < 10 { b'0' + lo } else { b'a' + lo - 10 },
-            ]);
+            ])?;
         }
     }
+    Ok(())
 }
 
 // ── primitive impls ───────────────────────────────────────────────────────────

@@ -1,0 +1,15 @@
+{
+  "base_commit": "94727f756af4db62c6ce5892ea4b650d098622be",
+  "working_head": "94727f756af4db62c6ce5892ea4b650d098622be",
+  "working_branch": "repair/replacement-readiness",
+  "baseline_production_fingerprint": "1f03c125f82e0d22d512f10fbfef4adc71f4ab1fe57c6c5280183b68cd87dd82",
+  "current_production_fingerprint": "a995d8c04310d42409fe42fe7463f597313dd4a32f3dfabaa3488447a3c84360",
+  "baseline_modifications": "Only bench_native_profile depth harness and isolated failing i128 reproduction; production source unchanged. Cargo.lock copied from current workspace.",
+  "oracle": "serde_json 1.0.151",
+  "allocation_command": "cargo run --release --manifest-path fixtures/allocation/Cargo.toml --locked",
+  "allocation_exit_status": 0,
+  "allocation_before": "docs/evidence/allocation.csv (committed repaired baseline)",
+  "baseline_i128_command": "cargo test -p jzon-rs --test numeric128_repro",
+  "baseline_i128_exit_status": 101,
+  "final_source_validation": "33 commands in validation-*-results.json, all exit 0; allocation and benchmarks recorded separately."
+}

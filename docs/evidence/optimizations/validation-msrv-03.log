@@ -1,0 +1,12 @@
+    Checking jzon-rs v0.3.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon)
+warning: function `try_write_escaped_key_sink` is never used
+  --> /home/meme/Documentos/GitHub/jzon-rs/crates/jzon/src/ser.rs:85:15
+   |
+85 | pub(crate) fn try_write_escaped_key_sink<S: SerializeSink>(
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: `jzon-rs` (lib) generated 1 warning
+    Checking derive-consumer v0.0.0 (/home/meme/Documentos/GitHub/jzon-rs/fixtures/derive)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.79s

@@ -172,3 +172,73 @@ impl<const N: usize> JsonSink for crate::fixed::FixedBuf<N> {
         self.sink_ok()
     }
 }
+
+/// Fallible, statically dispatched output used by the native Serde engine.
+/// Sealed to preserve the behavior of the built-in buffer and writer sinks.
+pub trait SerializeSink: sealed::Sealed {
+    fn push_byte(&mut self, byte: u8) -> io::Result<()>;
+    fn write_bytes(&mut self, bytes: &[u8]) -> io::Result<()>;
+    fn reserve_bytes(&mut self, _additional: usize) {}
+}
+
+impl sealed::Sealed for Vec<u8> {}
+impl SerializeSink for Vec<u8> {
+    #[inline]
+    fn push_byte(&mut self, byte: u8) -> io::Result<()> {
+        self.push(byte);
+        Ok(())
+    }
+    #[inline]
+    fn write_bytes(&mut self, bytes: &[u8]) -> io::Result<()> {
+        self.extend_from_slice(bytes);
+        Ok(())
+    }
+    #[inline]
+    fn reserve_bytes(&mut self, additional: usize) {
+        self.reserve(additional);
+    }
+}
+
+/// A native streaming sink. Each operation propagates its writer error before
+/// serialization continues; short and interrupted writes use `write_all`.
+pub struct WriterSink<W> {
+    writer: W,
+}
+impl<W> WriterSink<W> {
+    pub fn new(writer: W) -> Self {
+        Self { writer }
+    }
+    pub fn into_inner(self) -> W {
+        self.writer
+    }
+}
+impl<W: io::Write> sealed::Sealed for WriterSink<W> {}
+impl<W: io::Write> SerializeSink for WriterSink<W> {
+    #[inline]
+    fn push_byte(&mut self, byte: u8) -> io::Result<()> {
+        self.writer.write_all(&[byte])
+    }
+    #[inline]
+    fn write_bytes(&mut self, bytes: &[u8]) -> io::Result<()> {
+        self.writer.write_all(bytes)
+    }
+}
+
+pub(crate) struct InfallibleSink<'a, S>(pub &'a mut S);
+impl<S: JsonSink> sealed::Sealed for InfallibleSink<'_, S> {}
+impl<S: JsonSink> SerializeSink for InfallibleSink<'_, S> {
+    #[inline]
+    fn push_byte(&mut self, byte: u8) -> io::Result<()> {
+        self.0.push(byte);
+        Ok(())
+    }
+    #[inline]
+    fn write_bytes(&mut self, bytes: &[u8]) -> io::Result<()> {
+        self.0.extend(bytes);
+        Ok(())
+    }
+    #[inline]
+    fn reserve_bytes(&mut self, additional: usize) {
+        self.0.reserve(additional);
+    }
+}

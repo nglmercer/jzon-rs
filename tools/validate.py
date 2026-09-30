@@ -21,7 +21,7 @@ suites={
 'cargo bench -p jzon-rs --bench bench_cmp --features float_roundtrip -- --test',
 ],
 'safety':[
-'cargo +nightly miri test -p jzon-rs --test depth_safety --test readiness',
+'cargo +nightly miri test -p jzon-rs --test depth_safety --test readiness --test optimizations',
 'cargo +nightly test --workspace --features simd,unstable',
 ],
 'msrv':[

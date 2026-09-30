@@ -1,0 +1,51 @@
+[
+  {
+    "command": [
+      "cargo",
+      "fmt",
+      "--manifest-path",
+      "fixtures/allocation/Cargo.toml",
+      "--",
+      "--check"
+    ],
+    "exit_status": 0,
+    "elapsed_seconds": 0.057985802999610314,
+    "log": "docs/evidence/optimizations/supplemental-0.log"
+  },
+  {
+    "command": [
+      "cargo",
+      "fmt",
+      "--manifest-path",
+      "fixtures/native/Cargo.toml",
+      "--",
+      "--check"
+    ],
+    "exit_status": 0,
+    "elapsed_seconds": 0.06044362800003,
+    "log": "docs/evidence/optimizations/supplemental-1.log"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit_status": 0,
+    "elapsed_seconds": 0.017939555999873846,
+    "log": "docs/evidence/optimizations/supplemental-2.log"
+  },
+  {
+    "command": [
+      "cargo",
+      "run",
+      "--release",
+      "--manifest-path",
+      "fixtures/allocation/Cargo.toml",
+      "--locked"
+    ],
+    "exit_status": 0,
+    "stdout": "allocation.csv",
+    "note": "Executed separately after final benchmark completion; zero-allocation direct-streaming assertion included."
+  }
+]

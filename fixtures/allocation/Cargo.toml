@@ -7,3 +7,4 @@ edition = "2021"
 jzon = { package = "jzon-rs", path = "../../crates/jzon", default-features = false }
 jzon_serde = { package = "jzon-rs-serde", path = "../../crates/jzon_serde" }
 stats_alloc = "0.1.10"
+serde = "1"

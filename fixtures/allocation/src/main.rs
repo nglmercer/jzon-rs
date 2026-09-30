@@ -27,6 +27,23 @@ fn measure(label: &str, input: &str, native: bool) {
     }
     std::hint::black_box(values);
 }
+struct Length(usize);
+impl<'de> serde::Deserialize<'de> for Length {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        struct Visitor;
+        impl<'de> serde::de::Visitor<'de> for Visitor {
+            type Value = Length;
+            fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                f.write_str("a string")
+            }
+            fn visit_str<E: serde::de::Error>(self, value: &str) -> Result<Length, E> {
+                Ok(Length(value.len()))
+            }
+        }
+        deserializer.deserialize_str(Visitor)
+    }
+}
+
 fn main() {
     println!("mode,case,input_bytes,allocations,reallocations,allocated_bytes,retained_string_capacity,time_ns_single_sample");
     {
@@ -42,6 +59,64 @@ fn main() {
         assert_eq!(borrowed, "borrowed");
         println!(
             "B,scalar_and_borrowed,12,{},0,{},0,0",
+            stats.allocations, stats.bytes_allocated
+        );
+    }
+    {
+        use serde::Deserialize;
+        let mut parser = jzon_serde::Deserializer::from_str(r#""\n" "\t" "\u00e9""#);
+        assert_eq!(Length::deserialize(&mut parser).unwrap().0, 1);
+        let region = Region::new(GLOBAL);
+        assert_eq!(Length::deserialize(&mut parser).unwrap().0, 1);
+        assert_eq!(Length::deserialize(&mut parser).unwrap().0, 2);
+        let stats = region.change();
+        assert_eq!(
+            stats.allocations, 0,
+            "warmed transient scratch should allocate nothing"
+        );
+        println!(
+            "B,warmed_transient_scratch,12,{},0,{},0,0",
+            stats.allocations, stats.bytes_allocated
+        );
+        let mut serializer = jzon_serde::Serializer::with_capacity(1024);
+        serializer.serialize(&[1, 2, 3]).unwrap();
+        let region = Region::new(GLOBAL);
+        serializer.clear();
+        serializer.serialize(&[4, 5, 6]).unwrap();
+        let stats = region.change();
+        assert_eq!(
+            stats.allocations, 0,
+            "warmed reusable serializer should allocate nothing"
+        );
+        println!(
+            "B,warmed_reusable_serializer,7,{},0,{},0,0",
+            stats.allocations, stats.bytes_allocated
+        );
+    }
+    {
+        let region = Region::new(GLOBAL);
+        let empty: Vec<u8> = jzon_serde::from_str("[]").unwrap();
+        let stats = region.change();
+        assert!(empty.is_empty());
+        assert_eq!(
+            stats.allocations, 0,
+            "bounded native empty containers need no counter allocation"
+        );
+        println!(
+            "B,empty_container,2,{},0,{},0,0",
+            stats.allocations, stats.bytes_allocated
+        );
+    }
+    {
+        let region = Region::new(GLOBAL);
+        jzon_serde::to_writer(std::io::sink(), &[1, 2, 3]).unwrap();
+        let stats = region.change();
+        assert_eq!(
+            stats.allocations, 0,
+            "direct native streaming needs no intermediate output buffer"
+        );
+        println!(
+            "B,direct_streaming_writer,7,{},0,{},0,0",
             stats.allocations, stats.bytes_allocated
         );
     }

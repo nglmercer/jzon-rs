@@ -2,7 +2,7 @@
 //! escaping and zero-copy scanner.
 //!
 //! Uses existing Serde traits. This native engine has its own errors and
-//! buffered reader/writer helpers; assess its documented contract separately
+//! a buffered reader and streaming writer; assess its documented contract separately
 //! from the delegated compatibility facade.
 //! Available as `jzon::from_str` / `jzon::to_string` with the `serde` cargo
 //! feature, or through the standalone [`jzon-rs-serde`](https://crates.io/crates/jzon-rs-serde)
@@ -30,8 +30,13 @@ use serde::ser::{
     SerializeStructVariant, SerializeTuple, SerializeTupleStruct, SerializeTupleVariant,
 };
 
-use crate::ser::{write_escaped_str, write_i128, write_i64, write_u128, write_u64};
-use crate::{JsonStr, Scanner};
+use crate::scanner::DecodedStr;
+use crate::ser::{
+    try_write_escaped_key_sink as write_escaped_key,
+    try_write_escaped_str_sink as write_escaped_str,
+};
+pub use crate::ser::{SerializeSink, WriterSink};
+use crate::Scanner;
 
 #[derive(Debug)]
 pub enum Error {
@@ -74,37 +79,116 @@ impl de_trait::Error for Error {
     }
 }
 
+impl From<std::io::Error> for Error {
+    fn from(error: std::io::Error) -> Self {
+        Self::Io(error)
+    }
+}
+
 impl From<crate::Error> for Error {
     fn from(e: crate::Error) -> Self {
         Error::Scanner(e)
     }
 }
 
+#[inline]
+fn write_u128<S: SerializeSink>(v: u128, w: &mut S) -> Result<(), Error> {
+    w.write_bytes(itoa::Buffer::new().format(v).as_bytes())?;
+    Ok(())
+}
+
+#[inline]
+fn write_i128<S: SerializeSink>(v: i128, w: &mut S) -> Result<(), Error> {
+    w.write_bytes(itoa::Buffer::new().format(v).as_bytes())?;
+    Ok(())
+}
+
+#[inline]
+fn write_u64<S: SerializeSink>(v: u64, w: &mut S) -> Result<(), Error> {
+    w.write_bytes(itoa::Buffer::new().format(v).as_bytes())?;
+    Ok(())
+}
+
+#[inline]
+fn write_i64<S: SerializeSink>(v: i64, w: &mut S) -> Result<(), Error> {
+    w.write_bytes(itoa::Buffer::new().format(v).as_bytes())?;
+    Ok(())
+}
+
 // ── float helpers ─────────────────────────────────────────────────────────────
 // Native Serde output uses the same float formatter as the pinned upstream
 // release. Mode A retains its separately selectable formatter policy.
 #[inline]
-fn serialize_float64(v: f64, w: &mut Vec<u8>) {
+fn serialize_float64<S: SerializeSink>(v: f64, w: &mut S) -> Result<(), Error> {
     if !v.is_finite() {
-        w.extend_from_slice(b"null");
-        return;
+        w.write_bytes(b"null")?;
+        return Ok(());
     }
     let mut buffer = zmij::Buffer::new();
-    w.extend_from_slice(buffer.format_finite(v).as_bytes());
+    w.write_bytes(buffer.format_finite(v).as_bytes())?;
+    Ok(())
 }
 
 #[inline]
-fn serialize_float32(v: f32, w: &mut Vec<u8>) {
+fn serialize_float32<S: SerializeSink>(v: f32, w: &mut S) -> Result<(), Error> {
     if !v.is_finite() {
-        w.extend_from_slice(b"null");
-        return;
+        w.write_bytes(b"null")?;
+        return Ok(());
     }
     let mut buffer = zmij::Buffer::new();
-    w.extend_from_slice(buffer.format_finite(v).as_bytes());
+    w.write_bytes(buffer.format_finite(v).as_bytes())?;
+    Ok(())
 }
 
-pub struct Serializer {
-    output: Vec<u8>,
+pub struct Serializer<S: SerializeSink = Vec<u8>> {
+    output: S,
+}
+
+impl Default for Serializer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+impl Serializer {
+    /// Fresh reusable byte serializer with a modest initial capacity.
+    pub fn new() -> Self {
+        Self::with_capacity(128)
+    }
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self {
+            output: Vec::with_capacity(capacity),
+        }
+    }
+    /// Reuse an owned Vec; subsequent serialization appends to its existing bytes.
+    pub fn from_vec(output: Vec<u8>) -> Self {
+        Self { output }
+    }
+    /// Reset output length, retaining capacity. Does not replay serialization.
+    pub fn clear(&mut self) {
+        self.output.clear();
+    }
+    pub fn buffer(&self) -> &[u8] {
+        &self.output
+    }
+    pub fn capacity(&self) -> usize {
+        self.output.capacity()
+    }
+}
+impl<W: std::io::Write> Serializer<WriterSink<W>> {
+    pub fn from_writer(writer: W) -> Self {
+        Self {
+            output: WriterSink::new(writer),
+        }
+    }
+}
+impl<S: SerializeSink> Serializer<S> {
+    /// Append one value. Errors and panics preserve already emitted bytes.
+    pub fn serialize<T: Serialize + ?Sized>(&mut self, value: &T) -> Result<(), Error> {
+        value.serialize(&mut *self)
+    }
+    pub fn into_inner(self) -> S {
+        self.output
+    }
 }
 
 pub fn to_string<T: Serialize + ?Sized>(v: &T) -> Result<String, Error> {
@@ -143,82 +227,103 @@ pub fn to_bytes_in<T: Serialize + ?Sized>(v: &T, output: &mut Vec<u8>) -> Result
     v.serialize(&mut restore.serializer)
 }
 
-/// Buffered native writer API: serializes fully before invoking the writer.
-/// For upstream streaming/error ordering use the strict compatibility facade.
-pub fn to_writer<W: std::io::Write, T: Serialize + ?Sized>(mut w: W, v: &T) -> Result<(), Error> {
-    let bytes = to_bytes(v)?;
-    w.write_all(&bytes).map_err(Error::Io)
+/// Stream native JSON directly to the writer, preserving partial output and
+/// propagating each I/O failure before later user callbacks.
+pub fn to_writer<W: std::io::Write, T: Serialize + ?Sized>(w: W, v: &T) -> Result<(), Error> {
+    let mut serializer = Serializer::from_writer(w);
+    v.serialize(&mut serializer)
 }
 
-impl<'a> ser_trait::Serializer for &'a mut Serializer {
+/// Explicit buffered writer variant: completes user serialization before any
+/// I/O, retaining the historical native helper's memory/error-ordering contract.
+pub fn to_writer_buffered<W: std::io::Write, T: Serialize + ?Sized>(
+    mut w: W,
+    v: &T,
+) -> Result<(), Error> {
+    let bytes = to_bytes(v)?;
+    w.write_all(&bytes)?;
+    Ok(())
+}
+
+impl<'a, S: SerializeSink> ser_trait::Serializer for &'a mut Serializer<S> {
     type Ok = ();
     type Error = Error;
 
-    type SerializeSeq = SeqSerializer<'a>;
-    type SerializeTuple = SeqSerializer<'a>;
-    type SerializeTupleStruct = SeqSerializer<'a>;
-    type SerializeTupleVariant = SeqSerializer<'a>;
-    type SerializeMap = MapSerializer<'a>;
-    type SerializeStruct = StructSerializer<'a>;
-    type SerializeStructVariant = MapSerializer<'a>;
+    type SerializeSeq = SeqSerializer<'a, S>;
+    type SerializeTuple = SeqSerializer<'a, S>;
+    type SerializeTupleStruct = SeqSerializer<'a, S>;
+    type SerializeTupleVariant = SeqSerializer<'a, S>;
+    type SerializeMap = MapSerializer<'a, S>;
+    type SerializeStruct = StructSerializer<'a, S>;
+    type SerializeStructVariant = StructVariantSerializer<'a, S>;
 
     #[inline]
     fn serialize_bool(self, v: bool) -> Result<(), Error> {
         self.output
-            .extend_from_slice(if v { b"true" } else { b"false" });
+            .write_bytes(if v { b"true" } else { b"false" })?;
         Ok(())
     }
 
     #[inline]
     fn serialize_i8(self, v: i8) -> Result<(), Error> {
-        write_i64(v as i64, &mut self.output);
+        write_i64(v as i64, &mut self.output)?;
         Ok(())
     }
     #[inline]
     fn serialize_i16(self, v: i16) -> Result<(), Error> {
-        write_i64(v as i64, &mut self.output);
+        write_i64(v as i64, &mut self.output)?;
         Ok(())
     }
     #[inline]
     fn serialize_i32(self, v: i32) -> Result<(), Error> {
-        write_i64(v as i64, &mut self.output);
+        write_i64(v as i64, &mut self.output)?;
         Ok(())
     }
     #[inline]
     fn serialize_i64(self, v: i64) -> Result<(), Error> {
-        write_i64(v, &mut self.output);
+        write_i64(v, &mut self.output)?;
         Ok(())
     }
 
     #[inline]
+    fn serialize_i128(self, v: i128) -> Result<(), Error> {
+        write_i128(v, &mut self.output)
+    }
+
+    #[inline]
+    fn serialize_u128(self, v: u128) -> Result<(), Error> {
+        write_u128(v, &mut self.output)
+    }
+
+    #[inline]
     fn serialize_u8(self, v: u8) -> Result<(), Error> {
-        write_u64(v as u64, &mut self.output);
+        write_u64(v as u64, &mut self.output)?;
         Ok(())
     }
     #[inline]
     fn serialize_u16(self, v: u16) -> Result<(), Error> {
-        write_u64(v as u64, &mut self.output);
+        write_u64(v as u64, &mut self.output)?;
         Ok(())
     }
     #[inline]
     fn serialize_u32(self, v: u32) -> Result<(), Error> {
-        write_u64(v as u64, &mut self.output);
+        write_u64(v as u64, &mut self.output)?;
         Ok(())
     }
     #[inline]
     fn serialize_u64(self, v: u64) -> Result<(), Error> {
-        write_u64(v, &mut self.output);
+        write_u64(v, &mut self.output)?;
         Ok(())
     }
 
     #[inline]
     fn serialize_f32(self, v: f32) -> Result<(), Error> {
-        serialize_float32(v, &mut self.output);
+        serialize_float32(v, &mut self.output)?;
         Ok(())
     }
     #[inline]
     fn serialize_f64(self, v: f64) -> Result<(), Error> {
-        serialize_float64(v, &mut self.output);
+        serialize_float64(v, &mut self.output)?;
         Ok(())
     }
 
@@ -226,31 +331,31 @@ impl<'a> ser_trait::Serializer for &'a mut Serializer {
     fn serialize_char(self, v: char) -> Result<(), Error> {
         let mut buf = [0u8; 4];
         let s = v.encode_utf8(&mut buf);
-        write_escaped_str(s, &mut self.output);
+        write_escaped_str(s, &mut self.output)?;
         Ok(())
     }
 
     #[inline]
     fn serialize_str(self, v: &str) -> Result<(), Error> {
-        write_escaped_str(v, &mut self.output);
+        write_escaped_str(v, &mut self.output)?;
         Ok(())
     }
 
     fn serialize_bytes(self, v: &[u8]) -> Result<(), Error> {
-        self.output.push(b'[');
+        self.output.push_byte(b'[')?;
         for (i, &b) in v.iter().enumerate() {
             if i > 0 {
-                self.output.push(b',');
+                self.output.push_byte(b',')?;
             }
-            write_u64(b as u64, &mut self.output);
+            write_u64(b as u64, &mut self.output)?;
         }
-        self.output.push(b']');
+        self.output.push_byte(b']')?;
         Ok(())
     }
 
     #[inline]
     fn serialize_none(self) -> Result<(), Error> {
-        self.output.extend_from_slice(b"null");
+        self.output.write_bytes(b"null")?;
         Ok(())
     }
 
@@ -261,13 +366,13 @@ impl<'a> ser_trait::Serializer for &'a mut Serializer {
 
     #[inline]
     fn serialize_unit(self) -> Result<(), Error> {
-        self.output.extend_from_slice(b"null");
+        self.output.write_bytes(b"null")?;
         Ok(())
     }
 
     #[inline]
     fn serialize_unit_struct(self, _name: &'static str) -> Result<(), Error> {
-        self.output.extend_from_slice(b"null");
+        self.output.write_bytes(b"null")?;
         Ok(())
     }
 
@@ -278,7 +383,7 @@ impl<'a> ser_trait::Serializer for &'a mut Serializer {
         _variant_index: u32,
         variant: &'static str,
     ) -> Result<(), Error> {
-        write_escaped_str(variant, &mut self.output);
+        write_escaped_str(variant, &mut self.output)?;
         Ok(())
     }
 
@@ -297,23 +402,23 @@ impl<'a> ser_trait::Serializer for &'a mut Serializer {
         variant: &'static str,
         value: &T,
     ) -> Result<(), Error> {
-        self.output.push(b'{');
-        write_escaped_str(variant, &mut self.output);
-        self.output.push(b':');
+        self.output.push_byte(b'{')?;
+        write_escaped_str(variant, &mut self.output)?;
+        self.output.push_byte(b':')?;
         value.serialize(&mut *self)?;
-        self.output.push(b'}');
+        self.output.push_byte(b'}')?;
         Ok(())
     }
 
-    fn serialize_seq(self, _len: Option<usize>) -> Result<SeqSerializer<'a>, Error> {
-        self.output.push(b'[');
+    fn serialize_seq(self, _len: Option<usize>) -> Result<SeqSerializer<'a, S>, Error> {
+        self.output.push_byte(b'[')?;
         Ok(SeqSerializer {
             ser: self,
             first: true,
         })
     }
 
-    fn serialize_tuple(self, len: usize) -> Result<SeqSerializer<'a>, Error> {
+    fn serialize_tuple(self, len: usize) -> Result<SeqSerializer<'a, S>, Error> {
         self.serialize_seq(Some(len))
     }
 
@@ -321,7 +426,7 @@ impl<'a> ser_trait::Serializer for &'a mut Serializer {
         self,
         _name: &'static str,
         len: usize,
-    ) -> Result<SeqSerializer<'a>, Error> {
+    ) -> Result<SeqSerializer<'a, S>, Error> {
         self.serialize_seq(Some(len))
     }
 
@@ -331,19 +436,19 @@ impl<'a> ser_trait::Serializer for &'a mut Serializer {
         _variant_index: u32,
         variant: &'static str,
         _len: usize,
-    ) -> Result<SeqSerializer<'a>, Error> {
-        self.output.push(b'{');
-        write_escaped_str(variant, &mut self.output);
-        self.output.push(b':');
-        self.output.push(b'[');
+    ) -> Result<SeqSerializer<'a, S>, Error> {
+        self.output.push_byte(b'{')?;
+        write_escaped_str(variant, &mut self.output)?;
+        self.output.push_byte(b':')?;
+        self.output.push_byte(b'[')?;
         Ok(SeqSerializer {
             ser: self,
             first: true,
         })
     }
 
-    fn serialize_map(self, _len: Option<usize>) -> Result<MapSerializer<'a>, Error> {
-        self.output.push(b'{');
+    fn serialize_map(self, _len: Option<usize>) -> Result<MapSerializer<'a, S>, Error> {
+        self.output.push_byte(b'{')?;
         Ok(MapSerializer {
             ser: self,
             first: true,
@@ -351,11 +456,12 @@ impl<'a> ser_trait::Serializer for &'a mut Serializer {
         })
     }
 
+    #[inline]
     fn serialize_struct(
         self,
         name: &'static str,
         len: usize,
-    ) -> Result<StructSerializer<'a>, Error> {
+    ) -> Result<StructSerializer<'a, S>, Error> {
         // serde_json token protocols: RawValue and arbitrary-precision
         // Number serialize as single-field structs whose payload must be
         // emitted raw (unquoted). Anything else is an ordinary struct.
@@ -373,24 +479,31 @@ impl<'a> ser_trait::Serializer for &'a mut Serializer {
                 err_msg: "invalid number",
             }));
         }
-        Ok(StructSerializer::Map(self.serialize_map(Some(len))?))
+        let _ = len;
+        self.output.push_byte(b'{')?;
+        Ok(StructSerializer::Map(FieldsSerializer {
+            ser: self,
+            first: true,
+        }))
     }
 
+    #[inline]
     fn serialize_struct_variant(
         self,
         _name: &'static str,
         _variant_index: u32,
         variant: &'static str,
         _len: usize,
-    ) -> Result<MapSerializer<'a>, Error> {
-        self.output.push(b'{');
-        write_escaped_str(variant, &mut self.output);
-        self.output.push(b':');
-        self.output.push(b'{');
-        Ok(MapSerializer {
-            ser: self,
-            first: true,
-            variant_wrap: true,
+    ) -> Result<StructVariantSerializer<'a, S>, Error> {
+        self.output.push_byte(b'{')?;
+        write_escaped_str(variant, &mut self.output)?;
+        self.output.push_byte(b':')?;
+        self.output.push_byte(b'{')?;
+        Ok(StructVariantSerializer {
+            fields: FieldsSerializer {
+                ser: self,
+                first: true,
+            },
         })
     }
 
@@ -399,32 +512,32 @@ impl<'a> ser_trait::Serializer for &'a mut Serializer {
     }
 }
 
-pub struct SeqSerializer<'a> {
-    ser: &'a mut Serializer,
+pub struct SeqSerializer<'a, S: SerializeSink = Vec<u8>> {
+    ser: &'a mut Serializer<S>,
     first: bool,
 }
 
-impl<'a> SerializeSeq for SeqSerializer<'a> {
+impl<'a, S: SerializeSink> SerializeSeq for SeqSerializer<'a, S> {
     type Ok = ();
     type Error = Error;
 
     fn serialize_element<T: Serialize + ?Sized>(&mut self, value: &T) -> Result<(), Error> {
         if !self.first {
-            self.ser.output.push(b',');
+            self.ser.output.push_byte(b',')?;
         }
         self.first = false;
         value.serialize(&mut *self.ser)
     }
 
     fn end(self) -> Result<(), Error> {
-        self.ser.output.push(b']');
+        self.ser.output.push_byte(b']')?;
         Ok(())
     }
 }
 
 macro_rules! delegate_to_seq {
     ($trait:ident, $method:ident) => {
-        impl<'a> $trait for SeqSerializer<'a> {
+        impl<'a, S: SerializeSink> $trait for SeqSerializer<'a, S> {
             type Ok = ();
             type Error = Error;
             fn $method<T: Serialize + ?Sized>(&mut self, value: &T) -> Result<(), Error> {
@@ -439,7 +552,7 @@ macro_rules! delegate_to_seq {
 delegate_to_seq!(SerializeTuple, serialize_element);
 delegate_to_seq!(SerializeTupleStruct, serialize_field);
 
-impl<'a> SerializeTupleVariant for SeqSerializer<'a> {
+impl<'a, S: SerializeSink> SerializeTupleVariant for SeqSerializer<'a, S> {
     type Ok = ();
     type Error = Error;
 
@@ -447,8 +560,8 @@ impl<'a> SerializeTupleVariant for SeqSerializer<'a> {
         SerializeSeq::serialize_element(self, value)
     }
     fn end(self) -> Result<(), Error> {
-        self.ser.output.push(b']');
-        self.ser.output.push(b'}');
+        self.ser.output.push_byte(b']')?;
+        self.ser.output.push_byte(b'}')?;
         Ok(())
     }
 }
@@ -456,8 +569,8 @@ impl<'a> SerializeTupleVariant for SeqSerializer<'a> {
 /// Serializer for map keys: mirrors `serde_json` exactly — strings, numbers,
 /// bools, chars and unit variants are stringified; anything structural is an
 /// error (`collect_str` inherits serde's default, same as `serde_json`).
-struct MapKeySerializer<'a> {
-    ser: &'a mut Serializer,
+struct MapKeySerializer<'a, S: SerializeSink = Vec<u8>> {
+    ser: &'a mut Serializer<S>,
 }
 
 #[inline]
@@ -473,15 +586,15 @@ fn float_key_must_be_finite() -> Error {
 macro_rules! quoted_int_key {
     ($method:ident, $ty:ty, $write:ident) => {
         fn $method(self, value: $ty) -> Result<(), Error> {
-            self.ser.output.push(b'"');
-            $write(value as _, &mut self.ser.output);
-            self.ser.output.push(b'"');
+            self.ser.output.push_byte(b'"')?;
+            $write(value as _, &mut self.ser.output)?;
+            self.ser.output.push_byte(b'"')?;
             Ok(())
         }
     };
 }
 
-impl<'a> ser_trait::Serializer for MapKeySerializer<'a> {
+impl<'a, S: SerializeSink> ser_trait::Serializer for MapKeySerializer<'a, S> {
     type Ok = ();
     type Error = Error;
     type SerializeSeq = ser_trait::Impossible<(), Error>;
@@ -493,11 +606,11 @@ impl<'a> ser_trait::Serializer for MapKeySerializer<'a> {
     type SerializeStructVariant = ser_trait::Impossible<(), Error>;
 
     fn serialize_bool(self, value: bool) -> Result<(), Error> {
-        self.ser.output.push(b'"');
+        self.ser.output.push_byte(b'"')?;
         self.ser
             .output
-            .extend_from_slice(if value { b"true" } else { b"false" });
-        self.ser.output.push(b'"');
+            .write_bytes(if value { b"true" } else { b"false" })?;
+        self.ser.output.push_byte(b'"')?;
         Ok(())
     }
 
@@ -516,9 +629,9 @@ impl<'a> ser_trait::Serializer for MapKeySerializer<'a> {
         if !value.is_finite() {
             return Err(float_key_must_be_finite());
         }
-        self.ser.output.push(b'"');
-        serialize_float32(value, &mut self.ser.output);
-        self.ser.output.push(b'"');
+        self.ser.output.push_byte(b'"')?;
+        serialize_float32(value, &mut self.ser.output)?;
+        self.ser.output.push_byte(b'"')?;
         Ok(())
     }
 
@@ -526,21 +639,21 @@ impl<'a> ser_trait::Serializer for MapKeySerializer<'a> {
         if !value.is_finite() {
             return Err(float_key_must_be_finite());
         }
-        self.ser.output.push(b'"');
-        serialize_float64(value, &mut self.ser.output);
-        self.ser.output.push(b'"');
+        self.ser.output.push_byte(b'"')?;
+        serialize_float64(value, &mut self.ser.output)?;
+        self.ser.output.push_byte(b'"')?;
         Ok(())
     }
 
     fn serialize_char(self, value: char) -> Result<(), Error> {
         let mut buf = [0u8; 4];
         let s = value.encode_utf8(&mut buf);
-        write_escaped_str(s, &mut self.ser.output);
+        write_escaped_str(s, &mut self.ser.output)?;
         Ok(())
     }
 
     fn serialize_str(self, value: &str) -> Result<(), Error> {
-        write_escaped_str(value, &mut self.ser.output);
+        write_escaped_str(value, &mut self.ser.output)?;
         Ok(())
     }
 
@@ -570,7 +683,7 @@ impl<'a> ser_trait::Serializer for MapKeySerializer<'a> {
         _variant_index: u32,
         variant: &'static str,
     ) -> Result<(), Error> {
-        write_escaped_str(variant, &mut self.ser.output);
+        write_escaped_str(variant, &mut self.ser.output)?;
         Ok(())
     }
 
@@ -645,26 +758,26 @@ impl<'a> ser_trait::Serializer for MapKeySerializer<'a> {
     }
 }
 
-pub struct MapSerializer<'a> {
-    ser: &'a mut Serializer,
+pub struct MapSerializer<'a, S: SerializeSink = Vec<u8>> {
+    ser: &'a mut Serializer<S>,
     first: bool,
     /// True when this is a struct-variant that needs an extra closing `}`.
     variant_wrap: bool,
 }
 
-impl<'a> SerializeMap for MapSerializer<'a> {
+impl<'a, S: SerializeSink> SerializeMap for MapSerializer<'a, S> {
     type Ok = ();
     type Error = Error;
 
     fn serialize_key<T: Serialize + ?Sized>(&mut self, key: &T) -> Result<(), Error> {
         if !self.first {
-            self.ser.output.push(b',');
+            self.ser.output.push_byte(b',')?;
         }
         self.first = false;
         key.serialize(MapKeySerializer {
             ser: &mut *self.ser,
         })?;
-        self.ser.output.push(b':');
+        self.ser.output.push_byte(b':')?;
         Ok(())
     }
 
@@ -673,15 +786,15 @@ impl<'a> SerializeMap for MapSerializer<'a> {
     }
 
     fn end(self) -> Result<(), Error> {
-        self.ser.output.push(b'}');
+        self.ser.output.push_byte(b'}')?;
         if self.variant_wrap {
-            self.ser.output.push(b'}');
+            self.ser.output.push_byte(b'}')?;
         }
         Ok(())
     }
 }
 
-impl<'a> SerializeStruct for MapSerializer<'a> {
+impl<'a, S: SerializeSink> SerializeStruct for MapSerializer<'a, S> {
     type Ok = ();
     type Error = Error;
 
@@ -691,19 +804,66 @@ impl<'a> SerializeStruct for MapSerializer<'a> {
         value: &T,
     ) -> Result<(), Error> {
         if !self.first {
-            self.ser.output.push(b',');
+            self.ser.output.push_byte(b',')?;
         }
         self.first = false;
-        write_escaped_str(key, &mut self.ser.output);
-        self.ser.output.push(b':');
+        write_escaped_str(key, &mut self.ser.output)?;
+        self.ser.output.push_byte(b':')?;
         value.serialize(&mut *self.ser)
     }
 
     fn end(self) -> Result<(), Error> {
-        self.ser.output.push(b'}');
+        self.ser.output.push_byte(b'}')?;
         if self.variant_wrap {
-            self.ser.output.push(b'}');
+            self.ser.output.push_byte(b'}')?;
         }
+        Ok(())
+    }
+}
+
+/// Ordinary struct fields avoid generic map-key dispatch and enum-wrapper state.
+pub struct FieldsSerializer<'a, S: SerializeSink = Vec<u8>> {
+    ser: &'a mut Serializer<S>,
+    first: bool,
+}
+impl<S: SerializeSink> SerializeStruct for FieldsSerializer<'_, S> {
+    type Ok = ();
+    type Error = Error;
+    #[inline]
+    fn serialize_field<T: Serialize + ?Sized>(
+        &mut self,
+        key: &'static str,
+        value: &T,
+    ) -> Result<(), Error> {
+        if !self.first {
+            self.ser.output.push_byte(b',')?;
+        }
+        self.first = false;
+        write_escaped_key(key, &mut self.ser.output)?;
+        value.serialize(&mut *self.ser)
+    }
+    #[inline]
+    fn end(self) -> Result<(), Error> {
+        self.ser.output.push_byte(b'}')?;
+        Ok(())
+    }
+}
+
+pub struct StructVariantSerializer<'a, S: SerializeSink = Vec<u8>> {
+    fields: FieldsSerializer<'a, S>,
+}
+impl<S: SerializeSink> SerializeStructVariant for StructVariantSerializer<'_, S> {
+    type Ok = ();
+    type Error = Error;
+    fn serialize_field<T: Serialize + ?Sized>(
+        &mut self,
+        key: &'static str,
+        value: &T,
+    ) -> Result<(), Error> {
+        self.fields.serialize_field(key, value)
+    }
+    fn end(self) -> Result<(), Error> {
+        self.fields.ser.output.write_bytes(b"}}")?;
         Ok(())
     }
 }
@@ -714,15 +874,16 @@ const NUMBER_TOKEN: &str = "$serde_json::private::Number";
 
 /// Struct serializer dispatch: ordinary structs serialize as maps, while
 /// serde_json token structs emit their payload raw (unquoted).
-pub enum StructSerializer<'a> {
-    Map(MapSerializer<'a>),
-    Raw(RawTokenStructSerializer<'a>),
+pub enum StructSerializer<'a, S: SerializeSink = Vec<u8>> {
+    Map(FieldsSerializer<'a, S>),
+    Raw(RawTokenStructSerializer<'a, S>),
 }
 
-impl<'a> SerializeStruct for StructSerializer<'a> {
+impl<'a, S: SerializeSink> SerializeStruct for StructSerializer<'a, S> {
     type Ok = ();
     type Error = Error;
 
+    #[inline(always)]
     fn serialize_field<T: Serialize + ?Sized>(
         &mut self,
         key: &'static str,
@@ -734,6 +895,7 @@ impl<'a> SerializeStruct for StructSerializer<'a> {
         }
     }
 
+    #[inline(always)]
     fn end(self) -> Result<(), Error> {
         match self {
             StructSerializer::Map(m) => SerializeStruct::end(m),
@@ -742,13 +904,13 @@ impl<'a> SerializeStruct for StructSerializer<'a> {
     }
 }
 
-pub struct RawTokenStructSerializer<'a> {
-    ser: &'a mut Serializer,
+pub struct RawTokenStructSerializer<'a, S: SerializeSink = Vec<u8>> {
+    ser: &'a mut Serializer<S>,
     token: &'static str,
     err_msg: &'static str,
 }
 
-impl<'a> SerializeStruct for RawTokenStructSerializer<'a> {
+impl<'a, S: SerializeSink> SerializeStruct for RawTokenStructSerializer<'a, S> {
     type Ok = ();
     type Error = Error;
 
@@ -772,8 +934,8 @@ impl<'a> SerializeStruct for RawTokenStructSerializer<'a> {
 }
 
 /// Emits strings raw (unquoted); every other type is a protocol violation.
-struct RawStrEmitter<'a> {
-    ser: &'a mut Serializer,
+struct RawStrEmitter<'a, S: SerializeSink = Vec<u8>> {
+    ser: &'a mut Serializer<S>,
     err_msg: &'static str,
 }
 
@@ -785,7 +947,7 @@ macro_rules! raw_err {
     };
 }
 
-impl<'a> ser_trait::Serializer for RawStrEmitter<'a> {
+impl<'a, S: SerializeSink> ser_trait::Serializer for RawStrEmitter<'a, S> {
     type Ok = ();
     type Error = Error;
     type SerializeSeq = ser_trait::Impossible<(), Error>;
@@ -797,7 +959,7 @@ impl<'a> ser_trait::Serializer for RawStrEmitter<'a> {
     type SerializeStructVariant = ser_trait::Impossible<(), Error>;
 
     fn serialize_str(self, value: &str) -> Result<(), Error> {
-        self.ser.output.extend_from_slice(value.as_bytes());
+        self.ser.output.write_bytes(value.as_bytes())?;
         Ok(())
     }
 
@@ -904,7 +1066,7 @@ impl<'a> ser_trait::Serializer for RawStrEmitter<'a> {
     }
 }
 
-impl<'a> SerializeStructVariant for MapSerializer<'a> {
+impl<'a, S: SerializeSink> SerializeStructVariant for MapSerializer<'a, S> {
     type Ok = ();
     type Error = Error;
 
@@ -923,6 +1085,9 @@ impl<'a> SerializeStructVariant for MapSerializer<'a> {
 
 pub struct Deserializer<'de> {
     scanner: Scanner<'de>,
+    scratch: Vec<u8>,
+    remaining_depth: u8,
+    depth_limit_disabled: bool,
 }
 
 impl<'de> Deserializer<'de> {
@@ -931,6 +1096,9 @@ impl<'de> Deserializer<'de> {
     pub fn from_str(input: &'de str) -> Self {
         Self {
             scanner: Scanner::new_str(input),
+            scratch: Vec::new(),
+            remaining_depth: crate::scanner::MAX_DEPTH,
+            depth_limit_disabled: false,
         }
     }
 
@@ -938,7 +1106,71 @@ impl<'de> Deserializer<'de> {
     pub fn from_slice(input: &'de [u8]) -> Self {
         Self {
             scanner: Scanner::new(input),
+            scratch: Vec::new(),
+            remaining_depth: crate::scanner::MAX_DEPTH,
+            depth_limit_disabled: false,
         }
+    }
+
+    #[inline]
+    fn with_depth<T>(
+        &mut self,
+        operation: impl FnOnce(&mut Self) -> Result<T, Error>,
+    ) -> Result<T, Error> {
+        if self.depth_limit_disabled {
+            return operation(self);
+        }
+        if self.remaining_depth <= 1 {
+            return Err(Error::Scanner(crate::Error::RecursionLimit));
+        }
+        self.remaining_depth -= 1;
+        // This private guard owns the exclusive borrow of the WHOLE parser.
+        // Visitors only access it through that borrow, so there is no aliasing
+        // of a scanner field with its enclosing deserializer. Drop is infallible.
+        struct RestoreDepth<'a, 'de> {
+            parser: &'a mut Deserializer<'de>,
+        }
+        impl Drop for RestoreDepth<'_, '_> {
+            fn drop(&mut self) {
+                self.parser.remaining_depth += 1;
+            }
+        }
+        let guard = RestoreDepth { parser: self };
+        operation(&mut *guard.parser)
+    }
+
+    #[inline]
+    fn with_str<T>(
+        &mut self,
+        colon: bool,
+        operation: impl for<'scratch> FnOnce(DecodedStr<'de, 'scratch>) -> Result<T, Error>,
+    ) -> Result<T, Error> {
+        // Keep typical decoded strings reusable, but release oversized storage
+        // on success, error AND unwind. A transient reference cannot escape T.
+        struct Scratch<'a>(&'a mut Vec<u8>);
+        impl Drop for Scratch<'_> {
+            fn drop(&mut self) {
+                if self.0.capacity() > 64 * 1024 {
+                    *self.0 = Vec::new();
+                }
+            }
+        }
+        let scratch = Scratch(&mut self.scratch);
+        let value = self.scanner.read_str_with_scratch(scratch.0)?;
+        if colon {
+            self.scanner.skip_whitespace();
+            self.scanner.expect_byte(b':')?;
+        }
+        operation(value)
+    }
+
+    /// Release reusable decoding storage without changing input position.
+    pub fn clear_scratch(&mut self) {
+        self.scratch = Vec::new();
+    }
+    /// Retained native transient decoding capacity (not total allocations).
+    pub fn scratch_capacity(&self) -> usize {
+        self.scratch.capacity()
     }
 
     /// Require end of input after one value.
@@ -949,6 +1181,7 @@ impl<'de> Deserializer<'de> {
     /// Explicit opt-out; enabling the feature leaves the default limit intact.
     #[cfg(feature = "unbounded_depth")]
     pub fn disable_recursion_limit(&mut self) {
+        self.depth_limit_disabled = true;
         self.scanner.disable_recursion_limit();
     }
 
@@ -1010,8 +1243,7 @@ impl<'de> MapAccess<'de> for RawTokenMapAccess<'de> {
 }
 
 pub fn from_str<'de, T: serde::Deserialize<'de>>(s: &'de str) -> Result<T, Error> {
-    let scanner = Scanner::new_str(s);
-    let mut de = Deserializer { scanner };
+    let mut de = Deserializer::from_str(s);
     let value = T::deserialize(&mut de)?;
     // ECMA-404: a JSON text is exactly one value — reject trailing content.
     de.scanner.expect_eof()?;
@@ -1019,8 +1251,7 @@ pub fn from_str<'de, T: serde::Deserialize<'de>>(s: &'de str) -> Result<T, Error
 }
 
 pub fn from_slice<'de, T: serde::Deserialize<'de>>(b: &'de [u8]) -> Result<T, Error> {
-    let scanner = Scanner::new(b);
-    let mut de = Deserializer { scanner };
+    let mut de = Deserializer::from_slice(b);
     let value = T::deserialize(&mut de)?;
     de.scanner.expect_eof()?;
     Ok(value)
@@ -1044,8 +1275,7 @@ pub fn from_reader<R: std::io::Read, T: DeserializeOwned>(mut r: R) -> Result<T,
 pub fn from_str_with_stats<'de, T: serde::Deserialize<'de>>(
     s: &'de str,
 ) -> Result<(T, crate::stats::ScannerStats), Error> {
-    let scanner = Scanner::new_str(s);
-    let mut de = Deserializer { scanner };
+    let mut de = Deserializer::from_str(s);
     let value = T::deserialize(&mut de)?;
     de.scanner.expect_eof()?;
     Ok((value, de.scanner.stats))
@@ -1058,8 +1288,7 @@ pub fn from_str_with_stats<'de, T: serde::Deserialize<'de>>(
 pub fn from_slice_with_stats<'de, T: serde::Deserialize<'de>>(
     b: &'de [u8],
 ) -> Result<(T, crate::stats::ScannerStats), Error> {
-    let scanner = Scanner::new(b);
-    let mut de = Deserializer { scanner };
+    let mut de = Deserializer::from_slice(b);
     let value = T::deserialize(&mut de)?;
     de.scanner.expect_eof()?;
     Ok((value, de.scanner.stats))
@@ -1164,11 +1393,10 @@ impl<'de> de_trait::Deserializer<'de> for &mut Deserializer<'de> {
     }
 
     fn deserialize_str<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, Error> {
-        let s = self.scanner.read_str()?;
-        match s {
-            JsonStr::Borrowed(b) | JsonStr::BorrowedNoEsc(b) => visitor.visit_borrowed_str(b),
-            JsonStr::Owned(o) => visitor.visit_str(&o),
-        }
+        self.with_str(false, |s| match s {
+            DecodedStr::Borrowed(b) => visitor.visit_borrowed_str(b),
+            DecodedStr::Transient(s) => visitor.visit_str(s),
+        })
     }
 
     fn deserialize_string<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, Error> {
@@ -1226,20 +1454,21 @@ impl<'de> de_trait::Deserializer<'de> for &mut Deserializer<'de> {
     }
 
     fn deserialize_seq<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, Error> {
-        let _depth = self.scanner.enter_depth()?;
-        self.scanner.skip_whitespace();
-        self.scanner.expect_byte(b'[')?;
-        let mut access = JsonSeqAccess {
-            de: self,
-            first: true,
-            done: false,
-        };
-        let value = visitor.visit_seq(&mut access)?;
-        if !access.done {
-            access.de.scanner.skip_whitespace();
-            access.de.scanner.expect_byte(b']')?;
-        }
-        Ok(value)
+        self.with_depth(|parser| {
+            parser.scanner.skip_whitespace();
+            parser.scanner.expect_byte(b'[')?;
+            let mut access = JsonSeqAccess {
+                de: parser,
+                first: true,
+                done: false,
+            };
+            let value = visitor.visit_seq(&mut access)?;
+            if !access.done {
+                access.de.scanner.skip_whitespace();
+                access.de.scanner.expect_byte(b']')?;
+            }
+            Ok(value)
+        })
     }
 
     fn deserialize_tuple<V: Visitor<'de>>(
@@ -1260,24 +1489,25 @@ impl<'de> de_trait::Deserializer<'de> for &mut Deserializer<'de> {
     }
 
     fn deserialize_map<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, Error> {
-        let _depth = self.scanner.enter_depth()?;
-        self.scanner.skip_whitespace();
-        self.scanner.expect_byte(b'{')?;
-        let mut access = JsonMapAccess {
-            de: self,
-            first: true,
-            pending_value: false,
-            done: false,
-        };
-        let value = visitor.visit_map(&mut access)?;
-        if access.pending_value {
-            return Err(Error::Custom("map value not consumed".into()));
-        }
-        if !access.done {
-            access.de.scanner.skip_whitespace();
-            access.de.scanner.expect_byte(b'}')?;
-        }
-        Ok(value)
+        self.with_depth(|parser| {
+            parser.scanner.skip_whitespace();
+            parser.scanner.expect_byte(b'{')?;
+            let mut access = JsonMapAccess {
+                de: parser,
+                first: true,
+                pending_value: false,
+                done: false,
+            };
+            let value = visitor.visit_map(&mut access)?;
+            if access.pending_value {
+                return Err(Error::Custom("map value not consumed".into()));
+            }
+            if !access.done {
+                access.de.scanner.skip_whitespace();
+                access.de.scanner.expect_byte(b'}')?;
+            }
+            Ok(value)
+        })
     }
 
     fn deserialize_struct<V: Visitor<'de>>(
@@ -1301,17 +1531,16 @@ impl<'de> de_trait::Deserializer<'de> for &mut Deserializer<'de> {
     ) -> Result<V::Value, Error> {
         let b = self.scanner.peek_byte_after_ws()?;
         if b == b'"' {
-            let s = self.scanner.read_str()?;
-            let variant = s;
-            visitor.visit_enum(StrDeserializer::new(variant))
+            self.with_str(false, |s| visitor.visit_enum(StrDeserializer::new(s)))
         } else if b == b'{' {
-            let _depth = self.scanner.enter_depth()?;
-            self.scanner.skip_whitespace();
-            self.scanner.expect_byte(b'{')?;
-            let value = visitor.visit_enum(JsonEnumAccess { de: self })?;
-            self.scanner.skip_whitespace();
-            self.scanner.expect_byte(b'}')?;
-            Ok(value)
+            self.with_depth(|parser| {
+                parser.scanner.skip_whitespace();
+                parser.scanner.expect_byte(b'{')?;
+                let value = visitor.visit_enum(JsonEnumAccess { de: parser })?;
+                parser.scanner.skip_whitespace();
+                parser.scanner.expect_byte(b'}')?;
+                Ok(value)
+            })
         } else {
             Err(Error::Scanner(crate::Error::UnexpectedToken))
         }
@@ -1637,11 +1866,10 @@ impl<'de, 'a> de_trait::Deserializer<'de> for MapKeyDeserializer<'a, 'de> {
     }
 
     fn deserialize_str<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, Error> {
-        let s = self.de.scanner.read_str()?;
-        match s {
-            JsonStr::Borrowed(b) | JsonStr::BorrowedNoEsc(b) => visitor.visit_borrowed_str(b),
-            JsonStr::Owned(o) => visitor.visit_str(&o),
-        }
+        self.de.with_str(false, |s| match s {
+            DecodedStr::Borrowed(b) => visitor.visit_borrowed_str(b),
+            DecodedStr::Transient(s) => visitor.visit_str(s),
+        })
     }
 
     fn deserialize_string<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, Error> {
@@ -1663,12 +1891,15 @@ impl<'de, 'a> de_trait::Deserializer<'de> for MapKeyDeserializer<'a, 'de> {
     numeric_key!(deserialize_u64);
     numeric_key!(deserialize_u128);
     fn deserialize_bool<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, Error> {
-        let s = self.de.scanner.read_str()?;
-        let b: bool = s
-            .as_str()
-            .parse()
-            .map_err(|_| Error::Scanner(crate::Error::UnexpectedToken))?;
-        visitor.visit_bool(b)
+        self.de.with_str(false, |s| {
+            let text = match s {
+                DecodedStr::Borrowed(b) | DecodedStr::Transient(b) => b,
+            };
+            let b = text
+                .parse()
+                .map_err(|_| Error::Scanner(crate::Error::UnexpectedToken))?;
+            visitor.visit_bool(b)
+        })
     }
     fn deserialize_bytes<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, Error> {
         self.deserialize_str(visitor)
@@ -1743,44 +1974,44 @@ impl<'de, 'a> de_trait::Deserializer<'de> for MapKeyDeserializer<'a, 'de> {
     }
 }
 
-struct StrDeserializer<'de> {
-    value: JsonStr<'de>,
+struct StrDeserializer<'de, 'scratch> {
+    value: DecodedStr<'de, 'scratch>,
 }
 
-impl<'de> StrDeserializer<'de> {
-    fn new(value: JsonStr<'de>) -> Self {
+impl<'de, 'scratch> StrDeserializer<'de, 'scratch> {
+    fn new(value: DecodedStr<'de, 'scratch>) -> Self {
         StrDeserializer { value }
     }
 }
 
-impl<'de> de_trait::Deserializer<'de> for StrDeserializer<'de> {
+impl<'de, 'scratch> de_trait::Deserializer<'de> for StrDeserializer<'de, 'scratch> {
     type Error = Error;
 
     fn deserialize_any<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, Error> {
         match self.value {
-            JsonStr::Borrowed(s) | JsonStr::BorrowedNoEsc(s) => visitor.visit_borrowed_str(s),
-            JsonStr::Owned(s) => visitor.visit_str(&s),
+            DecodedStr::Borrowed(s) => visitor.visit_borrowed_str(s),
+            DecodedStr::Transient(s) => visitor.visit_str(s),
         }
     }
 
     fn deserialize_identifier<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, Error> {
         match self.value {
-            JsonStr::Borrowed(s) | JsonStr::BorrowedNoEsc(s) => visitor.visit_borrowed_str(s),
-            JsonStr::Owned(s) => visitor.visit_str(&s),
+            DecodedStr::Borrowed(s) => visitor.visit_borrowed_str(s),
+            DecodedStr::Transient(s) => visitor.visit_str(s),
         }
     }
 
     fn deserialize_str<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, Error> {
         match self.value {
-            JsonStr::Borrowed(s) | JsonStr::BorrowedNoEsc(s) => visitor.visit_borrowed_str(s),
-            JsonStr::Owned(s) => visitor.visit_str(&s),
+            DecodedStr::Borrowed(s) => visitor.visit_borrowed_str(s),
+            DecodedStr::Transient(s) => visitor.visit_str(s),
         }
     }
 
     fn deserialize_string<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, Error> {
         match self.value {
-            JsonStr::Borrowed(s) | JsonStr::BorrowedNoEsc(s) => visitor.visit_borrowed_str(s),
-            JsonStr::Owned(s) => visitor.visit_str(&s),
+            DecodedStr::Borrowed(s) => visitor.visit_borrowed_str(s),
+            DecodedStr::Transient(s) => visitor.visit_str(s),
         }
     }
 
@@ -1800,7 +2031,7 @@ impl<'de> de_trait::Deserializer<'de> for StrDeserializer<'de> {
     }
 }
 
-impl<'de> EnumAccess<'de> for StrDeserializer<'de> {
+impl<'de, 'scratch> EnumAccess<'de> for StrDeserializer<'de, 'scratch> {
     type Error = Error;
     type Variant = UnitOnlyVariantAccess;
 
@@ -1854,11 +2085,9 @@ impl<'de, 'a> EnumAccess<'de> for JsonEnumAccess<'a, 'de> {
         self,
         seed: V,
     ) -> Result<(V::Value, Self::Variant), Error> {
-        let s = self.de.scanner.read_str()?;
-        let variant_name = s;
-        self.de.scanner.skip_whitespace();
-        self.de.scanner.expect_byte(b':')?;
-        let val = seed.deserialize(StrDeserializer::new(variant_name))?;
+        let val = self
+            .de
+            .with_str(true, |s| seed.deserialize(StrDeserializer::new(s)))?;
         Ok((val, JsonVariantAccess { de: self.de }))
     }
 }

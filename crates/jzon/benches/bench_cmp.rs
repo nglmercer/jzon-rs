@@ -1467,11 +1467,11 @@ fn bench_serde_adapter_numeric_heavy(c: &mut Criterion) {
             b.iter(|| black_box(jzon_serde::to_string(black_box(&val)).unwrap()))
         });
         g.throughput(Throughput::Bytes(checked_output_size(
-            "jzon/B/buffered_to_writer",
+            "jzon/B/streaming_to_writer",
             jzon_serde::to_bytes(&val).unwrap(),
             &val,
         )));
-        g.bench_function("jzon/B/buffered_to_writer", |b| {
+        g.bench_function("jzon/B/streaming_to_writer", |b| {
             let mut buf = Vec::with_capacity(input.len());
             b.iter(|| {
                 buf.clear();

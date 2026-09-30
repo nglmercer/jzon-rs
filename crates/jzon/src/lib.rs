@@ -97,6 +97,7 @@ pub use jzon_derive::{FromJson, ToJson};
 #[cfg(feature = "serde")]
 pub use serde_impl::{
     from_reader, from_slice, from_str, to_bytes, to_bytes_in, to_string, to_writer,
+    to_writer_buffered, Deserializer, Serializer,
 };
 #[cfg(all(feature = "serde", feature = "stats"))]
 pub use serde_impl::{from_reader_with_stats, from_slice_with_stats, from_str_with_stats};

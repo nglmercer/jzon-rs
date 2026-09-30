@@ -63,6 +63,13 @@ impl<'de> JsonStr<'de> {
     }
 }
 
+/// Strings decoded for native visitors preserve distinct input/scratch lifetimes.
+#[cfg(feature = "serde")]
+pub(crate) enum DecodedStr<'de, 'scratch> {
+    Borrowed(&'de str),
+    Transient(&'scratch str),
+}
+
 /// Levels of array/object nesting a single parse may enter, mirroring
 /// `serde_json` (127 nested opens parse, the 128th errors).
 pub const MAX_DEPTH: u8 = 128;
@@ -371,6 +378,44 @@ impl<'de> Scanner<'de> {
                 Ok(JsonStr::Owned(owned))
             }
             Some(_) => Err(Error::InvalidEscape), // control char < 0x20
+            None => Err(err_eof()),
+        }
+    }
+
+    /// Native transient decoding: plain strings borrow the input; escaped
+    /// strings borrow the caller's scratch only for the current visitor call.
+    #[cfg(feature = "serde")]
+    #[inline]
+    pub(crate) fn read_str_with_scratch<'scratch>(
+        &mut self,
+        scratch: &'scratch mut Vec<u8>,
+    ) -> Result<DecodedStr<'de, 'scratch>, Error> {
+        self.skip_whitespace();
+        self.expect_byte(b'"')?;
+        let start = self.pos;
+        let (stop, _) = simd::scan_string_run(self.input, start);
+        match self.input.get(stop) {
+            Some(b'"') => {
+                let value = core::str::from_utf8(&self.input[start..stop])
+                    .map_err(|_| Error::InvalidUtf8)?;
+                self.pos = stop + 1;
+                #[cfg(feature = "stats")]
+                {
+                    self.stats.zero_copy_borrows += 1;
+                }
+                Ok(DecodedStr::Borrowed(value))
+            }
+            Some(b'\\') => {
+                self.pos = stop;
+                self.unescape_into(start, scratch)?;
+                let value = core::str::from_utf8(scratch).map_err(|_| Error::InvalidUtf8)?;
+                #[cfg(feature = "stats")]
+                {
+                    self.stats.decoded_strings += 1;
+                }
+                Ok(DecodedStr::Transient(value))
+            }
+            Some(_) => Err(Error::InvalidEscape),
             None => Err(err_eof()),
         }
     }
@@ -992,10 +1037,16 @@ impl<'de> Scanner<'de> {
     /// Unescape a JSON string whose content starts at `content_start` and whose
     /// first backslash is at `self.pos`.  Returns the fully decoded `String`.
     fn unescape_from(&mut self, content_start: usize) -> Result<String, Error> {
+        let mut buf = Vec::new();
+        self.unescape_into(content_start, &mut buf)?;
+        String::from_utf8(buf).map_err(|_| Error::InvalidUtf8)
+    }
+
+    fn unescape_into(&mut self, content_start: usize, buf: &mut Vec<u8>) -> Result<(), Error> {
         // Reserve only the scanned prefix plus modest slack. Unrelated values
         // must not inflate the retained capacity of this string.
-        let mut buf: Vec<u8> =
-            Vec::with_capacity(self.pos.saturating_sub(content_start).saturating_add(16));
+        buf.clear();
+        buf.reserve(self.pos.saturating_sub(content_start).saturating_add(16));
         // The caller (read_str) already positioned self.pos at the first `\`;
         // find_escape already verified no control chars before that point,
         // so the prefix is clean and we copy it directly.
@@ -1063,6 +1114,6 @@ impl<'de> Scanner<'de> {
             }
         }
 
-        String::from_utf8(buf).map_err(|_| Error::InvalidUtf8)
+        Ok(())
     }
 }
