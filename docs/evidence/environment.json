@@ -12,5 +12,7 @@
   "reference": "serde_json 1.0.151",
   "lockfile_sha256": "6ecd1dfab7853bfc73c94d874b670db20b0c9329bf3e2434b7cd88e11308a8ca",
   "final_source_fingerprint_sha256": "cf83002380694fcbb069cc246122db70c371f3b74f7f5d8ae3c4509081b05a71",
-  "fingerprint_note": "Benchmark metadata predates one additional depth_safety test only; production Rust sources are unchanged."
+  "fingerprint_note": "Benchmark metadata predates one additional depth_safety test only; production Rust sources are unchanged.",
+  "implementation_commit_sha": "82c496e3c1d2bb3530b837be772f58f2c3a72c60",
+  "final_head_sha_note": "final_head_sha records the measurement checkout before commits; implementation_commit_sha identifies the committed repaired source."
 }
