@@ -17,7 +17,7 @@ Add `jzon-rs`. The `derive` feature is on by default.
 
 ```toml
 [dependencies]
-jzon-rs = "0.3"
+jzon-rs = "0.4"
 ```
 
 ```rust
@@ -41,7 +41,7 @@ Add `jzon-rs-serde`. No other changes to your code.
 
 ```toml
 [dependencies]
-jzon-rs-serde = "0.3"
+jzon-rs-serde = "0.4"
 serde = { version = "1", features = ["derive"] }
 ```
 
@@ -64,7 +64,7 @@ still on real `serde_json`.
 
 ```toml
 [dependencies]
-serde_json = { package = "jzon-rs-compat", version = "0.3" }
+serde_json = { package = "jzon-rs-compat", version = "0.4" }
 ```
 
 `serde_json` features map 1:1 to same-named `jzon-rs-compat` flags
@@ -174,3 +174,20 @@ Native reusable output: `Serializer::with_capacity(n)`, `serialize(value)`,
 `clear()` (retain capacity), and `into_inner()`. Calls append; errors/panics
 retain partial bytes. Escaped-string scratch reuses up to 64 KiB and releases
 larger buffers on return or unwind. See [optimization progress](./docs/optimization-progress.md).
+
+## Planned 0.4.0 migration
+
+Native `from_reader` is incremental. Use `from_reader_buffered` for the former
+read-to-end contract. `ReaderDeserializer::new(reader).into_iter::<T>()` and
+`Deserializer::from_str(input).into_iter::<T>()` parse consecutive native values
+without retries. Reader callbacks receive transient strings/bytes; slice streams
+can borrow. `into_parts` returns any prefetched byte with the reader.
+
+Native errors expose category, line and column; match `error.cause()` when migrating
+old enum-pattern checks. Disable default features and enable `alloc,serde,derive`
+for embedded allocation support. I/O and HashMap APIs require `std`.
+
+Both compatibility facades require the audited serde_json 1.0.151 source override
+at the consuming workspace root. Registry-only publication is blocked because
+Cargo packaging strips path dependencies. No newer safe release is assumed.
+See [current implementation and evidence](docs/replacement-readiness.md).

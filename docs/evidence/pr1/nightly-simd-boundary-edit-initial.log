@@ -1,0 +1,19 @@
+   Compiling serde_json v1.0.151 (/home/meme/Documentos/GitHub/jzon-rs/vendor/serde_json)
+   Compiling jzon-rs-derive v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_derive)
+   Compiling fast-float2 v0.2.4
+   Compiling jzon-rs v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon)
+   Compiling tinytemplate v1.2.1
+   Compiling jzon-rs-compat v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_compat)
+   Compiling simd-json v0.13.11
+   Compiling criterion v0.5.1
+error[E0609]: no field `first` on type `ReaderEnum<'a, R>`
+   --> crates/jzon/src/serde_impl/reader.rs:705:14
+    |
+705 |         self.first = false;
+    |              ^^^^^ unknown field
+    |
+    = note: available field is: `de`
+
+For more information about this error, try `rustc --explain E0609`.
+error: could not compile `jzon-rs` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

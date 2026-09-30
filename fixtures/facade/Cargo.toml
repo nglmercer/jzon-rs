@@ -8,3 +8,6 @@ mirrors = ["serde_json/raw_value", "serde_json/preserve_order", "serde_json/arbi
 [dependencies]
 serde_json = { package = "jzon-rs-compat", path = "../../crates/jzon_compat" }
 serde = { version = "1", features = ["derive"] }
+
+[patch.crates-io]
+serde_json = { path = "../../vendor/serde_json" }

@@ -74,7 +74,7 @@ mod tests {
         let u = User {
             id: 4,
             name: "Eve".into(),
-            score: 2.718,
+            score: 2.75,
         };
         let mut buf = Vec::new();
         to_writer(&mut buf, &u).unwrap();

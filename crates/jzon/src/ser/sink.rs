@@ -1,6 +1,13 @@
 //! Sealed JSON output sinks for zero-allocation serialization paths.
 
+use crate::__private::*;
+#[cfg(feature = "std")]
 use std::io;
+#[cfg(not(feature = "std"))]
+mod io {
+    pub type Result<T> = core::result::Result<T, core::convert::Infallible>;
+}
+pub type SinkResult<T> = io::Result<T>;
 
 mod sealed {
     pub trait Sealed {}
@@ -89,12 +96,14 @@ impl JsonSink for LengthCounter {
 }
 
 /// Adapter that writes JSON bytes to any [`io::Write`] target.
+#[cfg(feature = "std")]
 pub struct IoSink<'a, W: io::Write + ?Sized> {
     w: &'a mut W,
     ok: bool,
     err: Option<io::Error>,
 }
 
+#[cfg(feature = "std")]
 impl<'a, W: io::Write + ?Sized> IoSink<'a, W> {
     #[inline]
     pub fn new(w: &'a mut W) -> Self {
@@ -115,8 +124,10 @@ impl<'a, W: io::Write + ?Sized> IoSink<'a, W> {
     }
 }
 
+#[cfg(feature = "std")]
 impl<W: io::Write + ?Sized> sealed::Sealed for IoSink<'_, W> {}
 
+#[cfg(feature = "std")]
 impl<W: io::Write + ?Sized> IoSink<'_, W> {
     #[inline]
     fn record_err(&mut self, err: io::Error) {
@@ -127,6 +138,7 @@ impl<W: io::Write + ?Sized> IoSink<'_, W> {
     }
 }
 
+#[cfg(feature = "std")]
 impl<W: io::Write + ?Sized> JsonSink for IoSink<'_, W> {
     #[inline]
     fn push(&mut self, b: u8) {
@@ -201,9 +213,11 @@ impl SerializeSink for Vec<u8> {
 
 /// A native streaming sink. Each operation propagates its writer error before
 /// serialization continues; short and interrupted writes use `write_all`.
+#[cfg(feature = "std")]
 pub struct WriterSink<W> {
     writer: W,
 }
+#[cfg(feature = "std")]
 impl<W> WriterSink<W> {
     pub fn new(writer: W) -> Self {
         Self { writer }
@@ -212,7 +226,9 @@ impl<W> WriterSink<W> {
         self.writer
     }
 }
+#[cfg(feature = "std")]
 impl<W: io::Write> sealed::Sealed for WriterSink<W> {}
+#[cfg(feature = "std")]
 impl<W: io::Write> SerializeSink for WriterSink<W> {
     #[inline]
     fn push_byte(&mut self, byte: u8) -> io::Result<()> {

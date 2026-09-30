@@ -287,11 +287,11 @@ pub mod x86 {
             1 => true,
             2 => false,
             _ => {
-                let tier = if is_x86_feature_detected!("avx2") {
-                    1
-                } else {
-                    2
-                };
+                #[cfg(feature = "std")]
+                let detected = std::is_x86_feature_detected!("avx2");
+                #[cfg(not(feature = "std"))]
+                let detected = cfg!(target_feature = "avx2");
+                let tier = if detected { 1 } else { 2 };
                 AVX2_TIER.store(tier, Ordering::Relaxed);
                 tier == 1
             }

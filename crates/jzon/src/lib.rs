@@ -62,8 +62,23 @@
 //! let out = user.to_json_string();
 //! ```
 
-// Enable `std::simd` portable SIMD on nightly when both features are set.
 #![cfg_attr(all(feature = "simd", feature = "unstable"), feature(portable_simd))]
+#![cfg_attr(not(feature = "std"), no_std)]
+extern crate alloc;
+/// Allocation types used by generated code without requiring consumer std.
+#[doc(hidden)]
+pub mod __private {
+    pub use alloc::{
+        borrow::ToOwned,
+        boxed::Box,
+        format,
+        string::{String, ToString},
+        vec,
+        vec::Vec,
+    };
+}
+
+// Enable `std::simd` portable SIMD on nightly when both features are set.
 
 #[cfg(feature = "compat")]
 pub mod compat;
@@ -86,7 +101,9 @@ pub use de::FromJson;
 pub use error::Error;
 pub use fixed::{json_str_len, FixedBuf, ToJsonExt};
 pub use scanner::{DepthGuard, JsonStr, Scanner};
-pub use ser::{IoSink, JsonSink, LengthCounter, ToJson, VecSink};
+#[cfg(feature = "std")]
+pub use ser::IoSink;
+pub use ser::{JsonSink, LengthCounter, ToJson, VecSink};
 
 #[cfg(feature = "derive")]
 pub use jzon_derive::{FromJson, ToJson};
@@ -94,10 +111,17 @@ pub use jzon_derive::{FromJson, ToJson};
 // Serde engine entry points live in [`serde_impl`]; the most-used functions
 // are re-exported at the crate root. (`serde_impl::Error` keeps its module
 // path to avoid clashing with [`Error`].)
+#[cfg(all(feature = "serde", feature = "std"))]
+pub use serde_impl::{
+    from_reader, from_reader_buffered, to_writer, to_writer_buffered, ReaderDeserializer,
+    ReaderStream,
+};
+#[cfg(all(feature = "serde", feature = "std", feature = "stats"))]
+pub use serde_impl::{from_reader_buffered_with_stats, from_reader_with_stats};
 #[cfg(feature = "serde")]
 pub use serde_impl::{
-    from_reader, from_slice, from_str, to_bytes, to_bytes_in, to_string, to_writer,
-    to_writer_buffered, Deserializer, Serializer,
+    from_slice, from_str, to_bytes, to_bytes_in, to_string, Deserializer, Serializer,
+    StreamDeserializer,
 };
 #[cfg(all(feature = "serde", feature = "stats"))]
-pub use serde_impl::{from_reader_with_stats, from_slice_with_stats, from_str_with_stats};
+pub use serde_impl::{from_slice_with_stats, from_str_with_stats};

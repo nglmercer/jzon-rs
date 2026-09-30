@@ -1,7 +1,7 @@
 //! Integration tests covering all supported struct syntaxes, serde attributes,
 //! data types, and runtime properties (zero-copy, allocation behaviour).
 
-use jzon::{Error, FromJson, ToJson};
+use jzon::{FromJson, ToJson};
 #[derive(ToJson, FromJson, Debug, PartialEq)]
 struct Point {
     x: f64,
@@ -2111,19 +2111,17 @@ fn read_str_valid_non_ascii_unescaped() {
 #[test]
 fn read_str_invalid_utf8_unescaped_returns_error() {
     use jzon::scanner::Scanner;
-    use jzon::Error;
     let input = b"\"\xFF\xFE\"";
     let mut sc = Scanner::new(input);
-    assert!(matches!(sc.read_str(), Err(Error::InvalidUtf8)));
+    assert!(matches!(sc.read_str(), Err(jzon::Error::InvalidUtf8)));
 }
 
 #[test]
 fn read_str_raw_control_byte_returns_invalid_escape() {
     use jzon::scanner::Scanner;
-    use jzon::Error;
     let input = b"\"hello\x01world\"";
     let mut sc = Scanner::new(input);
-    assert!(matches!(sc.read_str(), Err(Error::InvalidEscape)));
+    assert!(matches!(sc.read_str(), Err(jzon::Error::InvalidEscape)));
 }
 
 #[cfg(not(feature = "unbounded_depth"))]
@@ -2142,11 +2140,11 @@ fn recursion_limit_enforced_and_bounded() {
     assert!(Node::from_json_str(&nested(127)).is_ok());
     assert!(matches!(
         Node::from_json_str(&nested(128)),
-        Err(Error::RecursionLimit)
+        Err(jzon::Error::RecursionLimit)
     ));
     assert!(matches!(
         Node::from_json_str(&nested(500)),
-        Err(Error::RecursionLimit)
+        Err(jzon::Error::RecursionLimit)
     ));
 }
 
@@ -2166,7 +2164,7 @@ fn recursion_limit_applies_to_skipped_regions() {
     );
     assert!(matches!(
         HasSkipped::from_json_str(&deep),
-        Err(Error::RecursionLimit)
+        Err(jzon::Error::RecursionLimit)
     ));
     let ok = format!(
         "{{\"keep\":1,\"drop\":{}{}}}",
@@ -2189,15 +2187,15 @@ fn strict_rejects_trailing_commas_in_structs_and_maps() {
     }
     assert!(matches!(
         Solo::from_json_str(r#"{"x":1,}"#),
-        Err(Error::TrailingComma)
+        Err(jzon::Error::TrailingComma)
     ));
     assert!(matches!(
         Solo::from_json_str(r#"{"x":1,"y":2,}"#),
-        Err(Error::TrailingComma)
+        Err(jzon::Error::TrailingComma)
     ));
     assert!(matches!(
         HashMap::<String, u64>::from_json_str(r#"{"a":1,}"#),
-        Err(Error::TrailingComma)
+        Err(jzon::Error::TrailingComma)
     ));
     // Well-formed input still parses.
     assert_eq!(Solo::from_json_str(r#"{"x":1}"#).unwrap().x, 1);
@@ -2213,7 +2211,7 @@ fn strict_rejects_trailing_commas_in_enums() {
     }
     assert!(matches!(
         Msg::from_json_str(r#"{"Move":{"x":1,}}"#),
-        Err(Error::TrailingComma)
+        Err(jzon::Error::TrailingComma)
     ));
 
     #[derive(ToJson, FromJson, Debug, PartialEq)]
@@ -2223,7 +2221,7 @@ fn strict_rejects_trailing_commas_in_enums() {
     }
     assert!(matches!(
         Tagged::from_json_str(r#"{"t":"Point","x":1,}"#),
-        Err(Error::TrailingComma)
+        Err(jzon::Error::TrailingComma)
     ));
 }
 
@@ -2243,11 +2241,11 @@ fn strict_rejects_trailing_commas_on_other_fallback() {
     }
     assert!(matches!(
         Catch::from_json_str(r#"{"t":"Nope","x":1,}"#),
-        Err(Error::TrailingComma)
+        Err(jzon::Error::TrailingComma)
     ));
     assert!(matches!(
         Catch::from_json_str(r#"{"x":1,"t":"Nope",}"#),
-        Err(Error::TrailingComma)
+        Err(jzon::Error::TrailingComma)
     ));
     assert_eq!(
         Catch::from_json_str(r#"{"t":"Nope","x":1}"#).unwrap(),

@@ -1,0 +1,5 @@
+   Compiling serde_json v1.0.151 (/home/meme/Documentos/GitHub/jzon-rs/vendor/serde_json)
+warning: cargo:rustc-check-cfg requires -Zcheck-cfg=output flag
+    Checking jzon-rs-compat v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_compat)
+    Checking alloc-consumer v0.0.0 (/home/meme/Documentos/GitHub/jzon-rs/fixtures/alloc)
+    Finished dev [unoptimized + debuginfo] target(s) in 1.59s

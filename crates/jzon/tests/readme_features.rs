@@ -358,7 +358,8 @@ fn stats_hint_counters_track_dispatch() {
         d: u32,
     }
     let mut sc = jzon::Scanner::new_str(r#"{"d":4,"c":3,"b":2,"a":1}"#);
-    Multi::from_json_scanner(&mut sc).unwrap();
+    let parsed = Multi::from_json_scanner(&mut sc).unwrap();
+    assert_eq!((parsed.a, parsed.b, parsed.c, parsed.d), (1, 2, 3, 4));
     assert_eq!(sc.stats.hint_hits, 0);
     assert_eq!(sc.stats.hint_misses, 4);
 }

@@ -1,6 +1,9 @@
 //! Zero-allocation, stack-based JSON output via const-generic fixed buffers.
 
-use crate::ser::{IoSink, LengthCounter, ToJson};
+use crate::__private::*;
+#[cfg(feature = "std")]
+use crate::ser::IoSink;
+use crate::ser::{LengthCounter, ToJson};
 
 /// Stack-allocated, const-generic byte buffer for zero-allocation JSON output.
 pub struct FixedBuf<const N: usize> {
@@ -133,6 +136,7 @@ pub trait ToJsonExt: ToJson {
     }
 
     /// Serialize to any `io::Write`.
+    #[cfg(feature = "std")]
     fn json_write_io(&self, w: impl std::io::Write) -> std::io::Result<()>
     where
         Self: Sized,

@@ -1,10 +1,15 @@
 //! `ToJson` trait and primitive implementations.
 
+use crate::__private::*;
 mod sink;
 
-pub use sink::{IoSink, JsonSink, LengthCounter, SerializeSink, VecSink, WriterSink};
+#[cfg(feature = "std")]
+pub use sink::{IoSink, WriterSink};
+pub use sink::{JsonSink, LengthCounter, SerializeSink, VecSink};
 
-use std::collections::{BTreeMap, HashMap};
+use alloc::collections::BTreeMap;
+#[cfg(feature = "std")]
+use std::collections::HashMap;
 
 pub trait ToJson {
     fn json_write(&self, w: &mut Vec<u8>);
@@ -77,7 +82,7 @@ pub fn write_escaped_str_sink<S: JsonSink>(s: &str, w: &mut S) {
 }
 
 #[inline]
-pub fn try_write_escaped_str_sink<S: SerializeSink>(s: &str, w: &mut S) -> std::io::Result<()> {
+pub fn try_write_escaped_str_sink<S: SerializeSink>(s: &str, w: &mut S) -> sink::SinkResult<()> {
     write_quoted_sink(s, w, b"\"")
 }
 
@@ -85,7 +90,7 @@ pub fn try_write_escaped_str_sink<S: SerializeSink>(s: &str, w: &mut S) -> std::
 pub(crate) fn try_write_escaped_key_sink<S: SerializeSink>(
     s: &str,
     w: &mut S,
-) -> std::io::Result<()> {
+) -> sink::SinkResult<()> {
     let bytes = s.as_bytes();
     // Validate every byte even for static names supplied by custom Serialize
     // implementations. This fast path trusts neither field syntax nor ASCII.
@@ -103,7 +108,7 @@ pub(crate) fn try_write_escaped_key_sink<S: SerializeSink>(
 }
 
 #[inline]
-fn write_quoted_sink<S: SerializeSink>(s: &str, w: &mut S, suffix: &[u8]) -> std::io::Result<()> {
+fn write_quoted_sink<S: SerializeSink>(s: &str, w: &mut S, suffix: &[u8]) -> sink::SinkResult<()> {
     w.reserve_bytes(s.len().saturating_add(1).saturating_add(suffix.len()));
     w.push_byte(b'"')?;
     let bytes = s.as_bytes();
@@ -135,7 +140,7 @@ fn write_quoted_sink<S: SerializeSink>(s: &str, w: &mut S, suffix: &[u8]) -> std
 }
 
 #[inline(always)]
-fn escape_one<S: SerializeSink>(b: u8, w: &mut S) -> std::io::Result<()> {
+fn escape_one<S: SerializeSink>(b: u8, w: &mut S) -> sink::SinkResult<()> {
     match b {
         b'"' => w.write_bytes(b"\\\"")?,
         b'\\' => w.write_bytes(b"\\\\")?,
@@ -608,6 +613,7 @@ impl ToJson for () {
 
 // ── HashMap / BTreeMap → JSON objects ────────────────────────────────────────
 
+#[cfg(feature = "std")]
 impl<K: ToJson, V: ToJson> ToJson for HashMap<K, V> {
     fn json_write(&self, w: &mut Vec<u8>) {
         write_map(self.iter(), &mut VecSink(w));

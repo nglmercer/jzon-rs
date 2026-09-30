@@ -1,5 +1,193 @@
 # Replacement-readiness assessment
 
+## PR #1 remaining fixes — 2026-09-30
+
+This section supersedes the current conclusions in the historical reports below.
+The checkout started clean at **1ef7809435e1ce57bc3198ef560e7774f74307c7**, matching
+the reviewed baseline. No repository or parent AGENTS.md was found. The named
+`JZON_PR1_REMAINING_FIXES.md` was absent; the user's subsequently supplied full
+specification governed this implementation. Existing native map-key, guard,
+container, allocation and callback repairs were preserved. Validation uses the
+local modified source, bound by the resulting local commit and
+[source fingerprints](evidence/pr1/source-identity.json). No reset, push, merge,
+publication, billing or security-setting change occurred.
+
+Remote CI: **EXCLUDED_BY_USER — billing limitation**. There is no remote approval,
+dispatch or final-head CI gate in this local task. Earlier remote-status statements
+below are historical evidence only.
+
+### Implementation status and separate conclusions
+
+| Work item | Implementation and locally observed status | Concrete limits / blockers |
+|---|---|---|
+| Upstream safety | Audited local serde_json **1.0.151** bool-key patch, shared by both facades; affected constructors and streams checked under Miri. Direct string fuzz comparisons restored after validating the patched reference. | No verified fixed upstream registry release was selected. This is a narrow audited patch, not a safety proof for all upstream code. |
+| Shipped dependency | Active manifests, independent fixtures, fuzz and resolved lockfiles select the safe source. Independent source and extracted-package consumers verify its exact `de.rs` hash and a single shared upstream type identity under Miri. | Cargo strips path dependencies in packaged manifests. **Consumers must override serde_json at their workspace root.** Without that override, package metadata demonstrably resolves the unsafe registry source. Registry-only release is blocked. |
+| Native errors / dispatch | Native Serde has category, byte-based line/column, wrapped cause and public-constructor positions. Valid wrong types are Data errors; malformed syntax and EOF remain distinct. Visitor errors retain precedence. Byte visitors preserve native byte/surrogate rules. | Native messages/types remain distinct. Exhaustive upstream error-message/position equivalence is not certified; Mode A keeps its existing error type. |
+| Native readers / streams | Incremental native parser, fragmented reads, Interrupted retry, EOF/I/O handling, explicit container completion, primitive boundaries, owned reader streams and borrowed slice streams. No whole-document reader buffer or callback replay. | Scalar tokens require token-sized storage; RawValue explicitly captures its requested raw value. Streams fuse on errors and report actual parser consumption, not upstream's recovery-offset contract. |
+| Native no_std + alloc / features | Core and native wrapper gate std/I/O/HashMap paths; generated code uses core/alloc. Native Serde and Mode A derive compile on **thumbv7em-none-eabi**, including Rust **1.71.0**. Native mirror features do not activate serde_json. | Public guard storage requires pointer-width atomics; targets without them are outside this demonstrated support. Runtime SIMD/reader APIs require std. Other architectures and platforms are not locally executed. |
+| Validation / performance | Formatting, Clippy, complete local suites, consumers, MSRV, targeted Miri, typed and Value reader fuzzing, package checks and repeated equivalent reader benchmarks recorded below. | Finite local campaigns are not deployment certification. CPU-callgraph profiling tools are unavailable; no speculative timing optimization or gain is claimed. The incremental reader has a measured timing regression. |
+| Migration / release preparation | All internal packages and version requirements aligned to planned **0.4.0**; [migration notes](migration-0.4.md), changelog and [PR description](pr1-description.md) prepared. | Registry-only distribution remains blocked by safe-source resolution. No release was published. |
+
+**Native completeness:** the requested incremental-reader, structured-error and
+alloc implementations now exist and have finite local coverage; unrestricted
+replacement remains uncertified, especially exact error/recovery contracts and
+unexecuted platform/deployment workloads. **Facade compatibility:** both strict
+surfaces remain direct upstream re-exports, with shared type interoperability
+when consumers select the audited source. **Measured acceleration:** this reader
+workload regresses; historical serialization comparisons retain their own scope.
+**Dependency removal:** native-only consumers contain no upstream JSON dependency;
+facades still require upstream JSON and are not acceleration or dependency removal.
+**Registry-release readiness:** blocked without a verified safe registry source or
+an explicitly migrated maintained fork. A transitive workspace patch cannot fix
+that distribution requirement.
+
+### Audited reference and packaging evidence
+
+The original registry string-key reproduction was run **only under Miri** and
+failed with Undefined Behavior, exit 1. Its
+[probe](evidence/pr1/original-oracle-probe.rs),
+[manifest](evidence/pr1/original-oracle-Cargo.toml),
+[lockfile](evidence/pr1/original-oracle-Cargo.lock) and
+[observed failure](evidence/pr1/upstream-baseline-miri.log) are retained.
+`vendor/serde_json` preserves upstream package name/version and MIT/Apache
+licenses. The [patch](evidence/pr1/upstream-safety.patch) peeks at the first
+boolean-key content byte and consumes it only on literal `t` / `f` paths. The
+invalid-key branch parses the complete string, preserving StrRead's UTF-8
+precondition. It does not decode escapes into accepted boolean spellings or
+replay callbacks. The [source record](evidence/pr1/dependency-source.json) gives
+original and patched hashes and the update policy. No newer release is assumed
+safe. The inspected upstream source was not a verified fixed release.
+
+The vendor manifest also pins optional **indexmap =2.2.3**, a real release with
+Rust 1.63 metadata. The initial mirror MSRV attempt resolved 2.14.2 and failed
+because Cargo 1.71 cannot read its edition-2024 manifest. The corrected mirror
+consumer passed on Rust 1.71; both failure and correction logs remain recorded.
+This manifest constraint is explicit additional patch scope, separate from the
+three-line boolean-parser repair.
+
+`tools/check-safe-dependency.py` constructs an independent consumer with both
+facades, upstream Value interoperability, public string/slice/reader constructors
+and streams. Its packaged mode extracts all four `.crate` artifacts plus the
+safe serde_json artifact. It first checks **metadata only** without a serde_json
+override, proving unsafe registry resolution without executing that source; it
+then installs the required root override, proves a single safe source and hash,
+and executes the affected consumer under Miri. The selected source survives
+packaging **with this explicit override**. Packaging alone does not embed it.
+See [package command results](evidence/pr1/package-results.json) and
+[packaged consumer log](evidence/pr1/packaged-consumer-final.log).
+
+### Native implementation and storage contract
+
+`ReaderDeserializer` drives containers incrementally with a single lookahead
+byte, RAII depth restoration and a reusable scalar token. Its lifetime bridge
+converts borrowed scalar callbacks to transient string/byte callbacks; it invokes
+user seeds and visitors once and contains no unsafe lifetime extension. Scalar
+parsing delegates to the **native slice engine**, never upstream. Ignored/raw
+values use iterative lexical grammar with validated keys, escapes and controls.
+Ignored-token errors retain their local positions; large lexical token storage is
+released after completion. Requested raw captures are output requirements, not a
+hidden general document buffer. Tests parse a 100,000-element array with a maximum
+three-byte scalar token, exercise deep ignored structures and retain byte/surrogate
+behavior separately from String behavior.
+
+`from_reader_buffered` and its stats variant retain the explicitly named former
+contract. `ReaderDeserializer::into_parts()` returns a prefetched byte together
+with the source so partial consumption is not silently lost. Reader stats count
+native scalar work actually performed; they do not claim borrowed output or
+complete scanner-event accounting for reader structural/ignored traversal.
+Slice and reader streams validate primitive boundaries (for example `truefalse`
+is rejected) and stop after errors. Early visitor completion cannot hide malformed
+container tails. Reader depth restoration is tested across visitor panic unwinding.
+
+### Exact local commands and results
+
+[Validation results](evidence/pr1/validation-results.json),
+[additional results](evidence/pr1/extra-results.json),
+[Miri results](evidence/pr1/miri-results.json),
+[package results](evidence/pr1/package-results.json),
+[fuzz results](evidence/pr1/fuzz-results.json) and
+[measurement results](evidence/pr1/measurement-results.json) contain exact argument
+vectors, exit codes and elapsed times; adjacent logs retain output messages.
+Captured logs normalize trailing whitespace and redundant final blank lines for
+repository whitespace checks; result content is unchanged.
+Historical/intermediate failures retain their original labels. The generated root
+lockfile is normally ignored by this library repository; its tested resolved
+snapshot is preserved as [workspace lock](evidence/pr1/workspace-Cargo.lock).
+Tracked independent fixture and fuzz lockfiles were updated; fixture lockfiles
+remain Cargo-format 3 for the supported MSRV.
+
+| Command / configuration | Observed result |
+|---|---|
+| `cargo fmt --all -- --check`; native alloc fixture formatting | Passed. |
+| `cargo clippy --workspace --all-targets --features 'compat,raw_value,preserve_order,arbitrary_precision,float_roundtrip,unbounded_depth,simd,simd-intrinsics,stats,zmij-float-ser' -- -D warnings` | Passed; checks retained. Initial feature-combination lints were fixed in test data/imports/assertions. |
+| `cargo test --workspace`; complete mirror, SIMD and strict configurations | Passed, including direct native regression tests and doctests. |
+| `cargo +nightly test --workspace --features serde,simd,unstable` | Passed on local x86_64. |
+| `cargo test -p jzon-rs --features serde,raw_value --test native_reader --test native_errors` | **13 reader + 2 error tests passed**. Existing eight PR21 key groups pass in complete configurations. |
+| `python3 tools/check-consumers.py` | Passed all independent source consumers, real native no_std target and both expected compile rejections. |
+| `cargo +1.71.0` facade/mirror, native, derive, alloc and native-alloc target fixture checks | Passed with locked dependency resolution; exact commands in results. |
+| Native wrapper alloc/mirror and strict-facade alloc target checks on `thumbv7em-none-eabi` | Passed. Normal native dependency tree contains **no serde_json**. |
+| `cargo doc --workspace --no-deps --features compat,serde` | Passed. |
+| Targeted Miri, strict provenance | **36 final-source guard/error/key/readiness/facade tests + 12 reader tests passed**, exit 0; one large reader storage test excluded from Miri and passed normally. |
+| `cargo package --manifest-path vendor/serde_json/Cargo.toml --allow-dirty`; `cargo package --workspace --allow-dirty` | Passed, including Cargo package build verification. |
+| `python3 tools/check-safe-dependency.py`; same with `--packaged` | Passed affected probes under Miri and verified safe-source hash/type identity. Packaged negative metadata probe confirms the release blocker. |
+| Typed `map_keys` fuzz, default and roundtrip policy; `native` Value reader fuzz | **50,541 typed default / 48,648 typed roundtrip / 210,190 Value reader executions**, all exit 0; direct patched string comparisons. |
+
+The earlier full Miri run passed **46 tests**, including all **10 optimization**
+tests, before the final stream-boundary and ignored-reader position changes. Its
+[result record](evidence/pr1/miri-before-final-source-results.json) and adjacent
+logs retain that snapshot scope. The final-source run repeats the relevant guard,
+error, key, readiness, facade and reader tests; it does not needlessly repeat the
+unchanged large optimization test.
+
+Fuzz campaigns are bounded smoke tests (4096 bytes, 512 MiB, 30 seconds), not long
+coverage or a correctness proof. Affected upstream string probes in the dedicated
+test module are `cfg(miri)`; direct oracle fuzzing is enabled only after the
+patched source's Miri verification. The large document-storage reader test runs
+normally but is excluded from targeted Miri to keep the interpreter campaign
+bounded; this limitation is explicit, not a fabricated Miri result.
+
+### Measured reader performance and remaining validation limits
+
+The two final measured means (full Vec<u32>, 0..10,000) are:
+
+| Engine | Run 3 | Run 4 |
+|---|---:|---:|
+| Native incremental | 1,401.2 us | 1,133.8 us |
+| Native explicitly buffered | 521.49 us | 523.76 us |
+| Audited upstream reader | 440.05 us | 317.92 us |
+
+The incremental reader takes approximately **3.2–3.6 times the reference time**
+on this workload. Both measured configurations are slower than the reference;
+variation across runs prevents claiming a stable exact ratio. Criterion's
+historical change percentages compare earlier exploratory runs and are not
+attributed to an optimization in this patch. The implementation meets the
+incremental storage contract, not a universal speed claim.
+
+Allocation counts measure allocator calls (including reallocations) and total
+requested bytes, separately from timing, input/output storage and peak live
+memory. Inputs and expected output are constructed outside the measured region.
+At 10,000 elements (48,891 input bytes), incremental native parsing measured
+**14 allocation/reallocation calls, 131,064 requested bytes**; buffered native
+**14 / 179,947**; audited upstream **13 / 131,056**. This includes owned Vec output
+allocation, not input construction. Native ignored traversal measured **3 calls /
+17 requested bytes** at 100, 1,000 and 10,000 elements. These are totals requested,
+not peak resident memory or allocator-retained capacity.
+
+Benchmarks use equivalent full-reader work and identical 48,891-byte input;
+reader throughput uses **input bytes**, while existing serializer reports must
+continue using emitted output bytes. Repeated final runs use 30 samples, one-second
+warm-up and two-second measurement, pinned to CPU 10 with Miri excluded from that
+CPU. Shared host load/cache/frequency effects remain possible. Early runs 1/2 are
+exploratory and lack final-source identity; they do not establish an improvement.
+`perf` and `valgrind` are absent, so CPU-callgraph profiling and an evidence-backed
+timing optimization remain undone. Preserve this regression and profile before
+changing the parser for speed. Allocation/storage measurements are not throughput
+claims. No ARM runtime, Windows/macOS, non-atomic target, long fuzz campaign or
+production deployment validation ran locally. These limits and the registry
+safe-source blocker prevent an unrestricted replacement/release certification.
+
+---
+
 ## PR #21 map-key follow-up — 2026-09-30
 
 This section supersedes earlier map-key validation, facade safety scope and remote-status statements for the current follow-up; the historical reports below retain their original source scope. Starting checkout was clean at reviewed head **`dffe27f2973149dd2515033ac6477046664bdc6f`**, with base **`f96732b96408e6355153fdebca733148678d81ab`**. No repository `AGENTS.md` instructions were found. Validation ran against an **uncommitted local working tree**. The local commit containing this follow-up records that tested patch; it is not a new GitHub head. [Source identity](evidence/pr21/source-identity.json) records SHA-256 hashes of production code, regressions, fuzz harness, workflow changes and resolved lockfiles, plus actual host/compiler versions.

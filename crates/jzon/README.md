@@ -11,7 +11,7 @@ Zero-copy JSON for Rust with compile-time generated parsers.
 
 ```toml
 [dependencies]
-jzon-rs = "0.3"
+jzon-rs = "0.4"
 ```
 
 ```rust
@@ -53,7 +53,7 @@ fn main() {
 
 ```toml
 [dependencies]
-jzon-rs = { version = "0.3", features = ["serde"] }
+jzon-rs = { version = "0.4", features = ["serde"] }
 serde = { version = "1", features = ["derive"] }
 ```
 
@@ -71,7 +71,7 @@ let out = jzon::to_string(&user).unwrap();
 
 ```toml
 [dependencies]
-jzon-rs = { version = "0.3", features = ["compat"] }
+jzon-rs = { version = "0.4", features = ["compat"] }
 ```
 
 ```rust
@@ -140,3 +140,30 @@ Native reusable output: `Serializer::with_capacity(n)`, `serialize(value)`,
 `clear()` (retain capacity), and `into_inner()`. Calls append; errors/panics
 retain partial bytes. Escaped-string scratch reuses up to 64 KiB and releases
 larger buffers on return or unwind. See [optimization progress](../../docs/optimization-progress.md).
+
+## Planned 0.4.0 migration and safe facade source
+
+Native `from_reader` parses incrementally; `from_reader_buffered` retains the
+former read-to-end contract. Reader streams own their decoded values, slice
+streams can borrow, and `into_parts()` preserves reader lookahead. Native Serde
+errors expose category/line/column; match underlying variants via `cause()`.
+Disable defaults and enable `alloc,serde,derive` for no_std on targets with
+pointer-width atomics. Std gates I/O and HashMap APIs. Native-only mirror flags do
+not activate upstream JSON.
+
+The core `compat` module and standalone strict facade require the audited
+serde_json 1.0.151 source. Its registry version has a confirmed non-ASCII bool-key
+safety defect. Consumers need a workspace-root override to the audited source:
+
+```toml
+[patch.crates-io]
+serde_json = { path = "/absolute/path/to/jzon-rs/vendor/serde_json" }
+```
+
+Packaged manifests lose path dependencies; registry-only publication is blocked
+until a verified safe registry source or an explicitly migrated maintained fork
+is available. No fixed upstream release is assumed. Facades still delegate
+upstream and require its dependency. The new incremental reader is slower on the
+measured integer-array workload. See [migration](../../docs/migration-0.4.md) and
+[replacement readiness](../../docs/replacement-readiness.md) for separate verdicts
+and executed evidence.

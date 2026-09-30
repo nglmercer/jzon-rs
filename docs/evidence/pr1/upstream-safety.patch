@@ -1,0 +1,9 @@
+--- registry/serde_json-1.0.151/src/de.rs
++++ vendor/serde_json/src/de.rs
+@@ -2249 +2249 @@
+-        let peek = match tri!(self.de.next_char()) {
++        let peek = match tri!(self.de.peek()) {
+@@ -2257,0 +2258 @@
++                self.de.eat_char();
+@@ -2261,0 +2263 @@
++                self.de.eat_char();

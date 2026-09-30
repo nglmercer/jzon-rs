@@ -1,4 +1,4 @@
-# Unreleased — recommend 0.4.0
+# Unreleased — planned 0.4.0
 
 - Remove raw-pointer depth restoration. DepthGuard owns counter storage, no longer has a lifetime parameter, and survives scanner movement/destruction safely. The public Scanner first lazily allocates this state on composite entry; native Serde now uses a separate local budget. Scalar parsing stays allocation-free.
 - Default depth limit remains active with unbounded_depth; explicit disabling is required. Guard cleanup restores depth on errors and panic unwinding.
@@ -21,5 +21,19 @@
 - Native Serializer/container types now accept a defaulted output-sink parameter;
   StructSerializer::Map contains dedicated FieldsSerializer storage.
 - Implement native root i128/u128 serialization, including fallible writer paths.
+
+- Apply an audited local serde_json 1.0.151 boolean-key safety patch to both
+  compatibility surfaces. Packaged consumers require a root safe-source override;
+  registry-only release remains blocked. No verified fixed release is assumed.
+- Add native Serde error categories and byte-based line/column positions; preserve
+  underlying variants through `cause()` and visitor-error precedence.
+- Make native `from_reader` incremental and add owned reader / borrowed slice
+  streams, token-boundary validation, Interrupted retry and explicit lookahead
+  recovery. Add `from_reader_buffered` for the former whole-document contract.
+- Support native no_std + alloc on targets with pointer-width atomics; gate std
+  I/O and HashMap APIs. Emit core/alloc derive paths and weak feature forwarding
+  so native mirrors do not activate serde_json.
+- Align internal packages and dependency requirements at planned 0.4.0. See
+  docs/migration-0.4.md for API and dependency-source migration requirements.
 
 No package has been published, branch pushed, or release merged. See docs/replacement-readiness.md and docs/optimization-progress.md for exact validation limits.

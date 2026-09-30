@@ -29,7 +29,7 @@ unstable = []
 stats = []
 
 [dependencies]
-serde_json = { version = "=1.0.151", default-features = false }
+serde_json = { version = "=1.0.151", path = "../../vendor/serde_json", default-features = false }
 
 [dev-dependencies]
 criterion = "0.5"

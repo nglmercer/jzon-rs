@@ -1,0 +1,8 @@
+[package]
+name = "native-alloc-consumer"
+version = "0.0.0"
+edition = "2021"
+[workspace]
+[dependencies]
+jzon = { package = "jzon-rs", path = "../../crates/jzon", default-features = false, features = ["alloc", "serde", "derive", "raw_value", "arbitrary_precision", "float_roundtrip", "unbounded_depth", "simd", "simd-intrinsics"] }
+serde = { version = "1", default-features = false, features = ["alloc", "derive"] }

@@ -1,0 +1,113 @@
+[
+  {
+    "name": "reader-extra",
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "jzon-rs",
+      "--features",
+      "serde,raw_value",
+      "--test",
+      "native_reader",
+      "--test",
+      "native_errors"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 0.76
+  },
+  {
+    "name": "strict",
+    "command": [
+      "cargo",
+      "test",
+      "--workspace",
+      "--features",
+      "serde,strict"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 12.31
+  },
+  {
+    "name": "facade-alloc-target",
+    "command": [
+      "cargo",
+      "check",
+      "--manifest-path",
+      "fixtures/alloc/Cargo.toml",
+      "--locked",
+      "--target",
+      "thumbv7em-none-eabi"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 0.04
+  },
+  {
+    "name": "native-wrapper-target",
+    "command": [
+      "cargo",
+      "check",
+      "-p",
+      "jzon-rs-serde",
+      "--no-default-features",
+      "--features",
+      "alloc,raw_value,arbitrary_precision,float_roundtrip",
+      "--target",
+      "thumbv7em-none-eabi"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 0.37
+  },
+  {
+    "name": "native-only-dependency",
+    "command": [
+      "cargo",
+      "tree",
+      "--manifest-path",
+      "fixtures/native-alloc/Cargo.toml",
+      "--locked",
+      "-e",
+      "normal"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 0.05
+  },
+  {
+    "name": "fixture-fmt",
+    "command": [
+      "cargo",
+      "fmt",
+      "--manifest-path",
+      "fixtures/native-alloc/Cargo.toml",
+      "--",
+      "--check"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 0.11
+  },
+  {
+    "name": "isolated-safe-source",
+    "command": [
+      "python3",
+      "tools/check-safe-dependency.py"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 19.77
+  },
+  {
+    "name": "core-facade-alloc-target",
+    "command": [
+      "cargo",
+      "check",
+      "-p",
+      "jzon-rs",
+      "--no-default-features",
+      "--features",
+      "alloc,compat,raw_value,arbitrary_precision,float_roundtrip",
+      "--target",
+      "thumbv7em-none-eabi"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 2.81
+  }
+]

@@ -8,3 +8,6 @@ jzon = { package = "jzon-rs", path = "../../crates/jzon", default-features = fal
 jzon_serde = { package = "jzon-rs-serde", path = "../../crates/jzon_serde" }
 stats_alloc = "0.1.10"
 serde = "1"
+
+[patch.crates-io]
+serde_json = { path = "../../vendor/serde_json" }

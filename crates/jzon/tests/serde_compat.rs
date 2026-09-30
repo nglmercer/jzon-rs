@@ -825,9 +825,12 @@ fn internally_tagged_under_arb_matches_native() {
         r#"{"type":"Circle","radius":2.5}"#,
         r#"{"type":"Rectangle","width":3.0,"height":4.0}"#,
     ] {
-        let ours = from_str::<Shape>(src).map_err(|e| e.to_string());
+        let ours = from_str::<Shape>(src);
         let theirs = serde_json::from_str::<Shape>(src).map_err(|e| e.to_string());
-        assert_eq!(ours.unwrap_err(), "invalid type: map, expected f64");
+        let error = ours.unwrap_err();
+        assert_eq!(error.cause().to_string(), "invalid type: map, expected f64");
+        assert!(error.is_data());
+        assert!(error.line() > 0 && error.column() > 0);
         assert!(theirs
             .unwrap_err()
             .contains("invalid type: map, expected f64"));

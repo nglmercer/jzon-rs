@@ -43,7 +43,7 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
                         #[automatically_derived]
                         impl #impl_generics ::jzon::ToJson for #ident #ty_generics #where_clause {
                             #[inline(always)]
-                            fn json_write(&self, w: &mut ::std::vec::Vec<u8>) {
+                            fn json_write(&self, w: &mut ::jzon::__private::Vec<u8>) {
                                 ::jzon::ToJson::json_write(&self.#single, w);
                             }
                             #[inline(always)]
@@ -64,7 +64,7 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
                     #[automatically_derived]
                     impl #impl_generics ::jzon::ToJson for #ident #ty_generics #where_clause {
                         #[inline(always)]
-                        fn json_write(&self, w: &mut ::std::vec::Vec<u8>) {
+                        fn json_write(&self, w: &mut ::jzon::__private::Vec<u8>) {
                             self.json_write_sink(&mut ::jzon::VecSink(w));
                         }
                         #[inline(always)]
@@ -83,7 +83,7 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
                         #[automatically_derived]
                         impl #impl_generics ::jzon::ToJson for #ident #ty_generics #where_clause {
                             #[inline(always)]
-                            fn json_write(&self, w: &mut ::std::vec::Vec<u8>) {
+                            fn json_write(&self, w: &mut ::jzon::__private::Vec<u8>) {
                                 self.json_write_sink(&mut ::jzon::VecSink(w));
                             }
                             #[inline(always)]
@@ -100,7 +100,7 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
                         #[automatically_derived]
                         impl #impl_generics ::jzon::ToJson for #ident #ty_generics #where_clause {
                             #[inline(always)]
-                            fn json_write(&self, w: &mut ::std::vec::Vec<u8>) {
+                            fn json_write(&self, w: &mut ::jzon::__private::Vec<u8>) {
                                 ::jzon::ToJson::json_write(&self.0, w);
                             }
                             #[inline(always)]
@@ -135,7 +135,7 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
                     #[automatically_derived]
                     impl #impl_generics ::jzon::ToJson for #ident #ty_generics #where_clause {
                         #[inline]
-                        fn json_write(&self, w: &mut ::std::vec::Vec<u8>) {
+                        fn json_write(&self, w: &mut ::jzon::__private::Vec<u8>) {
                             self.json_write_sink(&mut ::jzon::VecSink(w));
                         }
                         #[inline]
@@ -195,7 +195,7 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
         let write_value: TokenStream = if let Some(path) = &fattrs.serialize_with {
             quote! {
                 {
-                    let mut __tmp = ::std::vec::Vec::new();
+                    let mut __tmp = ::jzon::__private::Vec::new();
                     #path(&self.#fname, &mut __tmp);
                     w.extend(&__tmp);
                 }
@@ -365,7 +365,7 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
         #[automatically_derived]
         impl #impl_generics ::jzon::ToJson for #ident #ty_generics #where_clause {
             #inline_attr
-            fn json_write(&self, w: &mut ::std::vec::Vec<u8>) {
+            fn json_write(&self, w: &mut ::jzon::__private::Vec<u8>) {
                 self.json_write_sink(&mut ::jzon::VecSink(w));
             }
 
@@ -531,7 +531,7 @@ fn expand_enum(input: &DeriveInput) -> Result<TokenStream> {
     Ok(quote! {
         #[automatically_derived]
         impl #impl_generics ::jzon::ToJson for #ident #ty_generics #where_clause {
-            fn json_write(&self, w: &mut ::std::vec::Vec<u8>) {
+            fn json_write(&self, w: &mut ::jzon::__private::Vec<u8>) {
                 self.json_write_sink(&mut ::jzon::VecSink(w));
             }
 

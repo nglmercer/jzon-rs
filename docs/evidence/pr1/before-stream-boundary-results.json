@@ -1,0 +1,168 @@
+[
+  {
+    "name": "fmt",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 0.62
+  },
+  {
+    "name": "clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--workspace",
+      "--all-targets",
+      "--features",
+      "compat,raw_value,preserve_order,arbitrary_precision,float_roundtrip,unbounded_depth,simd,simd-intrinsics,stats,zmij-float-ser",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 101,
+    "elapsed_seconds": 2.39
+  },
+  {
+    "name": "workspace",
+    "command": [
+      "cargo",
+      "test",
+      "--workspace"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 12.64
+  },
+  {
+    "name": "mirrors",
+    "command": [
+      "cargo",
+      "test",
+      "--workspace",
+      "--features",
+      "compat,raw_value,preserve_order,arbitrary_precision,float_roundtrip,unbounded_depth"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 24.84
+  },
+  {
+    "name": "simd",
+    "command": [
+      "cargo",
+      "test",
+      "--workspace",
+      "--features",
+      "compat,simd,simd-intrinsics,stats,zmij-float-ser"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 25.08
+  },
+  {
+    "name": "nightly-simd",
+    "command": [
+      "cargo",
+      "+nightly",
+      "test",
+      "--workspace",
+      "--features",
+      "serde,simd,unstable"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 20.03
+  },
+  {
+    "name": "consumers",
+    "command": [
+      "python3",
+      "tools/check-consumers.py"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 3.24
+  },
+  {
+    "name": "msrv-native-alloc",
+    "command": [
+      "cargo",
+      "+1.71.0",
+      "check",
+      "--manifest-path",
+      "fixtures/native-alloc/Cargo.toml",
+      "--locked",
+      "--target",
+      "thumbv7em-none-eabi"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 1.33
+  },
+  {
+    "name": "msrv-facade",
+    "command": [
+      "cargo",
+      "+1.71.0",
+      "run",
+      "--manifest-path",
+      "fixtures/facade/Cargo.toml",
+      "--locked",
+      "--features",
+      "mirrors"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 0.15
+  },
+  {
+    "name": "msrv-native",
+    "command": [
+      "cargo",
+      "+1.71.0",
+      "run",
+      "--manifest-path",
+      "fixtures/native/Cargo.toml",
+      "--locked"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 4.21
+  },
+  {
+    "name": "msrv-derive",
+    "command": [
+      "cargo",
+      "+1.71.0",
+      "run",
+      "--manifest-path",
+      "fixtures/derive/Cargo.toml",
+      "--locked"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 0.13
+  },
+  {
+    "name": "msrv-alloc",
+    "command": [
+      "cargo",
+      "+1.71.0",
+      "check",
+      "--manifest-path",
+      "fixtures/alloc/Cargo.toml",
+      "--locked"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 0.11
+  },
+  {
+    "name": "docs",
+    "command": [
+      "cargo",
+      "doc",
+      "--workspace",
+      "--no-deps",
+      "--features",
+      "compat,serde"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 2.5
+  }
+]

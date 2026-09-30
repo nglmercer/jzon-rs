@@ -1,0 +1,18 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.55s
+     Running tests/native_reader.rs (target/miri/x86_64-unknown-linux-gnu/debug/deps/native_reader-6e89b08107d7a5bf)
+
+running 12 tests
+test borrowed_slice_stream ... ok
+test callbacks_once_and_error_precedence ... ok
+test early_container_visitors_do_not_hide_remaining_input ... ok
+test errors_and_truncated_io ... ok
+test fragmented_values_and_enums ... ok
+test ignored_token_errors_keep_their_local_position ... ok
+test raw_ignored_and_byte_models ... ok
+test reader_budget_recovers_after_visitor_unwind ... ok
+test reader_bytes_are_transient_and_match_reference ... ok
+test reader_custom_key_visitors ... ok
+test stream_partial_consumption_and_fused_errors ... ok
+test streams_validate_primitive_boundaries ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 4.83s

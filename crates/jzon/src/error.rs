@@ -1,4 +1,5 @@
-use std::fmt;
+use crate::__private::*;
+use core::fmt;
 
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq)]
@@ -46,4 +47,5 @@ impl fmt::Display for Error {
     }
 }
 
+#[cfg(feature = "std")]
 impl std::error::Error for Error {}

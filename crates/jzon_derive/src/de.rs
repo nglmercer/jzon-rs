@@ -173,7 +173,7 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
                             let fa = attrs::parse_field_attrs(&field.attrs).unwrap_or_default();
                             if fa.skip || fa.skip_deserializing {
                                 let fname = field.ident.as_ref().unwrap();
-                                Some(quote! { #fname: ::std::default::Default::default(), })
+                                Some(quote! { #fname: ::core::default::Default::default(), })
                             } else {
                                 None
                             }
@@ -187,7 +187,7 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
                             #[inline(always)]
                             fn from_json_scanner(
                                 scanner: &mut ::jzon::Scanner<'de>,
-                            ) -> ::std::result::Result<Self, ::jzon::Error> {
+                            ) -> ::core::result::Result<Self, ::jzon::Error> {
                                 Ok(#ident {
                                     #single_field: <#single_ty as ::jzon::FromJson<'de>>::from_json_scanner(scanner)?,
                                     #(#skipped_assembly)*
@@ -210,7 +210,7 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
                             #[inline(always)]
                             fn from_json_scanner(
                                 scanner: &mut ::jzon::Scanner<'de>,
-                            ) -> ::std::result::Result<Self, ::jzon::Error> {
+                            ) -> ::core::result::Result<Self, ::jzon::Error> {
                                 let _depth_guard = scanner.enter_depth()?;
                                 scanner.skip_whitespace();
                                 scanner.expect_byte(b'[')?;
@@ -231,7 +231,7 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
                             #[inline(always)]
                             fn from_json_scanner(
                                 scanner: &mut ::jzon::Scanner<'de>,
-                            ) -> ::std::result::Result<Self, ::jzon::Error> {
+                            ) -> ::core::result::Result<Self, ::jzon::Error> {
                                 Ok(#ident(<#inner_ty as ::jzon::FromJson<'de>>::from_json_scanner(scanner)?))
                             }
                         }
@@ -264,7 +264,7 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
                         #[inline]
                         fn from_json_scanner(
                             scanner: &mut ::jzon::Scanner<'de>,
-                        ) -> ::std::result::Result<Self, ::jzon::Error> {
+                        ) -> ::core::result::Result<Self, ::jzon::Error> {
                             let _depth_guard = scanner.enter_depth()?;
                             scanner.skip_whitespace();
                             scanner.expect_byte(b'[')?;
@@ -499,7 +499,7 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
             let fname_str = f.json_key.as_str();
 
             if f.fattrs.skip || f.fattrs.skip_deserializing {
-                return quote! { #fname: ::std::default::Default::default(), };
+                return quote! { #fname: ::core::default::Default::default(), };
             }
             if f.fattrs.skip_serializing {
                 return quote! { #fname: #fname.unwrap_or_default(), };
@@ -569,7 +569,7 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
             #inline_attr
             fn from_json_scanner(
                 scanner: &mut ::jzon::Scanner<'de>,
-            ) -> ::std::result::Result<Self, ::jzon::Error> {
+            ) -> ::core::result::Result<Self, ::jzon::Error> {
                 let _depth_guard = scanner.enter_depth()?;
                 scanner.skip_whitespace();
                 scanner.expect_byte(b'{')?;
@@ -859,7 +859,7 @@ fn expand_unit_struct(input: &DeriveInput, _container: &ContainerAttrs) -> Resul
         {
             fn from_json_scanner(
                 scanner: &mut ::jzon::Scanner<'de>,
-            ) -> ::std::result::Result<Self, ::jzon::Error> {
+            ) -> ::core::result::Result<Self, ::jzon::Error> {
                 scanner.skip_whitespace();
                 scanner.expect_byte(b'{')?;
                 scanner.skip_whitespace();
@@ -1160,14 +1160,14 @@ fn expand_internally_tagged_enum(
         {
             fn from_json_scanner(
                 scanner: &mut ::jzon::Scanner<'de>,
-            ) -> ::std::result::Result<Self, ::jzon::Error> {
+            ) -> ::core::result::Result<Self, ::jzon::Error> {
                 let _depth_guard = scanner.enter_depth()?;
                 scanner.skip_whitespace();
 
                 let _obj_start = scanner.pos();
                 scanner.expect_byte(b'{')?;
 
-                let mut _tag: ::std::option::Option<::jzon::JsonStr<'de>> = None;
+                let mut _tag: ::core::option::Option<::jzon::JsonStr<'de>> = None;
                 let mut _tag_first = false;
                 let mut _first_key = true;
                 let mut _after_comma = false;
@@ -1183,7 +1183,7 @@ fn expand_internally_tagged_enum(
                             _after_comma = false;
                             let _k = scanner.read_key_colon()?;
                             if _k == #tag_bytes_lit {
-                                _tag = ::std::option::Option::Some(scanner.read_str()?);
+                                _tag = ::core::option::Option::Some(scanner.read_str()?);
                                 _tag_first = _first_key;
                                 break;
                             } else {
@@ -1294,7 +1294,7 @@ fn variant_field_assembly(
     container_default: bool,
 ) -> TokenStream {
     if fa.skip || fa.skip_deserializing {
-        return quote! { #fname: ::std::default::Default::default(), };
+        return quote! { #fname: ::core::default::Default::default(), };
     }
     if fa.skip_serializing {
         return quote! { #fname: #fname.unwrap_or_default(), };
@@ -1536,7 +1536,7 @@ fn expand_externally_tagged_enum(
         {
             fn from_json_scanner(
                 scanner: &mut ::jzon::Scanner<'de>,
-            ) -> ::std::result::Result<Self, ::jzon::Error> {
+            ) -> ::core::result::Result<Self, ::jzon::Error> {
                 scanner.skip_whitespace();
                 match scanner.peek_byte()? {
                     b'"' => {

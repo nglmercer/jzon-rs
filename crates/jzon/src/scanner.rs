@@ -1,7 +1,6 @@
-use std::sync::{
-    atomic::{AtomicU8, Ordering},
-    Arc,
-};
+use crate::__private::*;
+use alloc::sync::Arc;
+use core::sync::atomic::{AtomicU8, Ordering};
 
 use crate::{simd, Error};
 
@@ -129,6 +128,16 @@ impl<'de> Scanner<'de> {
         self.pos += 1;
     }
 
+    pub(crate) fn location(&self, offset: usize) -> (usize, usize) {
+        let prefix = &self.input[..offset.min(self.input.len())];
+        let line = 1 + prefix.iter().filter(|&&b| b == b'\n').count();
+        let column = prefix
+            .iter()
+            .rposition(|&b| b == b'\n')
+            .map_or(prefix.len(), |p| prefix.len() - p - 1);
+        (line, column)
+    }
+
     /// Byte offset into the input slice — used by internally-tagged enum parsers to checkpoint and re-scan.
     #[inline]
     pub fn pos(&self) -> usize {
@@ -235,18 +244,16 @@ impl<'de> Scanner<'de> {
                 self.pos += 1;
                 Ok(())
             }
+            None => Err(err_eof()),
             _ => Err(err_token()),
         }
     }
 
     pub fn expect_bytes(&mut self, expected: &[u8]) -> Result<(), Error> {
-        let end = self.pos + expected.len();
-        if self.input.get(self.pos..end) == Some(expected) {
-            self.pos = end;
-            Ok(())
-        } else {
-            Err(err_token())
+        for &byte in expected {
+            self.expect_byte(byte)?;
         }
+        Ok(())
     }
 
     #[inline(always)]
@@ -652,6 +659,7 @@ impl<'de> Scanner<'de> {
                 self.pos += 1;
                 self.scan_ascii_digits();
             }
+            None => return Err(Error::UnexpectedEof),
             _ => return Err(Error::InvalidNumber),
         }
 
@@ -660,7 +668,11 @@ impl<'de> Scanner<'de> {
             // At least one digit must follow the decimal point.
             if self.scan_ascii_digits() == 0 {
                 // No digit after '.': "1." is invalid JSON.
-                return Err(Error::InvalidNumber);
+                return Err(if self.pos == self.input.len() {
+                    Error::UnexpectedEof
+                } else {
+                    Error::InvalidNumber
+                });
             }
         }
         if matches!(self.input.get(self.pos), Some(b'e') | Some(b'E')) {
@@ -669,7 +681,11 @@ impl<'de> Scanner<'de> {
                 self.pos += 1;
             }
             if self.scan_ascii_digits() == 0 {
-                return Err(Error::InvalidNumber);
+                return Err(if self.pos == self.input.len() {
+                    Error::UnexpectedEof
+                } else {
+                    Error::InvalidNumber
+                });
             }
         }
         let end = self.pos;
@@ -699,24 +715,14 @@ impl<'de> Scanner<'de> {
 
     pub fn read_bool(&mut self) -> Result<bool, Error> {
         self.skip_whitespace();
-        match self.input.get(self.pos) {
-            Some(&b't') => {
-                self.pos += 4;
-                if self.input.get(self.pos - 3..self.pos) == Some(b"rue") {
-                    Ok(true)
-                } else {
-                    self.pos -= 4;
-                    Err(err_token())
-                }
+        match self.peek_byte()? {
+            b't' => {
+                self.expect_bytes(b"true")?;
+                Ok(true)
             }
-            Some(&b'f') => {
-                self.pos += 5;
-                if self.input.get(self.pos - 4..self.pos) == Some(b"alse") {
-                    Ok(false)
-                } else {
-                    self.pos -= 5;
-                    Err(err_token())
-                }
+            b'f' => {
+                self.expect_bytes(b"false")?;
+                Ok(false)
             }
             _ => Err(err_token()),
         }
@@ -829,8 +835,8 @@ impl<'de> Scanner<'de> {
     /// Byte-oriented Serde strings accept non-UTF-8, literal controls and lone
     /// UTF-16 surrogates (encoded as WTF-8), matching the upstream byte model.
     #[cfg(feature = "serde")]
-    pub(crate) fn read_byte_str(&mut self) -> Result<std::borrow::Cow<'de, [u8]>, Error> {
-        use std::borrow::Cow;
+    pub(crate) fn read_byte_str(&mut self) -> Result<alloc::borrow::Cow<'de, [u8]>, Error> {
+        use alloc::borrow::Cow;
         self.skip_whitespace();
         self.expect_byte(b'"')?;
         let start = self.pos;

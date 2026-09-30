@@ -1,0 +1,35 @@
+[
+  {
+    "name": "vendor-package",
+    "command": [
+      "cargo",
+      "package",
+      "--manifest-path",
+      "vendor/serde_json/Cargo.toml",
+      "--allow-dirty"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 1.96
+  },
+  {
+    "name": "workspace-package",
+    "command": [
+      "cargo",
+      "package",
+      "--workspace",
+      "--allow-dirty"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 6.97
+  },
+  {
+    "name": "packaged-consumer",
+    "command": [
+      "python3",
+      "tools/check-safe-dependency.py",
+      "--packaged"
+    ],
+    "exit_code": 0,
+    "elapsed_seconds": 17.26
+  }
+]

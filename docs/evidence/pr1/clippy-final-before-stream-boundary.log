@@ -1,0 +1,23 @@
+    Checking jzon-rs v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon)
+    Checking jzon-rs-compat v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_compat)
+error: unneeded `return` statement
+    --> crates/jzon/src/serde_impl.rs:2005:13
+     |
+2005 | /             return visitor.visit_map(RawTokenMapAccess {
+2006 | |                 token: NUMBER_TOKEN,
+2007 | |                 raw: Some(digits),
+2008 | |             });
+     | |______________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.97.0/index.html#needless_return
+     = note: `-D clippy::needless-return` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::needless_return)]`
+help: remove `return`
+     |
+2005 ~             visitor.visit_map(RawTokenMapAccess {
+2006 +                 token: NUMBER_TOKEN,
+2007 +                 raw: Some(digits),
+2008 ~             })
+     |
+
+error: could not compile `jzon-rs` (lib) due to 1 previous error

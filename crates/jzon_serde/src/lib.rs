@@ -2,7 +2,7 @@
 //! SIMD string escaping and zero-copy scanner.
 //!
 //! Uses existing Serde traits. This native engine has its own errors and
-//! a buffered reader and streaming writer; assess its documented contract separately
+//! incremental readers and streaming writers; assess its documented contract separately
 //! from the delegated compatibility facade.
 //! This crate re-exports the engine from
 //! [`jzon`](https://crates.io/crates/jzon-rs) (feature `serde`); it exists so
@@ -23,6 +23,7 @@
 //! assert_eq!(p, p2);
 //! ```
 
+#![cfg_attr(not(feature = "std"), no_std)]
 pub use jzon::serde_impl::*;
 
 #[cfg(test)]

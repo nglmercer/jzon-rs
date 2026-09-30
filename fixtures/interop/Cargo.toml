@@ -6,3 +6,6 @@ edition = "2021"
 [dependencies]
 serde_json = { package = "jzon-rs-compat", path = "../../crates/jzon_compat" }
 real-json-user = { path = "real-json-user" }
+
+[patch.crates-io]
+serde_json = { path = "../../vendor/serde_json" }

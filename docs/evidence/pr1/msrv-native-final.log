@@ -1,0 +1,5 @@
+   Compiling jzon-rs v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon)
+   Compiling jzon-rs-serde v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_serde)
+   Compiling native-consumer v0.0.0 (/home/meme/Documentos/GitHub/jzon-rs/fixtures/native)
+    Finished dev [unoptimized + debuginfo] target(s) in 1.48s
+     Running `fixtures/native/target/debug/native-consumer`

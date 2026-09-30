@@ -63,7 +63,7 @@ pub fn find_quote_or_backslash_simd16(input: &[u8], start: usize) -> usize {
 
 #[cfg(all(feature = "simd", feature = "unstable"))]
 pub fn find_quote_or_backslash_portable32(input: &[u8], start: usize) -> usize {
-    use std::simd::{cmp::SimdPartialEq, u8x32};
+    use core::simd::{cmp::SimdPartialEq, u8x32};
 
     let quote = u8x32::splat(b'"');
     let slash = u8x32::splat(b'\\');
@@ -85,7 +85,7 @@ pub fn find_quote_or_backslash_portable32(input: &[u8], start: usize) -> usize {
 /// 64-byte lanes — compiler emits AVX-512/SVE/etc. automatically; Rust code is fully safe.
 #[cfg(all(feature = "simd", feature = "unstable"))]
 pub fn find_quote_or_backslash_portable64(input: &[u8], start: usize) -> usize {
-    use std::simd::{cmp::SimdPartialEq, u8x64};
+    use core::simd::{cmp::SimdPartialEq, u8x64};
 
     let quote = u8x64::splat(b'"');
     let slash = u8x64::splat(b'\\');
@@ -190,7 +190,7 @@ pub fn find_escape_scalar(input: &[u8], start: usize) -> usize {
 /// Scan `input[start..]` for the first byte needing JSON string escaping using 32-byte portable SIMD.
 #[cfg(all(feature = "simd", feature = "unstable"))]
 fn find_escape_simd32(input: &[u8], start: usize) -> usize {
-    use std::simd::{cmp::SimdPartialEq, cmp::SimdPartialOrd, u8x32};
+    use core::simd::{cmp::SimdPartialEq, cmp::SimdPartialOrd, u8x32};
 
     let quote = u8x32::splat(b'"');
     let slash = u8x32::splat(b'\\');
@@ -350,7 +350,7 @@ fn scan_string_run_simd16(input: &[u8], start: usize, mut ascii_only: bool) -> (
 
 #[cfg(all(feature = "simd", feature = "unstable"))]
 fn scan_string_run_simd32(input: &[u8], start: usize) -> (usize, bool) {
-    use std::simd::{cmp::SimdPartialEq, cmp::SimdPartialOrd, u8x32};
+    use core::simd::{cmp::SimdPartialEq, cmp::SimdPartialOrd, u8x32};
 
     let quote = u8x32::splat(b'"');
     let slash = u8x32::splat(b'\\');

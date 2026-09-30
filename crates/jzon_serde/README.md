@@ -10,7 +10,7 @@ SIMD-backed serde `Serializer`/`Deserializer` for any type deriving `serde::Seri
 
 ```toml
 [dependencies]
-jzon-rs-serde = "0.3"
+jzon-rs-serde = "0.4"
 serde = { version = "1", features = ["derive"] }
 ```
 
@@ -57,7 +57,7 @@ MIT
 
 ## Native contract and migration
 
-This wrapper exposes the independent std-enabled native engine. It is separate from the delegated compatibility facade. Native errors have their own messages and no upstream line/column guarantee. `from_reader` uses read_to_end. `to_writer` now streams directly, propagates I/O failures immediately, and preserves partial output. `to_writer_buffered` retains the earlier buffer-before-I/O behavior. Mode C retains upstream error types and reader semantics.
+This wrapper exposes the independent native engine with default std and optional no_std + alloc. It is separate from the delegated compatibility facade. Native errors retain a distinct type and messages, with category, line and column. `from_reader` parses incrementally; `ReaderDeserializer` supports fused streams and preserves one lookahead byte through `into_parts`. `from_reader_buffered` retains read-to-end behavior explicitly. `to_writer` now streams directly, propagates I/O failures immediately, and preserves partial output. `to_writer_buffered` retains the earlier buffer-before-I/O behavior. Mode C retains upstream error types and reader semantics.
 
 `to_string`, `to_bytes`, `to_writer` and `to_bytes_in` accept `Serialize + ?Sized`. `to_bytes_in(value, &mut buffer)` appends directly with no intermediate copy; clear the buffer for reset semantics. Failure retains partial output, including during panic unwinding.
 
@@ -65,7 +65,7 @@ Default native float parsing reproduces the pinned reference's significand/scali
 
 `unbounded_depth` keeps the default limit. Construct `Deserializer::from_str`/`from_slice`, call `disable_recursion_limit()` explicitly, deserialize once, then call `end()`. Deep parsing and destruction require adequate stack management.
 
-Native options include `simd`, `simd-intrinsics`, nightly `unstable`, `stats`, `raw_value`, `arbitrary_precision`, and `float_roundtrip`. Core/native no_std support remains unimplemented. See [readiness](../../docs/replacement-readiness.md) for executed evidence and remaining compatibility gates.
+Native options include `simd`, `simd-intrinsics`, nightly `unstable`, `stats`, `raw_value`, `arbitrary_precision`, and `float_roundtrip`. Disable defaults and enable `alloc` for no_std. Derive-generated core/alloc paths and native Serde are compiled on thumbv7em-none-eabi. HashMap and I/O APIs require `std`; guard counters require target atomics. Native-only mirror features do not activate serde_json. See [readiness](../../docs/replacement-readiness.md) for executed evidence and remaining compatibility gates.
 
 Reusable native serializers use `Serializer::new()`, `with_capacity(n)`, or
 `from_vec(buffer)`; `serialize(&value)` appends, `clear()` resets length while

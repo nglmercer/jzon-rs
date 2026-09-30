@@ -1,0 +1,44 @@
+   Packaging jzon-rs-derive v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_derive)
+    Updating crates.io index
+    Packaged 10 files, 105.8KiB (19.3KiB compressed)
+   Packaging jzon-rs v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon)
+    Updating crates.io index
+    Packaged 367 files, 16.8MiB (4.9MiB compressed)
+   Packaging jzon-rs-compat v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_compat)
+    Updating crates.io index
+    Packaged 8 files, 31.1KiB (9.7KiB compressed)
+   Packaging jzon-rs-serde v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_serde)
+    Updating crates.io index
+    Packaged 6 files, 12.6KiB (5.0KiB compressed)
+   Verifying jzon-rs-derive v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_derive)
+   Compiling jzon-rs-derive v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/target/package/jzon-rs-derive-0.4.0)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.93s
+   Verifying jzon-rs v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon)
+    Updating crates.io index
+   Compiling jzon-rs v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/target/package/jzon-rs-0.4.0)
+warning: method `location` is never used
+   --> src/scanner.rs:131:19
+    |
+103 | impl<'de> Scanner<'de> {
+    | ---------------------- method in this implementation
+...
+131 |     pub(crate) fn location(&self, offset: usize) -> (usize, usize) {
+    |                   ^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `try_write_escaped_key_sink` is never used
+  --> src/ser.rs:90:15
+   |
+90 | pub(crate) fn try_write_escaped_key_sink<S: SerializeSink>(
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `jzon-rs` (lib) generated 2 warnings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.61s
+   Verifying jzon-rs-compat v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_compat)
+   Compiling jzon-rs-compat v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/target/package/jzon-rs-compat-0.4.0)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.72s
+   Verifying jzon-rs-serde v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_serde)
+    Updating crates.io index
+   Compiling jzon-rs-serde v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/target/package/jzon-rs-serde-0.4.0)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.94s
