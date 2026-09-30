@@ -11,5 +11,7 @@
   "allocation_before": "docs/evidence/allocation.csv (committed repaired baseline)",
   "baseline_i128_command": "cargo test -p jzon-rs --test numeric128_repro",
   "baseline_i128_exit_status": 101,
-  "final_source_validation": "33 commands in validation-*-results.json, all exit 0; allocation and benchmarks recorded separately."
+  "final_source_validation": "33 commands in validation-*-results.json, all exit 0; allocation and benchmarks recorded separately.",
+  "implementation_commit": "716b782fb68d97a7d8b505f2e2e246a3f2b411c1",
+  "commit_annotation": "Added after implementation commit; recorded working_head and dirty measurement metadata describe pre-commit execution."
 }

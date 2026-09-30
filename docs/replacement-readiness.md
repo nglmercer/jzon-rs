@@ -1,6 +1,6 @@
 # Replacement-readiness assessment
 
-Follow-up native optimization changes are tracked in [optimization progress](optimization-progress.md). The recorded baseline commits, allocation data and benchmark tables below remain historical evidence for their stated source fingerprints. Current native writers stream; `to_writer_buffered` preserves earlier ordering, while native readers remain buffered. Existing no-std/platform/error-surface migration limits remain open.
+Follow-up native optimization implementation commit: **`716b782fb68d97a7d8b505f2e2e246a3f2b411c1`**, with final validation and measurements tracked in [optimization progress](optimization-progress.md). The recorded baseline commits, allocation data and benchmark tables below remain historical evidence for their stated source fingerprints. Current native writers stream; `to_writer_buffered` preserves earlier ordering, while native readers remain buffered. Existing no-std/platform/error-surface migration limits remain open.
 
 ## Identity and scope
 
