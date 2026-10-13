@@ -1,0 +1,11 @@
+    Updating crates.io index
+     Locking 6 packages to latest compatible versions
+ Downgrading hashbrown v0.17.1 -> v0.14.5
+ Downgrading indexmap v2.14.0 -> v2.2.3 (available: v2.14.2)
+ Downgrading toml v1.1.3+spec-1.1.0 -> v0.9.0 (available: v0.9.12+spec-1.1.0)
+ Downgrading toml_datetime v1.1.1+spec-1.1.0 -> v0.7.5+spec-1.1.0
+ Downgrading trybuild v1.0.118 -> v1.0.115 (available: v1.0.121)
+      Adding winnow v0.7.15
+   Packaging serde_json v1.0.151 (/home/meme/Documentos/GitHub/jzon-rs/vendor/serde_json)
+    Updating crates.io index
+    Packaged 88 files, 728.3KiB (152.3KiB compressed)

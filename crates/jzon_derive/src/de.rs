@@ -19,7 +19,7 @@
 //!
 //! * **Alias support** — `|`-joined patterns in the generated `match`.
 //!
-//! * **Full serde attribute compatibility** — rename, rename_all,
+//! * **Supported Serde-style attributes** — rename, rename_all,
 //!   deny_unknown_fields, skip_deserializing, default, default = "fn", flatten.
 
 use proc_macro2::{Span, TokenStream};
@@ -173,7 +173,7 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
                             let fa = attrs::parse_field_attrs(&field.attrs).unwrap_or_default();
                             if fa.skip || fa.skip_deserializing {
                                 let fname = field.ident.as_ref().unwrap();
-                                Some(quote! { #fname: ::std::default::Default::default(), })
+                                Some(quote! { #fname: ::core::default::Default::default(), })
                             } else {
                                 None
                             }
@@ -187,7 +187,7 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
                             #[inline(always)]
                             fn from_json_scanner(
                                 scanner: &mut ::jzon::Scanner<'de>,
-                            ) -> ::std::result::Result<Self, ::jzon::Error> {
+                            ) -> ::core::result::Result<Self, ::jzon::Error> {
                                 Ok(#ident {
                                     #single_field: <#single_ty as ::jzon::FromJson<'de>>::from_json_scanner(scanner)?,
                                     #(#skipped_assembly)*
@@ -210,7 +210,7 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
                             #[inline(always)]
                             fn from_json_scanner(
                                 scanner: &mut ::jzon::Scanner<'de>,
-                            ) -> ::std::result::Result<Self, ::jzon::Error> {
+                            ) -> ::core::result::Result<Self, ::jzon::Error> {
                                 let _depth_guard = scanner.enter_depth()?;
                                 scanner.skip_whitespace();
                                 scanner.expect_byte(b'[')?;
@@ -231,7 +231,7 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
                             #[inline(always)]
                             fn from_json_scanner(
                                 scanner: &mut ::jzon::Scanner<'de>,
-                            ) -> ::std::result::Result<Self, ::jzon::Error> {
+                            ) -> ::core::result::Result<Self, ::jzon::Error> {
                                 Ok(#ident(<#inner_ty as ::jzon::FromJson<'de>>::from_json_scanner(scanner)?))
                             }
                         }
@@ -264,7 +264,7 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
                         #[inline]
                         fn from_json_scanner(
                             scanner: &mut ::jzon::Scanner<'de>,
-                        ) -> ::std::result::Result<Self, ::jzon::Error> {
+                        ) -> ::core::result::Result<Self, ::jzon::Error> {
                             let _depth_guard = scanner.enter_depth()?;
                             scanner.skip_whitespace();
                             scanner.expect_byte(b'[')?;
@@ -333,12 +333,10 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
     let dispatch_keys: Vec<DispatchKey> = active_deserialized
         .iter()
         .flat_map(|f| {
-            f.all_keys
-                .iter()
-                .map(move |k| DispatchKey {
-                    key: k.as_bytes(),
-                    idx: f.idx,
-                })
+            f.all_keys.iter().map(move |k| DispatchKey {
+                key: k.as_bytes(),
+                idx: f.idx,
+            })
         })
         .collect();
 
@@ -368,49 +366,49 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
         && !dispatch_keys.is_empty()
         && num_active <= FIRST_BYTE_DENY_UNKNOWN_MAX_FIELDS
     {
-            // Collect every unique first byte across all keys (including aliases).
-            let mut first_bytes: Vec<u8> = dispatch_keys
-                .iter()
-                .filter(|e| !e.key.is_empty())
-                .map(|e| e.key[0])
-                .collect();
-            first_bytes.sort_unstable();
-            first_bytes.dedup();
-            let byte_lits: Vec<TokenStream> = first_bytes.iter().map(|&b| quote! { #b }).collect();
-            let n = first_bytes.len();
-            quote! {
-                const VALID_FIRST_BYTES: [u8; #n] = [#(#byte_lits),*];
-                if !_key.is_empty() && !VALID_FIRST_BYTES.contains(&_key[0]) {
-                    return Err(::jzon::Error::UnknownField);
-                }
+        // Collect every unique first byte across all keys (including aliases).
+        let mut first_bytes: Vec<u8> = dispatch_keys
+            .iter()
+            .filter(|e| !e.key.is_empty())
+            .map(|e| e.key[0])
+            .collect();
+        first_bytes.sort_unstable();
+        first_bytes.dedup();
+        let byte_lits: Vec<TokenStream> = first_bytes.iter().map(|&b| quote! { #b }).collect();
+        let n = first_bytes.len();
+        quote! {
+            const VALID_FIRST_BYTES: [u8; #n] = [#(#byte_lits),*];
+            if !_key.is_empty() && !VALID_FIRST_BYTES.contains(&_key[0]) {
+                return Err(::jzon::Error::UnknownField);
             }
-        } else {
-            quote! {}
-        };
+        }
+    } else {
+        quote! {}
+    };
 
     // ── Optimization 2: u8 bitmask for required-field tracking ────────────────
     let (use_bitmask, required_slots, required_mask): (bool, Vec<usize>, u8) =
         if num_active <= REQUIRED_FIELD_BITMASK_MAX_FIELDS {
-        let slots: Vec<usize> = active_deserialized
-            .iter()
-            .enumerate()
-            .filter_map(|(slot, f)| {
-                let is_required = !container.default
-                    && !is_option(f.ty)
-                    && matches!(f.fattrs.default, FieldDefault::None)
-                    && !f.fattrs.skip_serializing;
-                if is_required {
-                    Some(slot)
-                } else {
-                    None
-                }
-            })
-            .collect();
-        let mask = slots.iter().fold(0u8, |acc, &s| acc | (1u8 << s));
-        (!slots.is_empty(), slots, mask)
-    } else {
-        (false, Vec::new(), 0)
-    };
+            let slots: Vec<usize> = active_deserialized
+                .iter()
+                .enumerate()
+                .filter_map(|(slot, f)| {
+                    let is_required = !container.default
+                        && !is_option(f.ty)
+                        && matches!(f.fattrs.default, FieldDefault::None)
+                        && !f.fattrs.skip_serializing;
+                    if is_required {
+                        Some(slot)
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+            let mask = slots.iter().fold(0u8, |acc, &s| acc | (1u8 << s));
+            (!slots.is_empty(), slots, mask)
+        } else {
+            (false, Vec::new(), 0)
+        };
 
     let inline_attr: TokenStream = if num_active <= INLINE_DISPATCH_MAX_FIELDS {
         quote! { #[inline] }
@@ -501,7 +499,7 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
             let fname_str = f.json_key.as_str();
 
             if f.fattrs.skip || f.fattrs.skip_deserializing {
-                return quote! { #fname: ::std::default::Default::default(), };
+                return quote! { #fname: ::core::default::Default::default(), };
             }
             if f.fattrs.skip_serializing {
                 return quote! { #fname: #fname.unwrap_or_default(), };
@@ -571,7 +569,7 @@ fn expand_struct(input: &DeriveInput) -> Result<TokenStream> {
             #inline_attr
             fn from_json_scanner(
                 scanner: &mut ::jzon::Scanner<'de>,
-            ) -> ::std::result::Result<Self, ::jzon::Error> {
+            ) -> ::core::result::Result<Self, ::jzon::Error> {
                 let _depth_guard = scanner.enter_depth()?;
                 scanner.skip_whitespace();
                 scanner.expect_byte(b'{')?;
@@ -861,7 +859,7 @@ fn expand_unit_struct(input: &DeriveInput, _container: &ContainerAttrs) -> Resul
         {
             fn from_json_scanner(
                 scanner: &mut ::jzon::Scanner<'de>,
-            ) -> ::std::result::Result<Self, ::jzon::Error> {
+            ) -> ::core::result::Result<Self, ::jzon::Error> {
                 scanner.skip_whitespace();
                 scanner.expect_byte(b'{')?;
                 scanner.skip_whitespace();
@@ -936,7 +934,6 @@ fn expand_enum(input: &DeriveInput) -> Result<TokenStream> {
     // Internally-tagged enums (unit-only or mixed) dispatch on the tag key.
     if let Some(tag_key) = &container.tag {
         return expand_internally_tagged_enum(
-            input,
             ident,
             &impl_params,
             &ty_args,
@@ -963,7 +960,6 @@ fn expand_enum(input: &DeriveInput) -> Result<TokenStream> {
 /// Tag-first inputs dispatch immediately; tag-not-first inputs keep the
 /// reset/rescan fallback so field order stays compatible.
 fn expand_internally_tagged_enum(
-    _input: &DeriveInput,
     ident: &syn::Ident,
     impl_params: &[TokenStream],
     ty_args: &TokenStream,
@@ -993,7 +989,10 @@ fn expand_internally_tagged_enum(
                 ));
             }
             if other_variant.is_some() {
-                return Err(Error::new_spanned(&v.ident, "multiple #[serde(other)] variants"));
+                return Err(Error::new_spanned(
+                    &v.ident,
+                    "multiple #[serde(other)] variants",
+                ));
             }
             let vident = &v.ident;
             other_variant = Some(quote! { #ident::#vident });
@@ -1012,21 +1011,24 @@ fn expand_internally_tagged_enum(
                 .unwrap_or(false)
         })
         .map(|v| {
-        let vident = &v.ident;
-        let vattrs = attrs::parse_field_attrs(&v.attrs)?;
-        let vname = if let Some(r) = &vattrs.rename { r.clone() }
-            else if let Some(rule) = container.rename_all { rename::apply_variant(&vident.to_string(), rule) }
-            else { vident.to_string() };
-        let vbytes_lit = proc_macro2::Literal::byte_string(vname.as_bytes());
-        let valias_pats: Vec<_> = vattrs
-            .aliases
-            .iter()
-            .map(|a| proc_macro2::Literal::byte_string(a.as_bytes()))
-            .collect();
+            let vident = &v.ident;
+            let vattrs = attrs::parse_field_attrs(&v.attrs)?;
+            let vname = if let Some(r) = &vattrs.rename {
+                r.clone()
+            } else if let Some(rule) = container.rename_all {
+                rename::apply_variant(&vident.to_string(), rule)
+            } else {
+                vident.to_string()
+            };
+            let vbytes_lit = proc_macro2::Literal::byte_string(vname.as_bytes());
+            let valias_pats: Vec<_> = vattrs
+                .aliases
+                .iter()
+                .map(|a| proc_macro2::Literal::byte_string(a.as_bytes()))
+                .collect();
 
-        match &v.fields {
-            Fields::Unit => {
-                Ok(quote! {
+            match &v.fields {
+                Fields::Unit => Ok(quote! {
                     #vbytes_lit #(| #valias_pats)* => {
                         let mut _after_comma = false;
                         loop {
@@ -1053,77 +1055,103 @@ fn expand_internally_tagged_enum(
                         }
                         Ok(#ident::#vident)
                     }
-                })
-            }
-            Fields::Named(f) => {
-                let decls: Vec<TokenStream> = f.named.iter().map(|field| {
-                    let fname = field.ident.as_ref().unwrap();
-                    let fa = attrs::parse_field_attrs(&field.attrs)?;
-                    if fa.skip || fa.skip_deserializing {
-                        Ok(quote! {})
-                    } else {
-                        Ok(quote! { let mut #fname = None; })
-                    }
-                }).collect::<Result<_>>()?;
+                }),
+                Fields::Named(f) => {
+                    let decls: Vec<TokenStream> = f
+                        .named
+                        .iter()
+                        .map(|field| {
+                            let fname = field.ident.as_ref().unwrap();
+                            let fa = attrs::parse_field_attrs(&field.attrs)?;
+                            if fa.skip || fa.skip_deserializing {
+                                Ok(quote! {})
+                            } else {
+                                Ok(quote! { let mut #fname = None; })
+                            }
+                        })
+                        .collect::<Result<_>>()?;
 
-                let field_arms: Vec<TokenStream> = f.named.iter().map(|field| {
-                    let fname = field.ident.as_ref().unwrap();
-                    let fa = attrs::parse_field_attrs(&field.attrs)?;
-                    if fa.skip || fa.skip_deserializing {
-                        return Ok(quote! {});
-                    }
-                    let json_key = variant_json_key(fname, &fa, container);
-                    Ok(variant_field_arm(fname, &json_key, &fa.aliases, &field.ty, &de_lt))
-                }).collect::<Result<_>>()?;
+                    let field_arms: Vec<TokenStream> = f
+                        .named
+                        .iter()
+                        .map(|field| {
+                            let fname = field.ident.as_ref().unwrap();
+                            let fa = attrs::parse_field_attrs(&field.attrs)?;
+                            if fa.skip || fa.skip_deserializing {
+                                return Ok(quote! {});
+                            }
+                            let json_key = variant_json_key(fname, &fa, container);
+                            Ok(variant_field_arm(
+                                fname,
+                                &json_key,
+                                &fa.aliases,
+                                &field.ty,
+                                &de_lt,
+                            ))
+                        })
+                        .collect::<Result<_>>()?;
 
-                let assembly: Vec<TokenStream> = f.named.iter().map(|field| {
-                    let fname = field.ident.as_ref().unwrap();
-                    let fa = attrs::parse_field_attrs(&field.attrs)?;
-                    let json_key = variant_json_key(fname, &fa, container);
-                    Ok(variant_field_assembly(fname, &json_key, &fa, &field.ty, container.default))
-                }).collect::<Result<_>>()?;
+                    let assembly: Vec<TokenStream> = f
+                        .named
+                        .iter()
+                        .map(|field| {
+                            let fname = field.ident.as_ref().unwrap();
+                            let fa = attrs::parse_field_attrs(&field.attrs)?;
+                            let json_key = variant_json_key(fname, &fa, container);
+                            Ok(variant_field_assembly(
+                                fname,
+                                &json_key,
+                                &fa,
+                                &field.ty,
+                                container.default,
+                            ))
+                        })
+                        .collect::<Result<_>>()?;
 
-                Ok(quote! {
-                    #vbytes_lit #(| #valias_pats)* => {
-                        #(#decls)*
-                        let mut _after_comma = false;
-                        loop {
-                            scanner.skip_whitespace();
-                            match scanner.peek_byte()? {
-                                b'}' => {
-                                    scanner.check_trailing_comma(_after_comma)?;
-                                    scanner.advance();
-                                    break;
-                                }
-                                b'"' => {
-                                    _after_comma = false;
-                                    let _k2 = scanner.read_key_colon()?;
-                                    if _k2 == #tag_bytes_lit {
-                                        scanner.skip_value()?;
-                                    } else {
-                                        match _k2 {
-                                            #(#field_arms)*
-                                            _ => { #unknown_handler }
+                    Ok(quote! {
+                        #vbytes_lit #(| #valias_pats)* => {
+                            #(#decls)*
+                            let mut _after_comma = false;
+                            loop {
+                                scanner.skip_whitespace();
+                                match scanner.peek_byte()? {
+                                    b'}' => {
+                                        scanner.check_trailing_comma(_after_comma)?;
+                                        scanner.advance();
+                                        break;
+                                    }
+                                    b'"' => {
+                                        _after_comma = false;
+                                        let _k2 = scanner.read_key_colon()?;
+                                        if _k2 == #tag_bytes_lit {
+                                            scanner.skip_value()?;
+                                        } else {
+                                            match _k2 {
+                                                #(#field_arms)*
+                                                _ => { #unknown_handler }
+                                            }
+                                        }
+                                        scanner.skip_whitespace();
+                                        match scanner.peek_byte()? {
+                                            b',' => { scanner.advance(); _after_comma = true; }
+                                            b'}' => {}
+                                            _ => return Err(::jzon::Error::UnexpectedToken),
                                         }
                                     }
-                                    scanner.skip_whitespace();
-                                    match scanner.peek_byte()? {
-                                        b',' => { scanner.advance(); _after_comma = true; }
-                                        b'}' => {}
-                                        _ => return Err(::jzon::Error::UnexpectedToken),
-                                    }
+                                    _ => return Err(::jzon::Error::UnexpectedToken),
                                 }
-                                _ => return Err(::jzon::Error::UnexpectedToken),
                             }
+                            Ok(#ident::#vident { #(#assembly)* })
                         }
-                        Ok(#ident::#vident { #(#assembly)* })
-                    }
-                })
+                    })
+                }
+                Fields::Unnamed(_) => Err(Error::new_spanned(
+                    vident,
+                    "tuple enum variants are not supported with #[serde(tag)]",
+                )),
             }
-            Fields::Unnamed(_) => Err(Error::new_spanned(vident,
-                "tuple enum variants are not supported with #[serde(tag)]")),
-        }
-    }).collect::<Result<_>>()?;
+        })
+        .collect::<Result<_>>()?;
 
     Ok(quote! {
         #[automatically_derived]
@@ -1132,14 +1160,14 @@ fn expand_internally_tagged_enum(
         {
             fn from_json_scanner(
                 scanner: &mut ::jzon::Scanner<'de>,
-            ) -> ::std::result::Result<Self, ::jzon::Error> {
+            ) -> ::core::result::Result<Self, ::jzon::Error> {
                 let _depth_guard = scanner.enter_depth()?;
                 scanner.skip_whitespace();
 
                 let _obj_start = scanner.pos();
                 scanner.expect_byte(b'{')?;
 
-                let mut _tag: ::std::option::Option<::jzon::JsonStr<'de>> = None;
+                let mut _tag: ::core::option::Option<::jzon::JsonStr<'de>> = None;
                 let mut _tag_first = false;
                 let mut _first_key = true;
                 let mut _after_comma = false;
@@ -1155,7 +1183,7 @@ fn expand_internally_tagged_enum(
                             _after_comma = false;
                             let _k = scanner.read_key_colon()?;
                             if _k == #tag_bytes_lit {
-                                _tag = ::std::option::Option::Some(scanner.read_str()?);
+                                _tag = ::core::option::Option::Some(scanner.read_str()?);
                                 _tag_first = _first_key;
                                 break;
                             } else {
@@ -1266,7 +1294,7 @@ fn variant_field_assembly(
     container_default: bool,
 ) -> TokenStream {
     if fa.skip || fa.skip_deserializing {
-        return quote! { #fname: ::std::default::Default::default(), };
+        return quote! { #fname: ::core::default::Default::default(), };
     }
     if fa.skip_serializing {
         return quote! { #fname: #fname.unwrap_or_default(), };
@@ -1323,7 +1351,10 @@ fn expand_externally_tagged_enum(
                 ));
             }
             if other_variant.is_some() {
-                return Err(Error::new_spanned(&v.ident, "multiple #[serde(other)] variants"));
+                return Err(Error::new_spanned(
+                    &v.ident,
+                    "multiple #[serde(other)] variants",
+                ));
             }
             let vident = &v.ident;
             other_variant = Some(quote! { #ident::#vident });
@@ -1422,7 +1453,13 @@ fn expand_externally_tagged_enum(
                             return Ok(quote! {});
                         }
                         let json_key = variant_json_key(fname, &fa, container);
-                        Ok(variant_field_arm(fname, &json_key, &fa.aliases, &field.ty, &de_lt))
+                        Ok(variant_field_arm(
+                            fname,
+                            &json_key,
+                            &fa.aliases,
+                            &field.ty,
+                            &de_lt,
+                        ))
                     })
                     .collect::<Result<_>>()?;
                 let assembly: Vec<TokenStream> = f
@@ -1499,7 +1536,7 @@ fn expand_externally_tagged_enum(
         {
             fn from_json_scanner(
                 scanner: &mut ::jzon::Scanner<'de>,
-            ) -> ::std::result::Result<Self, ::jzon::Error> {
+            ) -> ::core::result::Result<Self, ::jzon::Error> {
                 scanner.skip_whitespace();
                 match scanner.peek_byte()? {
                     b'"' => {

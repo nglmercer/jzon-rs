@@ -1,0 +1,25 @@
+native-alloc-consumer v0.0.0 (/home/meme/Documentos/GitHub/jzon-rs/fixtures/native-alloc)
+├── jzon-rs v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon)
+│   ├── fast-float2 v0.2.4
+│   ├── itoa v1.0.18
+│   ├── jzon-rs-derive v0.4.0 (proc-macro) (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_derive)
+│   │   ├── proc-macro2 v1.0.107
+│   │   │   └── unicode-ident v1.0.26
+│   │   ├── quote v1.0.47
+│   │   │   └── proc-macro2 v1.0.107 (*)
+│   │   └── syn v2.0.119
+│   │       ├── proc-macro2 v1.0.107 (*)
+│   │       ├── quote v1.0.47 (*)
+│   │       └── unicode-ident v1.0.26
+│   ├── ryu v1.0.23
+│   ├── serde v1.0.229
+│   │   ├── serde_core v1.0.229
+│   │   └── serde_derive v1.0.229 (proc-macro)
+│   │       ├── proc-macro2 v1.0.107 (*)
+│   │       ├── quote v1.0.47 (*)
+│   │       └── syn v3.0.6
+│   │           ├── proc-macro2 v1.0.107 (*)
+│   │           ├── quote v1.0.47 (*)
+│   │           └── unicode-ident v1.0.26
+│   └── zmij v1.0.23
+└── serde v1.0.229 (*)

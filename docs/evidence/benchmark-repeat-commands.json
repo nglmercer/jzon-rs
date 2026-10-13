@@ -1,0 +1,37 @@
+[
+  {
+    "name": "native",
+    "command": [
+      "cargo",
+      "bench",
+      "-p",
+      "jzon-rs",
+      "--bench",
+      "bench_cmp",
+      "--features",
+      "float_roundtrip",
+      "--",
+      "^serialize/(twitter|canada)"
+    ],
+    "exit_status": 0
+  },
+  {
+    "name": "compat",
+    "command": [
+      "cargo",
+      "bench",
+      "-p",
+      "jzon-rs-compat",
+      "--bench",
+      "bench_compat",
+      "--",
+      "--sample-size",
+      "30",
+      "--warm-up-time",
+      "0.5",
+      "--measurement-time",
+      "1"
+    ],
+    "exit_status": 0
+  }
+]

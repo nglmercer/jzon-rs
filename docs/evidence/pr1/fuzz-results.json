@@ -1,0 +1,55 @@
+[
+  {
+    "name": "typed-fuzz-default",
+    "command": [
+      "cargo",
+      "+nightly",
+      "fuzz",
+      "run",
+      "map_keys",
+      "--",
+      "-max_total_time=30",
+      "-max_len=4096",
+      "-rss_limit_mb=512"
+    ],
+    "cwd": "fuzz",
+    "exit_code": 0,
+    "elapsed_seconds": 56.5
+  },
+  {
+    "name": "typed-fuzz-roundtrip",
+    "command": [
+      "cargo",
+      "+nightly",
+      "fuzz",
+      "run",
+      "map_keys",
+      "--features",
+      "roundtrip_policy",
+      "--",
+      "-max_total_time=30",
+      "-max_len=4096",
+      "-rss_limit_mb=512"
+    ],
+    "cwd": "fuzz",
+    "exit_code": 0,
+    "elapsed_seconds": 61.82
+  },
+  {
+    "name": "value-reader-fuzz",
+    "command": [
+      "cargo",
+      "+nightly",
+      "fuzz",
+      "run",
+      "native",
+      "--",
+      "-max_total_time=30",
+      "-max_len=4096",
+      "-rss_limit_mb=512"
+    ],
+    "cwd": "fuzz",
+    "exit_code": 0,
+    "elapsed_seconds": 37.04
+  }
+]

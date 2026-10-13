@@ -1,0 +1,16 @@
+[
+  {
+    "command": "cargo +nightly miri test -p jzon-rs --test depth_safety --test readiness --test optimizations",
+    "cwd": ".",
+    "exit_status": 0,
+    "elapsed_seconds": 162.483,
+    "log": "/tmp/jzon-optimizations/verified/safety-00.log"
+  },
+  {
+    "command": "cargo +nightly test --workspace --features simd,unstable",
+    "cwd": ".",
+    "exit_status": 0,
+    "elapsed_seconds": 7.384,
+    "log": "/tmp/jzon-optimizations/verified/safety-01.log"
+  }
+]

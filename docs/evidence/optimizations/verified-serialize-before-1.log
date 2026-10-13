@@ -1,0 +1,148 @@
+    Finished `bench` profile [optimized] target(s) in 0.06s
+     Running benches/bench_cmp.rs (target/release/deps/bench_cmp-590b984010563014)
+Gnuplot not found, using plotters backend
+output-size serde_json: 51013 bytes
+Benchmarking serialize/twitter/serde_json
+Benchmarking serialize/twitter/serde_json: Warming up for 1.0000 s
+Benchmarking serialize/twitter/serde_json: Collecting 200 samples in estimated 4.6698 s (100k iterations)
+Benchmarking serialize/twitter/serde_json: Analyzing
+serialize/twitter/serde_json
+                        time:   [46.289 µs 46.467 µs 46.677 µs]
+                        thrpt:  [1.0178 GiB/s 1.0224 GiB/s 1.0264 GiB/s]
+Found 11 outliers among 200 measurements (5.50%)
+  5 (2.50%) high mild
+  6 (3.00%) high severe
+output-size sonic_rs: 51013 bytes
+Benchmarking serialize/twitter/sonic_rs
+Benchmarking serialize/twitter/sonic_rs: Warming up for 1.0000 s
+Benchmarking serialize/twitter/sonic_rs: Collecting 200 samples in estimated 4.1381 s (181k iterations)
+Benchmarking serialize/twitter/sonic_rs: Analyzing
+serialize/twitter/sonic_rs
+                        time:   [23.039 µs 23.109 µs 23.201 µs]
+                        thrpt:  [2.0477 GiB/s 2.0559 GiB/s 2.0621 GiB/s]
+Found 30 outliers among 200 measurements (15.00%)
+  1 (0.50%) low mild
+  6 (3.00%) high mild
+  23 (11.50%) high severe
+output-size jzon: 51013 bytes
+Benchmarking serialize/twitter/jzon
+Benchmarking serialize/twitter/jzon: Warming up for 1.0000 s
+Benchmarking serialize/twitter/jzon: Collecting 200 samples in estimated 4.0160 s (80k iterations)
+Benchmarking serialize/twitter/jzon: Analyzing
+serialize/twitter/jzon  time:   [50.037 µs 50.164 µs 50.370 µs]
+                        thrpt:  [965.85 MiB/s 969.81 MiB/s 972.28 MiB/s]
+Found 15 outliers among 200 measurements (7.50%)
+  9 (4.50%) high mild
+  6 (3.00%) high severe
+output-size jzon_serde: 51013 bytes
+Benchmarking serialize/twitter/jzon_serde
+Benchmarking serialize/twitter/jzon_serde: Warming up for 1.0000 s
+Benchmarking serialize/twitter/jzon_serde: Collecting 200 samples in estimated 5.5019 s (60k iterations)
+Benchmarking serialize/twitter/jzon_serde: Analyzing
+serialize/twitter/jzon_serde
+                        time:   [90.282 µs 90.397 µs 90.582 µs]
+                        thrpt:  [537.08 MiB/s 538.18 MiB/s 538.86 MiB/s]
+Found 6 outliers among 200 measurements (3.00%)
+  2 (1.00%) high mild
+  4 (2.00%) high severe
+
+output-size serde_json: 2090326 bytes
+Benchmarking serialize/canada/serde_json
+Benchmarking serialize/canada/serde_json: Warming up for 1.0000 s
+Benchmarking serialize/canada/serde_json: Collecting 200 samples in estimated 4.0440 s (1200 iterations)
+Benchmarking serialize/canada/serde_json: Analyzing
+serialize/canada/serde_json
+                        time:   [3.3373 ms 3.3421 ms 3.3473 ms]
+                        thrpt:  [595.54 MiB/s 596.48 MiB/s 597.34 MiB/s]
+Found 7 outliers among 200 measurements (3.50%)
+  4 (2.00%) high mild
+  3 (1.50%) high severe
+output-size sonic_rs: 2090326 bytes
+Benchmarking serialize/canada/sonic_rs
+Benchmarking serialize/canada/sonic_rs: Warming up for 1.0000 s
+Benchmarking serialize/canada/sonic_rs: Collecting 200 samples in estimated 4.3113 s (1000 iterations)
+Benchmarking serialize/canada/sonic_rs: Analyzing
+serialize/canada/sonic_rs
+                        time:   [4.2778 ms 4.2930 ms 4.3189 ms]
+                        thrpt:  [461.57 MiB/s 464.35 MiB/s 466.00 MiB/s]
+Found 12 outliers among 200 measurements (6.00%)
+  5 (2.50%) high mild
+  7 (3.50%) high severe
+output-size jzon: 2090326 bytes
+Benchmarking serialize/canada/jzon
+Benchmarking serialize/canada/jzon: Warming up for 1.0000 s
+Benchmarking serialize/canada/jzon: Collecting 200 samples in estimated 4.3775 s (1000 iterations)
+Benchmarking serialize/canada/jzon: Analyzing
+serialize/canada/jzon   time:   [4.3589 ms 4.3627 ms 4.3674 ms]
+                        thrpt:  [456.44 MiB/s 456.94 MiB/s 457.34 MiB/s]
+Found 11 outliers among 200 measurements (5.50%)
+  3 (1.50%) low mild
+  1 (0.50%) high mild
+  7 (3.50%) high severe
+output-size jzon_serde: 2090326 bytes
+Benchmarking serialize/canada/jzon_serde
+Benchmarking serialize/canada/jzon_serde: Warming up for 1.0000 s
+Benchmarking serialize/canada/jzon_serde: Collecting 200 samples in estimated 4.5817 s (1200 iterations)
+Benchmarking serialize/canada/jzon_serde: Analyzing
+serialize/canada/jzon_serde
+                        time:   [3.7548 ms 3.7684 ms 3.7838 ms]
+                        thrpt:  [526.85 MiB/s 529.00 MiB/s 530.91 MiB/s]
+Found 22 outliers among 200 measurements (11.00%)
+  10 (5.00%) high mild
+  12 (6.00%) high severe
+
+output-size serde_json/Point: 26 bytes
+output-size sonic_rs/Point: 26 bytes
+output-size jzon/Point: 26 bytes
+output-size jzon_serde/Point: 26 bytes
+output-size serde_json/Record: 52 bytes
+output-size sonic_rs/Record: 52 bytes
+output-size jzon/Record: 52 bytes
+output-size jzon_serde/Record: 52 bytes
+output-size jzon/Point/pre-alloc: 26 bytes
+output-size serde_json/Point/pre-alloc: 26 bytes
+output-size jzon/Record/pre-alloc: 52 bytes
+output-size serde_json/Record/pre-alloc: 52 bytes
+output-size serde_json: 60201 bytes
+output-size sonic_rs: 60201 bytes
+output-size jzon: 60201 bytes
+output-size jzon_serde: 60201 bytes
+output-size serde_json: 197 bytes
+output-size sonic_rs: 197 bytes
+output-size jzon: 197 bytes
+output-size serde_json: 13750 bytes
+output-size sonic_rs: 13750 bytes
+output-size jzon: 13748 bytes
+output-size jzon_serde: 13750 bytes
+output-size jzon/reuse: 51013 bytes
+output-size serde_json/reuse: 51013 bytes
+output-size jzon_serde/reuse: 51013 bytes
+output-size sonic_rs/fresh_to_string: 51013 bytes
+output-size jzon/A/Vec_alloc: 27 bytes
+output-size jzon/A/FixedBuf<128>: 27 bytes
+output-size jzon/A/reuse: 27 bytes
+output-size serde_json/alloc: 27 bytes
+output-size serde_json/reuse: 27 bytes
+output-size sonic_rs: 27 bytes
+output-size jzon/A: 7601 bytes
+output-size jzon/B: 7601 bytes
+output-size serde_json: 7601 bytes
+output-size sonic_rs: 7601 bytes
+output-size jzon/A: 48255 bytes
+output-size jzon/B: 48257 bytes
+output-size serde_json: 48257 bytes
+output-size sonic_rs: 48257 bytes
+output-size jzon/A/to_json_bytes: 43464 bytes
+output-size jzon/B/to_string: 43466 bytes
+output-size jzon/B/buffered_to_writer: 43466 bytes
+output-size serde_json/to_string: 43466 bytes
+output-size serde_json/to_writer: 43466 bytes
+output-size sonic_rs/to_string: 43466 bytes
+output-size serde_json: 9412636 bytes
+output-size sonic_rs: 9412636 bytes
+output-size jzon/A: 9412636 bytes
+output-size jzon/B: 9412636 bytes
+output-size serde_json: 2106432 bytes
+output-size sonic_rs: 2106432 bytes
+output-size jzon/B: 2106432 bytes
+output-size jzon/A: 1944307 bytes

@@ -1,0 +1,55 @@
+   Compiling jzon-rs v0.3.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon)
+   Compiling jzon-rs-serde v0.3.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_serde)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.06s
+     Running tests/depth_safety.rs (target/miri/x86_64-unknown-linux-gnu/debug/deps/depth_safety-a7c0fbd3c0604b83)
+
+running 4 tests
+test guard_owns_state_after_owner_drops ... ok
+test native_deserializer_restores_budget_after_visitor_unwind ... ok
+test public_string_variant_cannot_bypass_escaping ... ok
+test restores_on_error_and_unwind ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.75s
+
+     Running tests/optimizations.rs (target/miri/x86_64-unknown-linux-gnu/debug/deps/optimizations-40d141f49036a7c8)
+
+running 9 tests
+test buffered_writer_keeps_its_explicit_contract ... ok
+test dedicated_structs_and_variants_match_reference ... ok
+test emitted_strings_match_oracle_at_dispatch_boundaries ... ok
+test native_128_bit_endpoints_use_fallible_sinks ... ok
+test reusable_and_streaming_serializers_recover_ownership_after_unwind ... ok
+test reusable_serializer_preserves_capacity_and_partial_output ... ok
+test scratch_reuses_small_strings_and_releases_oversized_on_unwind ... ok
+test short_key_batching_validates_names_and_preserves_error_order ... ok
+test streaming_io_and_callback_order_match_reference ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 79.76s
+
+     Running tests/readiness.rs (target/miri/x86_64-unknown-linux-gnu/debug/deps/readiness-06035d124e33b074)
+
+running 21 tests
+test byte_model ... ok
+test container_matrix ... ok
+test derived_attribute_and_enum_matrix ... ok
+test early_visitors_must_finish ... ok
+test escaped_capacity_is_local ... ok
+test exactly_one_scalar ... ok
+test float_bits_match_equivalent_configuration ... ok
+test ignored_strings_validate ... ok
+test integer_boundaries ... ok
+test iterative_ignored_and_raw_follow_upstream_depth_policy ... ok
+test map_key_grammar ... ok
+test raw_and_ignored_have_distinct_unicode_contracts ... ok
+test recursion_boundaries_match_reference ... ok
+test reusable_buffer_restores_partial_output_on_error_and_panic ... ok
+test reuse_buffer_and_failure_output ... ok
+test scalar_callback_traces ... ok
+test scalar_serialization_matches_reference ... ok
+test structs_accept_reference_sequence_representation ... ok
+test tuple_completion ... ok
+test unsized_native_api ... ok
+test whitespace_bulk_blocks_reject_other_controls ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 28.22s
+

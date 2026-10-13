@@ -1,0 +1,61 @@
+   Compiling serde_json v1.0.151 (/home/meme/Documentos/GitHub/jzon-rs/vendor/serde_json)
+   Compiling jzon-rs-compat v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_compat)
+   Compiling facade-consumer v0.0.0 (/home/meme/Documentos/GitHub/jzon-rs/fixtures/facade)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.62s
+     Running `fixtures/facade/target/debug/facade-consumer`
+   Compiling hashbrown v0.14.5
+   Compiling serde_json v1.0.151 (/home/meme/Documentos/GitHub/jzon-rs/vendor/serde_json)
+   Compiling indexmap v2.2.3
+   Compiling jzon-rs-compat v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_compat)
+   Compiling facade-consumer v0.0.0 (/home/meme/Documentos/GitHub/jzon-rs/fixtures/facade)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.83s
+     Running `fixtures/facade/target/debug/facade-consumer`
+   Compiling serde_core v1.0.229
+   Compiling serde v1.0.229
+   Compiling fast-float2 v0.2.4
+   Compiling jzon-rs v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon)
+   Compiling jzon-rs-serde v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_serde)
+   Compiling native-consumer v0.0.0 (/home/meme/Documentos/GitHub/jzon-rs/fixtures/native)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.98s
+     Running `fixtures/native/target/debug/native-consumer`
+   Compiling serde_json v1.0.151 (/home/meme/Documentos/GitHub/jzon-rs/vendor/serde_json)
+    Checking jzon-rs-compat v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_compat)
+    Checking alloc-consumer v0.0.0 (/home/meme/Documentos/GitHub/jzon-rs/fixtures/alloc)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.01s
+   Compiling hashbrown v0.14.5
+   Compiling serde_json v1.0.151 (/home/meme/Documentos/GitHub/jzon-rs/vendor/serde_json)
+   Compiling indexmap v2.2.3
+   Compiling real-json-user v0.0.0 (/home/meme/Documentos/GitHub/jzon-rs/fixtures/interop/real-json-user)
+   Compiling jzon-rs-compat v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_compat)
+   Compiling interop-consumer v0.0.0 (/home/meme/Documentos/GitHub/jzon-rs/fixtures/interop)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.89s
+     Running `fixtures/interop/target/debug/interop-consumer`
+   Compiling fast-float2 v0.2.4
+   Compiling jzon-rs-derive v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_derive)
+   Compiling jzon-rs v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon)
+warning: method `location` is never used
+   --> /home/meme/Documentos/GitHub/jzon-rs/crates/jzon/src/scanner.rs:131:19
+    |
+103 | impl<'de> Scanner<'de> {
+    | ---------------------- method in this implementation
+...
+131 |     pub(crate) fn location(&self, offset: usize) -> (usize, usize) {
+    |                   ^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `try_write_escaped_key_sink` is never used
+  --> /home/meme/Documentos/GitHub/jzon-rs/crates/jzon/src/ser.rs:90:15
+   |
+90 | pub(crate) fn try_write_escaped_key_sink<S: SerializeSink>(
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `jzon-rs` (lib) generated 2 warnings
+   Compiling derive-consumer v0.0.0 (/home/meme/Documentos/GitHub/jzon-rs/fixtures/derive)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.22s
+     Running `fixtures/derive/target/debug/derive-consumer`
+    Checking jzon-rs v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon)
+    Checking native-alloc-consumer v0.0.0 (/home/meme/Documentos/GitHub/jzon-rs/fixtures/native-alloc)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.85s
+PASS expected compile rejection: borrow_outlives
+PASS expected compile rejection: unsupported_attr

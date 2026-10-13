@@ -154,7 +154,8 @@ fn bench_strict_and_aliases(c: &mut Criterion) {
 }
 
 fn bench_dispatch_strategies(c: &mut Criterion) {
-    let cases: &[(&str, &str, fn(&str))] = &[
+    type DispatchCase = (&'static str, &'static str, fn(&str));
+    let cases: &[DispatchCase] = &[
         ("phf_threshold_struct", PHF_INPUT, |s| {
             black_box(PhfRecord::from_json_str(black_box(s)).unwrap());
         }),

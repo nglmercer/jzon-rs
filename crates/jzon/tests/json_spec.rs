@@ -355,7 +355,7 @@ fn num_zero() {
 fn num_float() {
     let v: Value = parse("3.14").unwrap();
     let n = v.as_f64().unwrap();
-    assert!((n - 3.14).abs() < 1e-12);
+    assert!((n - (314.0 / 100.0)).abs() < 1e-12);
 }
 
 // spec: numbers/scientific-notation

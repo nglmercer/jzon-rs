@@ -1,0 +1,13 @@
+{
+  "number": 21,
+  "html_url": "https://github.com/Rajaniraiyn/jzon-rs/pull/21",
+  "state": "open",
+  "draft": false,
+  "mergeable": true,
+  "commits": 7,
+  "changed_files": 663,
+  "body": null,
+  "head_sha": "dffe27f2973149dd2515033ac6477046664bdc6f",
+  "base_sha": "f96732b96408e6355153fdebca733148678d81ab",
+  "observed_at": "2026-09-30T20:35:27.407724+00:00"
+}

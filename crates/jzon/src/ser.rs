@@ -1,10 +1,15 @@
 //! `ToJson` trait and primitive implementations.
 
+use crate::__private::*;
 mod sink;
 
-pub use sink::{IoSink, JsonSink, LengthCounter, VecSink};
+#[cfg(feature = "std")]
+pub use sink::{IoSink, WriterSink};
+pub use sink::{JsonSink, LengthCounter, SerializeSink, VecSink};
 
-use std::collections::{BTreeMap, HashMap};
+use alloc::collections::BTreeMap;
+#[cfg(feature = "std")]
+use std::collections::HashMap;
 
 pub trait ToJson {
     fn json_write(&self, w: &mut Vec<u8>);
@@ -32,7 +37,9 @@ pub trait ToJson {
     /// the common case — over-estimating is fine, under-estimating causes a
     /// single reallocation.  The default (64) is conservative.
     #[inline]
-    fn json_size_hint(&self) -> usize { 64 }
+    fn json_size_hint(&self) -> usize {
+        64
+    }
 
     #[must_use]
     fn to_json_bytes(&self) -> Vec<u8> {
@@ -68,54 +75,95 @@ pub fn write_escaped_str(s: &str, w: &mut Vec<u8>) {
 
 #[inline]
 pub fn write_escaped_str_sink<S: JsonSink>(s: &str, w: &mut S) {
-    w.push(b'"');
-    // Pre-reserve: common case is no escaping, so reserve s.len() + 1 (closing quote).
-    // Avoids all reallocations in the fast (no-escape) path.
-    w.reserve(s.len() + 1);
+    // This adapter cannot produce I/O errors; capacity errors retain the
+    // existing JsonSink contract. Monomorphization removes Result handling.
+    try_write_escaped_str_sink(s, &mut sink::InfallibleSink(w))
+        .expect("infallible JSON sink adapter");
+}
+
+#[inline]
+pub fn try_write_escaped_str_sink<S: SerializeSink>(s: &str, w: &mut S) -> sink::SinkResult<()> {
+    write_quoted_sink(s, w, b"\"")
+}
+
+#[inline(always)]
+pub(crate) fn try_write_escaped_key_sink<S: SerializeSink>(
+    s: &str,
+    w: &mut S,
+) -> sink::SinkResult<()> {
+    let bytes = s.as_bytes();
+    // Validate every byte even for static names supplied by custom Serialize
+    // implementations. This fast path trusts neither field syntax nor ASCII.
+    // The whole UTF-8 key is copied, so no character boundary can be split.
+    if bytes.len() <= 32 && crate::simd::find_escape_scalar(bytes, 0) == bytes.len() {
+        let mut key = [0u8; 35];
+        key[0] = b'"';
+        key[1..bytes.len() + 1].copy_from_slice(bytes);
+        key[bytes.len() + 1] = b'"';
+        key[bytes.len() + 2] = b':';
+        w.write_bytes(&key[..bytes.len() + 3])
+    } else {
+        write_quoted_sink(s, w, b"\":")
+    }
+}
+
+#[inline]
+fn write_quoted_sink<S: SerializeSink>(s: &str, w: &mut S, suffix: &[u8]) -> sink::SinkResult<()> {
+    w.reserve_bytes(s.len().saturating_add(1).saturating_add(suffix.len()));
+    w.push_byte(b'"')?;
     let bytes = s.as_bytes();
     let mut start = 0usize; // start of current unescaped run
 
     let mut i = start;
     while i < bytes.len() {
         // Find the next byte that needs escaping using the widest available path.
-        let stop = crate::simd::find_escape(bytes, i);
+        let stop = if bytes.len() - i < 16 {
+            crate::simd::find_escape_scalar(bytes, i)
+        } else {
+            crate::simd::find_escape(bytes, i)
+        };
         if stop >= bytes.len() {
             // No more bytes need escaping; flush the rest in one go.
             break;
         }
         // Flush safe bytes [start..stop], then emit the escape sequence.
-        w.extend(&bytes[start..stop]);
-        escape_one(bytes[stop], w);
+        w.write_bytes(&bytes[start..stop])?;
+        escape_one(bytes[stop], w)?;
         i = stop + 1;
         start = i;
     }
 
     // Flush the final safe run.
-    w.extend(&bytes[start..]);
-    w.push(b'"');
+    w.write_bytes(&bytes[start..])?;
+    w.write_bytes(suffix)?;
+    Ok(())
 }
 
 #[inline(always)]
-fn escape_one<S: JsonSink>(b: u8, w: &mut S) {
+fn escape_one<S: SerializeSink>(b: u8, w: &mut S) -> sink::SinkResult<()> {
     match b {
-        b'"'  => w.extend(b"\\\""),
-        b'\\' => w.extend(b"\\\\"),
-        b'\n' => w.extend(b"\\n"),
-        b'\r' => w.extend(b"\\r"),
-        b'\t' => w.extend(b"\\t"),
-        0x08  => w.extend(b"\\b"),
-        0x0C  => w.extend(b"\\f"),
-        b     => {
+        b'"' => w.write_bytes(b"\\\"")?,
+        b'\\' => w.write_bytes(b"\\\\")?,
+        b'\n' => w.write_bytes(b"\\n")?,
+        b'\r' => w.write_bytes(b"\\r")?,
+        b'\t' => w.write_bytes(b"\\t")?,
+        0x08 => w.write_bytes(b"\\b")?,
+        0x0C => w.write_bytes(b"\\f")?,
+        b => {
             // Other control characters as \u00XX
             let hi = b >> 4;
             let lo = b & 0xF;
-            w.extend(&[
-                b'\\', b'u', b'0', b'0',
+            w.write_bytes(&[
+                b'\\',
+                b'u',
+                b'0',
+                b'0',
                 if hi < 10 { b'0' + hi } else { b'a' + hi - 10 },
                 if lo < 10 { b'0' + lo } else { b'a' + lo - 10 },
-            ]);
+            ])?;
         }
     }
+    Ok(())
 }
 
 // ── primitive impls ───────────────────────────────────────────────────────────
@@ -129,7 +177,10 @@ impl ToJson for bool {
     fn json_write_sink<S: JsonSink>(&self, w: &mut S) {
         write_bool(*self, w);
     }
-    #[inline] fn json_size_hint(&self) -> usize { 5 } // "false"
+    #[inline]
+    fn json_size_hint(&self) -> usize {
+        5
+    } // "false"
 }
 
 #[inline]
@@ -142,7 +193,10 @@ impl ToJson for str {
     fn json_write(&self, w: &mut Vec<u8>) {
         write_escaped_str(self, w);
     }
-    #[inline] fn json_size_hint(&self) -> usize { self.len() + 2 }
+    #[inline]
+    fn json_size_hint(&self) -> usize {
+        self.len() + 2
+    }
 }
 
 impl ToJson for String {
@@ -154,7 +208,10 @@ impl ToJson for String {
     fn json_write_sink<S: JsonSink>(&self, w: &mut S) {
         write_escaped_str_sink(self, w);
     }
-    #[inline] fn json_size_hint(&self) -> usize { self.len() + 2 }
+    #[inline]
+    fn json_size_hint(&self) -> usize {
+        self.len() + 2
+    }
 }
 
 impl ToJson for crate::scanner::JsonStr<'_> {
@@ -167,20 +224,16 @@ impl ToJson for crate::scanner::JsonStr<'_> {
         write_json_str(self, w);
     }
     #[inline]
-    fn json_size_hint(&self) -> usize { self.as_str().len() + 2 }
+    fn json_size_hint(&self) -> usize {
+        self.as_str().len() + 2
+    }
 }
 
 #[inline]
 fn write_json_str<S: JsonSink>(value: &crate::scanner::JsonStr<'_>, w: &mut S) {
     use crate::scanner::JsonStr;
     match value {
-        JsonStr::BorrowedNoEsc(s) => {
-            // Provably escape-free — skip find_escape scan.
-            w.reserve(s.len() + 2);
-            w.push(b'"');
-            w.extend(s.as_bytes());
-            w.push(b'"');
-        }
+        JsonStr::BorrowedNoEsc(s) => write_escaped_str_sink(s, w),
         JsonStr::Borrowed(s) => write_escaped_str_sink(s, w),
         JsonStr::Owned(s) => write_escaped_str_sink(s, w),
     }
@@ -195,7 +248,10 @@ impl<T: ToJson> ToJson for &T {
     fn json_write_sink<S: JsonSink>(&self, w: &mut S) {
         (**self).json_write_sink(w);
     }
-    #[inline] fn json_size_hint(&self) -> usize { (**self).json_size_hint() }
+    #[inline]
+    fn json_size_hint(&self) -> usize {
+        (**self).json_size_hint()
+    }
 }
 
 impl ToJson for &str {
@@ -207,7 +263,10 @@ impl ToJson for &str {
     fn json_write_sink<S: JsonSink>(&self, w: &mut S) {
         write_escaped_str_sink(self, w);
     }
-    #[inline] fn json_size_hint(&self) -> usize { self.len() + 2 }
+    #[inline]
+    fn json_size_hint(&self) -> usize {
+        self.len() + 2
+    }
 }
 
 impl<T: ToJson> ToJson for Box<T> {
@@ -219,7 +278,10 @@ impl<T: ToJson> ToJson for Box<T> {
     fn json_write_sink<S: JsonSink>(&self, w: &mut S) {
         (**self).json_write_sink(w);
     }
-    #[inline] fn json_size_hint(&self) -> usize { (**self).json_size_hint() }
+    #[inline]
+    fn json_size_hint(&self) -> usize {
+        (**self).json_size_hint()
+    }
 }
 
 impl<T: ToJson> ToJson for Option<T> {
@@ -235,7 +297,7 @@ impl<T: ToJson> ToJson for Option<T> {
     fn json_size_hint(&self) -> usize {
         match self {
             Some(v) => v.json_size_hint(),
-            None    => 4, // "null"
+            None => 4, // "null"
         }
     }
 }
@@ -244,7 +306,7 @@ impl<T: ToJson> ToJson for Option<T> {
 fn write_option<T: ToJson, S: JsonSink>(value: &Option<T>, w: &mut S) {
     match value {
         Some(v) => v.json_write_sink(w),
-        None    => w.extend(b"null"),
+        None => w.extend(b"null"),
     }
 }
 
@@ -257,7 +319,9 @@ impl<T: ToJson> ToJson for Vec<T> {
     }
     #[inline]
     fn json_size_hint(&self) -> usize {
-        if self.is_empty() { return 2; }
+        if self.is_empty() {
+            return 2;
+        }
         // Use the first element's hint as a sample; add separating commas.
         2 + self.len() * (self[0].json_size_hint() + 1)
     }
@@ -272,7 +336,9 @@ impl<T: ToJson, const N: usize> ToJson for [T; N] {
     }
     #[inline]
     fn json_size_hint(&self) -> usize {
-        if N == 0 { return 2; }
+        if N == 0 {
+            return 2;
+        }
         2 + N * (self[0].json_size_hint() + 1)
     }
 }
@@ -283,7 +349,9 @@ impl<T: ToJson> ToJson for [T] {
     }
     #[inline]
     fn json_size_hint(&self) -> usize {
-        if self.is_empty() { return 2; }
+        if self.is_empty() {
+            return 2;
+        }
         2 + self.len() * (self[0].json_size_hint() + 1)
     }
 }
@@ -297,7 +365,9 @@ impl<T: ToJson> ToJson for &[T] {
     }
     #[inline]
     fn json_size_hint(&self) -> usize {
-        if self.is_empty() { return 2; }
+        if self.is_empty() {
+            return 2;
+        }
         2 + self.len() * (self[0].json_size_hint() + 1)
     }
 }
@@ -387,9 +457,18 @@ fn write_u128_sink<S: JsonSink>(n: u128, w: &mut S) {
     w.extend(buf.format(n).as_bytes());
 }
 impl ToJson for u128 {
-    #[inline] fn json_write(&self, w: &mut Vec<u8>) { write_u128_sink(*self, &mut VecSink(w)); }
-    #[inline] fn json_write_sink<S: JsonSink>(&self, w: &mut S) { write_u128_sink(*self, w); }
-    #[inline] fn json_size_hint(&self) -> usize { 39 }
+    #[inline]
+    fn json_write(&self, w: &mut Vec<u8>) {
+        write_u128_sink(*self, &mut VecSink(w));
+    }
+    #[inline]
+    fn json_write_sink<S: JsonSink>(&self, w: &mut S) {
+        write_u128_sink(*self, w);
+    }
+    #[inline]
+    fn json_size_hint(&self) -> usize {
+        39
+    }
 }
 impl ToJson for i128 {
     #[inline]
@@ -400,7 +479,10 @@ impl ToJson for i128 {
     fn json_write_sink<S: JsonSink>(&self, w: &mut S) {
         write_i128_sink(*self, w);
     }
-    #[inline] fn json_size_hint(&self) -> usize { 40 }
+    #[inline]
+    fn json_size_hint(&self) -> usize {
+        40
+    }
 }
 
 #[inline]
@@ -424,7 +506,10 @@ impl ToJson for f64 {
     /// 24-byte worst-case causing 96-byte allocations for small structs.  Under-estimation
     /// only causes a single reallocation, whereas over-estimation wastes allocator headroom
     /// and pushes small structs into larger (slower) allocator size classes.
-    #[inline] fn json_size_hint(&self) -> usize { 10 }
+    #[inline]
+    fn json_size_hint(&self) -> usize {
+        10
+    }
 }
 
 impl ToJson for f32 {
@@ -437,43 +522,51 @@ impl ToJson for f32 {
         write_f32(*self, w);
     }
     /// ryu's output for f32 is at most 14 characters.
-    #[inline] fn json_size_hint(&self) -> usize { 14 }
+    #[inline]
+    fn json_size_hint(&self) -> usize {
+        14
+    }
 }
 
 #[inline]
 fn write_f64<S: JsonSink>(n: f64, w: &mut S) {
-    if !n.is_finite() { w.extend(b"null"); return; }
+    if !n.is_finite() {
+        w.extend(b"null");
+        return;
+    }
     // ECMA-404 / ECMA-262 §24.5.2.4: -0 must serialise as "0".
     // IEEE 754: -0.0 == 0.0, so this check catches both.
-    if n == 0.0 { w.extend(b"0"); return; }
+    if n == 0.0 {
+        w.extend(b"0");
+        return;
+    }
     #[cfg(feature = "zmij-float-ser")]
     {
         let mut buf = zmij::Buffer::new();
         w.extend(buf.format_finite(n).as_bytes());
-        return;
     }
     #[cfg(not(feature = "zmij-float-ser"))]
     {
         let mut buf = ryu::Buffer::new();
         w.extend(buf.format_finite(n).as_bytes());
-        return;
     }
 }
 
 #[inline]
 fn write_f32<S: JsonSink>(n: f32, w: &mut S) {
-    if !n.is_finite() { w.extend(b"null"); return; }
+    if !n.is_finite() {
+        w.extend(b"null");
+        return;
+    }
     #[cfg(feature = "zmij-float-ser")]
     {
         let mut buf = zmij::Buffer::new();
         w.extend(buf.format_finite(n).as_bytes());
-        return;
     }
     #[cfg(not(feature = "zmij-float-ser"))]
     {
         let mut buf = ryu::Buffer::new();
         w.extend(buf.format_finite(n).as_bytes());
-        return;
     }
 }
 
@@ -489,7 +582,10 @@ impl ToJson for char {
         write_char(*self, w);
     }
     /// At most 4 UTF-8 bytes + 2 surrounding quotes.
-    #[inline] fn json_size_hint(&self) -> usize { 6 }
+    #[inline]
+    fn json_size_hint(&self) -> usize {
+        6
+    }
 }
 
 #[inline]
@@ -509,11 +605,15 @@ impl ToJson for () {
     fn json_write_sink<S: JsonSink>(&self, w: &mut S) {
         w.extend(b"null");
     }
-    #[inline] fn json_size_hint(&self) -> usize { 4 }
+    #[inline]
+    fn json_size_hint(&self) -> usize {
+        4
+    }
 }
 
 // ── HashMap / BTreeMap → JSON objects ────────────────────────────────────────
 
+#[cfg(feature = "std")]
 impl<K: ToJson, V: ToJson> ToJson for HashMap<K, V> {
     fn json_write(&self, w: &mut Vec<u8>) {
         write_map(self.iter(), &mut VecSink(w));
@@ -523,7 +623,9 @@ impl<K: ToJson, V: ToJson> ToJson for HashMap<K, V> {
     }
     #[inline]
     fn json_size_hint(&self) -> usize {
-        if self.is_empty() { return 2; }
+        if self.is_empty() {
+            return 2;
+        }
         let (k, v) = self.iter().next().unwrap();
         2 + self.len() * (k.json_size_hint() + 1 + v.json_size_hint() + 1)
     }
@@ -538,14 +640,22 @@ impl<K: ToJson, V: ToJson> ToJson for BTreeMap<K, V> {
     }
     #[inline]
     fn json_size_hint(&self) -> usize {
-        if self.is_empty() { return 2; }
+        if self.is_empty() {
+            return 2;
+        }
         let (k, v) = self.iter().next().unwrap();
         2 + self.len() * (k.json_size_hint() + 1 + v.json_size_hint() + 1)
     }
 }
 
 #[inline]
-fn write_map<'a, K: ToJson + 'a, V: ToJson + 'a, I: Iterator<Item = (&'a K, &'a V)>, S: JsonSink>(
+fn write_map<
+    'a,
+    K: ToJson + 'a,
+    V: ToJson + 'a,
+    I: Iterator<Item = (&'a K, &'a V)>,
+    S: JsonSink,
+>(
     entries: I,
     w: &mut S,
 ) {

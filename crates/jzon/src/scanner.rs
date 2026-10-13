@@ -1,4 +1,6 @@
-use std::marker::PhantomData;
+use crate::__private::*;
+use alloc::sync::Arc;
+use core::sync::atomic::{AtomicU8, Ordering};
 
 use crate::{simd, Error};
 
@@ -17,8 +19,8 @@ fn err_token() -> Error {
 /// A parsed JSON string: either a zero-copy borrow or a heap-allocated value.
 ///
 /// The `BorrowedNoEsc` variant is returned by [`Scanner::read_str`] when no
-/// escape sequences were present in the JSON input.  This lets the serializer
-/// skip the `find_escape` scan entirely — the string is provably escape-free.
+/// escape sequences were present in the JSON input. Publicly constructed values
+/// are still escaped by the serializer; this variant is not a trust boundary.
 pub enum JsonStr<'de> {
     /// Zero-copy borrow from the input.  **No longer emitted by [`Scanner::read_str`]**
     /// (use [`JsonStr::BorrowedNoEsc`] instead); kept for API compatibility.
@@ -60,6 +62,13 @@ impl<'de> JsonStr<'de> {
     }
 }
 
+/// Strings decoded for native visitors preserve distinct input/scratch lifetimes.
+#[cfg(feature = "serde")]
+pub(crate) enum DecodedStr<'de, 'scratch> {
+    Borrowed(&'de str),
+    Transient(&'scratch str),
+}
+
 /// Levels of array/object nesting a single parse may enter, mirroring
 /// `serde_json` (127 nested opens parse, the 128th errors).
 pub const MAX_DEPTH: u8 = 128;
@@ -67,41 +76,26 @@ pub const MAX_DEPTH: u8 = 128;
 pub struct Scanner<'de> {
     input: &'de [u8],
     pos: usize,
-    remaining_depth: u8,
+    remaining_depth: Option<Arc<AtomicU8>>,
+    depth_limit_disabled: bool,
     #[cfg(feature = "stats")]
     pub stats: crate::stats::ScannerStats,
 }
 
-/// Restores one level of [`Scanner`] depth when dropped. Bind the result of
-/// [`Scanner::enter_depth`] for the duration of a composite value.
-///
-/// Stores a raw pointer so the `&mut` borrow used to create the guard ends
-/// immediately and the scanner stays usable while the guard is alive. This
-/// is sound because the guard is always a stack local dropped before the
-/// borrowed scanner can move or be dropped, no borrows of the scanner
-/// itself ever escape it (returned slices borrow the input with `'de`),
-/// and no live borrows exist when the guard drops at scope end.
-#[must_use = "bind the guard so depth is restored when the value is done"]
+/// Owns the depth counter independently of the scanner. Dropping or moving a
+/// scanner while a guard exists is safe: the counter remains alive until the
+/// last owner drops. Drop performs only infallible depth restoration, including
+/// during unwinding. Leaking a guard can reduce the budget, never bypass it.
+#[must_use = "bind the guard for the duration of the composite value"]
 #[derive(Debug)]
-pub struct DepthGuard<'de> {
-    scanner: *mut Scanner<'de>,
-    _not_sync: PhantomData<&'de mut Scanner<'de>>,
+pub struct DepthGuard {
+    remaining: Option<Arc<AtomicU8>>,
 }
 
-impl Drop for DepthGuard<'_> {
-    #[inline]
+impl Drop for DepthGuard {
     fn drop(&mut self) {
-        // SAFETY: the pointer is valid (see struct docs) and nothing else
-        // touches the counter while the guard is being dropped.
-        #[cfg(not(feature = "unbounded_depth"))]
-        unsafe {
-            (*self.scanner).remaining_depth += 1;
-        }
-        // Touch the pointer in all configurations so it is not dead code
-        // when the limit is compiled out.
-        #[cfg(feature = "unbounded_depth")]
-        {
-            let _ = self.scanner;
+        if let Some(remaining) = &self.remaining {
+            remaining.fetch_add(1, Ordering::Relaxed);
         }
     }
 }
@@ -112,7 +106,8 @@ impl<'de> Scanner<'de> {
         Scanner {
             input,
             pos: 0,
-            remaining_depth: MAX_DEPTH,
+            remaining_depth: None,
+            depth_limit_disabled: false,
             #[cfg(feature = "stats")]
             stats: crate::stats::ScannerStats::default(),
         }
@@ -131,6 +126,16 @@ impl<'de> Scanner<'de> {
     #[inline]
     pub fn advance(&mut self) {
         self.pos += 1;
+    }
+
+    pub(crate) fn location(&self, offset: usize) -> (usize, usize) {
+        let prefix = &self.input[..offset.min(self.input.len())];
+        let line = 1 + prefix.iter().filter(|&&b| b == b'\n').count();
+        let column = prefix
+            .iter()
+            .rposition(|&b| b == b'\n')
+            .map_or(prefix.len(), |p| prefix.len() - p - 1);
+        (line, column)
     }
 
     /// Byte offset into the input slice — used by internally-tagged enum parsers to checkpoint and re-scan.
@@ -194,23 +199,42 @@ impl<'de> Scanner<'de> {
         Ok(())
     }
 
-    /// Enter one level of array/object nesting, enforcing the 128-level
-    /// recursion limit (use the `unbounded_depth` feature to opt out, exactly
-    /// like `serde_json`). The returned guard restores the level on drop, so
-    /// bind it for the whole composite value.
+    /// Enter a nesting level. The default budget remains active with all
+    /// features; the guard owns its counter and restores it on error or unwind.
     #[inline]
-    pub fn enter_depth(&mut self) -> Result<DepthGuard<'de>, Error> {
-        #[cfg(not(feature = "unbounded_depth"))]
-        {
-            if self.remaining_depth <= 1 {
+    pub fn enter_depth(&mut self) -> Result<DepthGuard, Error> {
+        if self.depth_limit_disabled {
+            return Ok(DepthGuard { remaining: None });
+        }
+        // Scalars and unescaped borrowed strings need no counter allocation.
+        let counter = self
+            .remaining_depth
+            .get_or_insert_with(|| Arc::new(AtomicU8::new(MAX_DEPTH)));
+        let mut remaining = counter.load(Ordering::Relaxed);
+        loop {
+            if remaining <= 1 {
                 return Err(Error::RecursionLimit);
             }
-            self.remaining_depth -= 1;
+            match counter.compare_exchange_weak(
+                remaining,
+                remaining - 1,
+                Ordering::Relaxed,
+                Ordering::Relaxed,
+            ) {
+                Ok(_) => break,
+                Err(current) => remaining = current,
+            }
         }
         Ok(DepthGuard {
-            scanner: self as *mut Scanner<'de>,
-            _not_sync: PhantomData,
+            remaining: Some(Arc::clone(counter)),
         })
+    }
+
+    /// Explicitly opt out of the nesting limit. The caller must ensure that
+    /// recursive parsing and destruction cannot exhaust the stack.
+    #[cfg(feature = "unbounded_depth")]
+    pub fn disable_recursion_limit(&mut self) {
+        self.depth_limit_disabled = true;
     }
 
     #[inline]
@@ -220,18 +244,16 @@ impl<'de> Scanner<'de> {
                 self.pos += 1;
                 Ok(())
             }
+            None => Err(err_eof()),
             _ => Err(err_token()),
         }
     }
 
     pub fn expect_bytes(&mut self, expected: &[u8]) -> Result<(), Error> {
-        let end = self.pos + expected.len();
-        if self.input.get(self.pos..end) == Some(expected) {
-            self.pos = end;
-            Ok(())
-        } else {
-            Err(err_token())
+        for &byte in expected {
+            self.expect_byte(byte)?;
         }
+        Ok(())
     }
 
     #[inline(always)]
@@ -248,35 +270,12 @@ impl<'de> Scanner<'de> {
         self.skip_whitespace_swar();
     }
 
-    /// SWAR whitespace skipper — called only when the first byte IS whitespace.
-    ///
-    /// JSON whitespace (ECMA-404 §2) is exactly: 0x09 (TAB), 0x0A (LF),
-    /// 0x0D (CR), 0x20 (SP).  VT (0x0B) and FF (0x0C) are NOT valid JSON
-    /// whitespace even though they are ≤ 0x20.
-    ///
-    /// Not `#[cold]` — pretty-printed JSON calls this on every field separator.
+    /// JSON whitespace is exactly space, tab, LF and CR. Never skip other
+    /// control bytes, including inside an eight-byte scanning block.
     #[inline]
     fn skip_whitespace_swar(&mut self) {
-        // 8-byte SWAR bulk scan: all 4 JSON whitespace bytes (0x09,0x0A,0x0D,0x20)
-        // are ≤ 0x20, so the "all high-bits set after sub(0x21)" trick bulk-skips
-        // them. VT(0x0B) and FF(0x0C) also satisfy this, so the byte-by-byte tail
-        // re-validates: bulk skip advances past any ≤0x20 byte, tail rejects non-WS.
-        while self.pos + 8 <= self.input.len() {
-            let chunk = u64::from_le_bytes(self.input[self.pos..self.pos + 8].try_into().unwrap());
-            let sub = chunk.wrapping_sub(0x2121_2121_2121_2121_u64);
-            if (sub & 0x8080_8080_8080_8080_u64) == 0x8080_8080_8080_8080_u64 {
-                self.pos += 8;
-            } else {
-                break;
-            }
-        }
-        // Byte-by-byte tail: precise WS test rejects VT/FF.
-        while let Some(&b) = self.input.get(self.pos) {
-            if b == b' ' || b == b'\t' || b == b'\n' || b == b'\r' {
-                self.pos += 1;
-            } else {
-                break;
-            }
+        while matches!(self.input.get(self.pos), Some(b' ' | b'\t' | b'\n' | b'\r')) {
+            self.pos += 1;
         }
     }
 
@@ -359,18 +358,12 @@ impl<'de> Scanner<'de> {
         self.skip_whitespace();
         self.expect_byte(b'"')?;
         let start = self.pos;
-        let (stop, ascii_only) = simd::scan_string_run(self.input, start);
+        let (stop, _ascii_only) = simd::scan_string_run(self.input, start);
 
         match self.input.get(stop) {
             Some(&b'"') => {
-                let s = if ascii_only {
-                    // SAFETY: fused scan proved every byte in [start..stop) is ASCII (< 0x80),
-                    // which is always valid UTF-8.
-                    unsafe { core::str::from_utf8_unchecked(&self.input[start..stop]) }
-                } else {
-                    core::str::from_utf8(&self.input[start..stop])
-                        .map_err(|_| Error::InvalidUtf8)?
-                };
+                let s = core::str::from_utf8(&self.input[start..stop])
+                    .map_err(|_| Error::InvalidUtf8)?;
                 self.pos = stop + 1;
 
                 #[cfg(feature = "stats")]
@@ -386,12 +379,50 @@ impl<'de> Scanner<'de> {
 
                 #[cfg(feature = "stats")]
                 {
-                    self.stats.heap_allocations += 1;
+                    self.stats.decoded_strings += 1;
                 }
 
                 Ok(JsonStr::Owned(owned))
             }
             Some(_) => Err(Error::InvalidEscape), // control char < 0x20
+            None => Err(err_eof()),
+        }
+    }
+
+    /// Native transient decoding: plain strings borrow the input; escaped
+    /// strings borrow the caller's scratch only for the current visitor call.
+    #[cfg(feature = "serde")]
+    #[inline]
+    pub(crate) fn read_str_with_scratch<'scratch>(
+        &mut self,
+        scratch: &'scratch mut Vec<u8>,
+    ) -> Result<DecodedStr<'de, 'scratch>, Error> {
+        self.skip_whitespace();
+        self.expect_byte(b'"')?;
+        let start = self.pos;
+        let (stop, _) = simd::scan_string_run(self.input, start);
+        match self.input.get(stop) {
+            Some(b'"') => {
+                let value = core::str::from_utf8(&self.input[start..stop])
+                    .map_err(|_| Error::InvalidUtf8)?;
+                self.pos = stop + 1;
+                #[cfg(feature = "stats")]
+                {
+                    self.stats.zero_copy_borrows += 1;
+                }
+                Ok(DecodedStr::Borrowed(value))
+            }
+            Some(b'\\') => {
+                self.pos = stop;
+                self.unescape_into(start, scratch)?;
+                let value = core::str::from_utf8(scratch).map_err(|_| Error::InvalidUtf8)?;
+                #[cfg(feature = "stats")]
+                {
+                    self.stats.decoded_strings += 1;
+                }
+                Ok(DecodedStr::Transient(value))
+            }
+            Some(_) => Err(Error::InvalidEscape),
             None => Err(err_eof()),
         }
     }
@@ -628,6 +659,7 @@ impl<'de> Scanner<'de> {
                 self.pos += 1;
                 self.scan_ascii_digits();
             }
+            None => return Err(Error::UnexpectedEof),
             _ => return Err(Error::InvalidNumber),
         }
 
@@ -636,7 +668,11 @@ impl<'de> Scanner<'de> {
             // At least one digit must follow the decimal point.
             if self.scan_ascii_digits() == 0 {
                 // No digit after '.': "1." is invalid JSON.
-                return Err(Error::InvalidNumber);
+                return Err(if self.pos == self.input.len() {
+                    Error::UnexpectedEof
+                } else {
+                    Error::InvalidNumber
+                });
             }
         }
         if matches!(self.input.get(self.pos), Some(b'e') | Some(b'E')) {
@@ -645,7 +681,11 @@ impl<'de> Scanner<'de> {
                 self.pos += 1;
             }
             if self.scan_ascii_digits() == 0 {
-                return Err(Error::InvalidNumber);
+                return Err(if self.pos == self.input.len() {
+                    Error::UnexpectedEof
+                } else {
+                    Error::InvalidNumber
+                });
             }
         }
         let end = self.pos;
@@ -655,7 +695,7 @@ impl<'de> Scanner<'de> {
 
         #[cfg(feature = "stats")]
         {
-            self.stats.bytes_scanned += (end - start) as u64;
+            self.stats.number_bytes_scanned += (end - start) as u64;
         }
 
         Ok(&self.input[start..end])
@@ -675,24 +715,14 @@ impl<'de> Scanner<'de> {
 
     pub fn read_bool(&mut self) -> Result<bool, Error> {
         self.skip_whitespace();
-        match self.input.get(self.pos) {
-            Some(&b't') => {
-                self.pos += 4;
-                if self.input.get(self.pos - 3..self.pos) == Some(b"rue") {
-                    Ok(true)
-                } else {
-                    self.pos -= 4;
-                    Err(err_token())
-                }
+        match self.peek_byte()? {
+            b't' => {
+                self.expect_bytes(b"true")?;
+                Ok(true)
             }
-            Some(&b'f') => {
-                self.pos += 5;
-                if self.input.get(self.pos - 4..self.pos) == Some(b"alse") {
-                    Ok(false)
-                } else {
-                    self.pos -= 5;
-                    Err(err_token())
-                }
+            b'f' => {
+                self.expect_bytes(b"false")?;
+                Ok(false)
             }
             _ => Err(err_token()),
         }
@@ -716,31 +746,193 @@ impl<'de> Scanner<'de> {
         }
     }
 
+    /// Serde IgnoredAny/RawValue use lexical, iterative skipping, as upstream
+    /// does. Typed recursion limits are not applied to this stack-safe path.
+    #[cfg(feature = "serde")]
+    pub(crate) fn skip_value_serde(&mut self) -> Result<(), Error> {
+        struct Frame {
+            close: u8,
+            first: bool,
+            after_value: bool,
+        }
+        let mut frames: Vec<Frame> = Vec::new();
+        let mut need_value = true;
+        loop {
+            if !need_value && frames.is_empty() {
+                return Ok(());
+            }
+            self.skip_whitespace();
+            if need_value {
+                match self.peek_byte()? {
+                    b'"' => self.skip_string()?,
+                    b't' => self.expect_bytes(b"true")?,
+                    b'f' => self.expect_bytes(b"false")?,
+                    b'n' => self.expect_bytes(b"null")?,
+                    b'-' | b'0'..=b'9' => {
+                        self.read_number_bytes()?;
+                    }
+                    open @ (b'[' | b'{') => {
+                        self.pos += 1;
+                        frames.push(Frame {
+                            close: if open == b'[' { b']' } else { b'}' },
+                            first: true,
+                            after_value: false,
+                        });
+                    }
+                    _ => return Err(err_token()),
+                }
+                need_value = false;
+            }
+            let frame = match frames.last_mut() {
+                Some(frame) => frame,
+                None => return Ok(()),
+            };
+            self.skip_whitespace();
+            let byte = self.peek_byte()?;
+            if byte == frame.close && (frame.first || frame.after_value) {
+                self.pos += 1;
+                frames.pop();
+                continue;
+            }
+            if frame.after_value {
+                self.expect_byte(b',')?;
+                frame.first = false;
+                frame.after_value = false;
+                continue;
+            }
+            // Following a comma a closing delimiter cannot stand in for a
+            // value/key. skip_value/read_string will reject it explicitly.
+            if frame.close == b'}' {
+                self.skip_string()?;
+                self.skip_whitespace();
+                self.expect_byte(b':')?;
+            }
+            frame.after_value = true;
+            frame.first = false;
+            need_value = true;
+        }
+    }
+
+    fn read_hex_escape(&mut self) -> Result<u32, Error> {
+        let hex = self
+            .input
+            .get(self.pos..self.pos + 4)
+            .ok_or(Error::InvalidEscape)?;
+        let mut value = 0;
+        for &digit in hex {
+            value = value * 16
+                + match digit {
+                    b'0'..=b'9' => (digit - b'0') as u32,
+                    b'a'..=b'f' => (digit - b'a' + 10) as u32,
+                    b'A'..=b'F' => (digit - b'A' + 10) as u32,
+                    _ => return Err(Error::InvalidEscape),
+                };
+        }
+        self.pos += 4;
+        Ok(value)
+    }
+
+    /// Byte-oriented Serde strings accept non-UTF-8, literal controls and lone
+    /// UTF-16 surrogates (encoded as WTF-8), matching the upstream byte model.
+    #[cfg(feature = "serde")]
+    pub(crate) fn read_byte_str(&mut self) -> Result<alloc::borrow::Cow<'de, [u8]>, Error> {
+        use alloc::borrow::Cow;
+        self.skip_whitespace();
+        self.expect_byte(b'"')?;
+        let start = self.pos;
+        let mut decoded: Option<Vec<u8>> = None;
+        loop {
+            let byte = self.input.get(self.pos).copied().ok_or_else(err_eof)?;
+            self.pos += 1;
+            match byte {
+                b'"' => {
+                    return Ok(match decoded {
+                        Some(buf) => Cow::Owned(buf),
+                        None => Cow::Borrowed(&self.input[start..self.pos - 1]),
+                    })
+                }
+                b'\\' => {
+                    let buf =
+                        decoded.get_or_insert_with(|| self.input[start..self.pos - 1].to_vec());
+                    let escape = self.input.get(self.pos).copied().ok_or_else(err_eof)?;
+                    self.pos += 1;
+                    let byte = match escape {
+                        b'"' | b'\\' | b'/' => escape,
+                        b'b' => 8,
+                        b'f' => 12,
+                        b'n' => 10,
+                        b'r' => 13,
+                        b't' => 9,
+                        b'u' => {
+                            let mut code = self.read_hex_escape()?;
+                            if (0xD800..=0xDBFF).contains(&code)
+                                && self.input.get(self.pos..self.pos + 2) == Some(b"\\u")
+                            {
+                                let saved = self.pos;
+                                self.pos += 2;
+                                let low = self.read_hex_escape()?;
+                                if (0xDC00..=0xDFFF).contains(&low) {
+                                    code = 0x10000 + ((code - 0xD800) << 10) + low - 0xDC00;
+                                } else {
+                                    self.pos = saved;
+                                }
+                            }
+                            if let Some(ch) = char::from_u32(code) {
+                                let mut bytes = [0; 4];
+                                buf.extend_from_slice(ch.encode_utf8(&mut bytes).as_bytes());
+                            } else {
+                                // A lone UTF-16 surrogate is encoded as WTF-8.
+                                buf.extend_from_slice(&[
+                                    (0xE0 | (code >> 12)) as u8,
+                                    (0x80 | ((code >> 6) & 0x3F)) as u8,
+                                    (0x80 | (code & 0x3F)) as u8,
+                                ]);
+                            }
+                            continue;
+                        }
+                        _ => return Err(Error::InvalidEscape),
+                    };
+                    buf.push(byte);
+                }
+                byte => {
+                    if let Some(buf) = &mut decoded {
+                        buf.push(byte);
+                    }
+                }
+            }
+        }
+    }
+
     fn skip_string(&mut self) -> Result<(), Error> {
         self.expect_byte(b'"')?;
         loop {
-            let stop = simd::find(self.input, self.pos);
-            match self.input.get(stop) {
-                Some(&b'"') => {
-                    self.pos = stop + 1;
+            let stop = simd::find_escape(self.input, self.pos);
+            self.pos = stop;
+            match self.input.get(stop).copied() {
+                Some(b'"') => {
+                    self.pos += 1;
                     return Ok(());
                 }
-                Some(&b'\\') => {
-                    let escaped = stop + 1;
-                    if escaped >= self.input.len() {
-                        return Err(err_eof());
+                Some(b'\\') => {
+                    self.pos += 1;
+                    let escaped = self.input.get(self.pos).copied().ok_or_else(err_eof)?;
+                    self.pos += 1;
+                    match escaped {
+                        b'"' | b'\\' | b'/' | b'b' | b'f' | b'n' | b'r' | b't' => {}
+                        b'u' => {
+                            self.read_hex_escape()?;
+                        }
+                        _ => return Err(Error::InvalidEscape),
                     }
-                    self.pos = escaped + 1;
                 }
-                Some(_) => unreachable!("simd::find only stops at quote or backslash"),
+                Some(_) => return Err(Error::InvalidEscape),
                 None => return Err(err_eof()),
             }
         }
     }
 
-    /// Skip remaining array elements and the closing `]`.
-    /// Call this after a partial `SeqAccess` visit to drain any unconsumed
-    /// elements so the scanner is positioned after the `]`.
+    /// Validate and consume the tail after at least one array value was read.
+    /// This helper does not suppress syntax errors or allow missing separators.
     pub fn skip_array_tail(&mut self) -> Result<(), Error> {
         loop {
             self.skip_whitespace();
@@ -753,9 +945,7 @@ impl<'de> Scanner<'de> {
                     self.pos += 1;
                     self.skip_value()?;
                 }
-                _ => {
-                    self.skip_value()?;
-                }
+                _ => return Err(err_token()),
             }
         }
     }
@@ -853,9 +1043,16 @@ impl<'de> Scanner<'de> {
     /// Unescape a JSON string whose content starts at `content_start` and whose
     /// first backslash is at `self.pos`.  Returns the fully decoded `String`.
     fn unescape_from(&mut self, content_start: usize) -> Result<String, Error> {
-        // Output is at most as long as the remaining input — preallocating
-        // avoids the Vec-doubling realloc chain on escape-heavy strings.
-        let mut buf: Vec<u8> = Vec::with_capacity(self.input.len().saturating_sub(content_start));
+        let mut buf = Vec::new();
+        self.unescape_into(content_start, &mut buf)?;
+        String::from_utf8(buf).map_err(|_| Error::InvalidUtf8)
+    }
+
+    fn unescape_into(&mut self, content_start: usize, buf: &mut Vec<u8>) -> Result<(), Error> {
+        // Reserve only the scanned prefix plus modest slack. Unrelated values
+        // must not inflate the retained capacity of this string.
+        buf.clear();
+        buf.reserve(self.pos.saturating_sub(content_start).saturating_add(16));
         // The caller (read_str) already positioned self.pos at the first `\`;
         // find_escape already verified no control chars before that point,
         // so the prefix is clean and we copy it directly.
@@ -881,38 +1078,22 @@ impl<'de> Scanner<'de> {
                         b'b' => buf.push(0x08),
                         b'f' => buf.push(0x0C),
                         b'u' => {
-                            let hex = self
-                                .input
-                                .get(self.pos..self.pos + 4)
-                                .ok_or(Error::InvalidEscape)?;
-                            let s = core::str::from_utf8(hex).map_err(|_| Error::InvalidEscape)?;
-                            let code =
-                                u32::from_str_radix(s, 16).map_err(|_| Error::InvalidEscape)?;
+                            let code = self.read_hex_escape()?;
                             let c = if (0xD800..=0xDBFF).contains(&code) {
-                                self.pos += 4;
                                 if self.input.get(self.pos..self.pos + 2) != Some(b"\\u") {
                                     return Err(Error::InvalidEscape);
                                 }
                                 self.pos += 2;
-                                let lo_hex = self
-                                    .input
-                                    .get(self.pos..self.pos + 4)
-                                    .ok_or(Error::InvalidEscape)?;
-                                let lo_s = core::str::from_utf8(lo_hex)
-                                    .map_err(|_| Error::InvalidEscape)?;
-                                let lo = u32::from_str_radix(lo_s, 16)
-                                    .map_err(|_| Error::InvalidEscape)?;
+                                let lo = self.read_hex_escape()?;
                                 // The second half must be a low surrogate
                                 // (DC00–DFFF); anything else is a lone
                                 // leading surrogate (serde_json rejects it).
                                 if !(0xDC00..=0xDFFF).contains(&lo) {
                                     return Err(Error::InvalidEscape);
                                 }
-                                self.pos += 4;
                                 let combined = 0x10000 + ((code - 0xD800) << 10) + (lo - 0xDC00);
                                 char::from_u32(combined).ok_or(Error::InvalidEscape)?
                             } else {
-                                self.pos += 4;
                                 char::from_u32(code).ok_or(Error::InvalidEscape)?
                             };
                             let mut tmp = [0u8; 4];
@@ -939,6 +1120,6 @@ impl<'de> Scanner<'de> {
             }
         }
 
-        String::from_utf8(buf).map_err(|_| Error::InvalidUtf8)
+        Ok(())
     }
 }

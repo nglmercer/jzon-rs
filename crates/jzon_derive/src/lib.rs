@@ -2,9 +2,9 @@ use proc_macro::TokenStream;
 use syn::{parse_macro_input, DeriveInput};
 
 mod attrs;
+mod de;
 mod rename;
 mod ser;
-mod de;
 
 /// Derive `jzon::ToJson` for structs and enums with unit and struct variants.
 ///

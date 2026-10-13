@@ -11,8 +11,12 @@ edition.workspace = true
 rust-version.workspace = true
 
 [features]
-default    = []
+default    = ["std"]
+std = ["jzon/std"]
+alloc = ["jzon/alloc"]
 simd       = ["jzon/simd"]
+simd-intrinsics = ["jzon/simd-intrinsics"]
+zmij-float-ser = ["jzon/zmij-float-ser"]
 fast-float = ["jzon/fast-float"]
 unstable   = ["jzon/unstable"]
 stats      = ["jzon/stats"]
@@ -20,14 +24,16 @@ stats      = ["jzon/stats"]
 # the serde_json you deserialize into has its own `arbitrary_precision` on,
 # so out-of-range numbers visit as exact digit strings instead of f64.
 arbitrary_precision = ["jzon/arbitrary_precision"]
+float_roundtrip = ["jzon/float_roundtrip"]
+raw_value = ["jzon/raw_value"]
 unbounded_depth     = ["jzon/unbounded_depth"]
 
 [dependencies]
-jzon  = { package = "jzon-rs", path = "../jzon", version = "0.3", default-features = false, features = ["serde"] }
+jzon  = { package = "jzon-rs", path = "../jzon", version = "0.4", default-features = false, features = ["serde"] }
 
 [dev-dependencies]
 serde      = { version = "1", features = ["derive"] }
-serde_json = "1"
+serde_json = { version = "=1.0.151", path = "../../vendor/serde_json" }
 
 [lib]
 name = "jzon_serde"

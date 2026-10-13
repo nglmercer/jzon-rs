@@ -1,0 +1,10 @@
+{
+  "upstream": "serde_json =1.0.151",
+  "registry_source": "/home/meme/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.151",
+  "upstream_de_sha256": "4998d7e252eb513be85b298e287048b4fb283882e9ba7df905f572f07200f3f3",
+  "patched_de_sha256": "38353024d53c49cdf30af6f4fa9809b8b6da1b63a20e8fb4dd45da5c8d4ca987",
+  "patch": "Peek the initial bool-key byte; consume it only for t/f literal branches. Invalid keys parse their full string, preserving UTF-8 and error context. No visitor replay.",
+  "distribution": "Packaged path dependencies normalize to registry versions. Downstream root must patch serde_json to this audited source; registry-only release blocked until verified safe upstream release.",
+  "manifest_change": "Pin optional indexmap =2.2.3 in the audited source for Rust1.71: verified Cargo metadata rust-version1.63; latest2.14.2 failed MSRV manifest parsing (edition2024).",
+  "source_update_policy": "Review future changes, rerun affected upstream probes only under Miri, both facades/public constructors/streams, external type interoperability and extracted package resolution. Do not replace the pin speculatively."
+}

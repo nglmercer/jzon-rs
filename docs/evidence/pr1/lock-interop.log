@@ -1,0 +1,4 @@
+    Updating crates.io index
+     Locking 2 packages to latest compatible versions
+ Downgrading hashbrown v0.17.1 -> v0.14.5
+ Downgrading indexmap v2.14.2 -> v2.2.3 (available: v2.14.2)

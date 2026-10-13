@@ -1,9 +1,8 @@
 //! Attribute parsing for both `#[serde(...)]` and `#[rjson(...)]` namespaces.
 //!
-//! We mirror every serde container / field attribute relevant to JSON so that
-//! structs annotated purely with `#[derive(serde::Serialize, serde::Deserialize)]`
-//! and `#[serde(…)]` work with jzon out of the box — users need not add any
-//! new annotations.  jzon-specific extensions live under `#[rjson(…)]`.
+//! Mode A supports an explicit subset of Serde-style attributes. Unsupported
+//! attributes fail compilation rather than implying full Serde semantics.
+//! Native custom hooks live under `#[rjson(...)]`.
 
 use syn::{Attribute, Error, ExprPath, LitStr, Result};
 
@@ -11,27 +10,27 @@ use syn::{Attribute, Error, ExprPath, LitStr, Result};
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum RenameAll {
-    LowerCase,
-    UpperCase,
-    PascalCase,
-    CamelCase,
-    SnakeCase,
-    ScreamingSnakeCase,
-    KebabCase,
-    ScreamingKebabCase,
+    Lower,
+    Upper,
+    Pascal,
+    Camel,
+    Snake,
+    ScreamingSnake,
+    Kebab,
+    ScreamingKebab,
 }
 
 impl RenameAll {
     pub fn from_str(s: &str) -> Option<Self> {
         match s {
-            "lowercase" => Some(Self::LowerCase),
-            "UPPERCASE" => Some(Self::UpperCase),
-            "PascalCase" => Some(Self::PascalCase),
-            "camelCase" => Some(Self::CamelCase),
-            "snake_case" => Some(Self::SnakeCase),
-            "SCREAMING_SNAKE_CASE" => Some(Self::ScreamingSnakeCase),
-            "kebab-case" => Some(Self::KebabCase),
-            "SCREAMING-KEBAB-CASE" => Some(Self::ScreamingKebabCase),
+            "lowercase" => Some(Self::Lower),
+            "UPPERCASE" => Some(Self::Upper),
+            "PascalCase" => Some(Self::Pascal),
+            "camelCase" => Some(Self::Camel),
+            "snake_case" => Some(Self::Snake),
+            "SCREAMING_SNAKE_CASE" => Some(Self::ScreamingSnake),
+            "kebab-case" => Some(Self::Kebab),
+            "SCREAMING-KEBAB-CASE" => Some(Self::ScreamingKebab),
             _ => None,
         }
     }
@@ -102,7 +101,10 @@ pub fn parse_container_attrs(attrs: &[Attribute]) -> Result<ContainerAttrs> {
         attr.parse_nested_meta(|meta| {
             if meta.path.is_ident("rename_all") {
                 let s: LitStr = meta.value()?.parse()?;
-                out.rename_all = RenameAll::from_str(&s.value());
+                out.rename_all = Some(
+                    RenameAll::from_str(&s.value())
+                        .ok_or_else(|| Error::new_spanned(&s, "unsupported rename_all rule"))?,
+                );
             } else if meta.path.is_ident("deny_unknown_fields") {
                 out.deny_unknown_fields = true;
             } else if meta.path.is_ident("default") {
@@ -119,43 +121,12 @@ pub fn parse_container_attrs(attrs: &[Attribute]) -> Result<ContainerAttrs> {
                 out.untagged = true;
             } else if meta.path.is_ident("transparent") {
                 out.transparent = true;
-            } else if meta.path.is_ident("rename_all_fields") {
-                // Serde 1.0.152+ alias for rename_all on enum variant fields.
-                // We apply the same rule as rename_all.
-                let s: LitStr = meta.value()?.parse()?;
-                out.rename_all = RenameAll::from_str(&s.value());
-            } else if matches!(
-                meta.path.get_ident().map(|i| i.to_string()).as_deref(),
-                Some(
-                    "bound"
-                        | "crate"
-                        | "remote"
-                        | "from"
-                        | "try_from"
-                        | "into"
-                        | "expecting"
-                        | "variant_identifier"
-                        | "field_identifier"
-                )
-            ) {
-                // Serde-internal attrs that don't map to jzon codegen. Consume
-                // any value token so syn's parser doesn't choke.
-                if meta.input.peek(syn::Token![=]) {
-                    let _: LitStr = meta.value()?.parse()?;
-                }
-            } else if matches!(
-                meta.path.get_ident().map(|i| i.to_string()).as_deref(),
-                Some("serialize_with" | "deserialize_with" | "with")
-            ) {
-                if meta.input.peek(syn::Token![=]) {
-                    let _: LitStr = meta.value()?.parse()?;
-                }
-            } else if is_rjson {
+            } else {
                 // #[serde(...)] unknowns are silently ignored — serde owns that
                 // namespace and will validate them. #[rjson(...)] unknowns are
                 // a typo or unsupported feature in jzon's own namespace: fail loudly.
                 return Err(meta.error(format!(
-                    "unknown rjson container attribute `{}`",
+                    "unsupported Mode A container attribute `{}`",
                     meta.path
                         .get_ident()
                         .map_or_else(|| "?".into(), |i| i.to_string())
@@ -205,9 +176,6 @@ pub fn parse_field_attrs(attrs: &[Attribute]) -> Result<FieldAttrs> {
             } else if meta.path.is_ident("borrow") {
                 // jzon zero-copies &'de str natively; this attr is a no-op for us.
                 if meta.input.peek(syn::Token![=]) { let _: LitStr = meta.value()?.parse()?; }
-            } else if matches!(meta.path.get_ident().map(|i| i.to_string()).as_deref(),
-                Some("bound" | "getter")) {
-                if meta.input.peek(syn::Token![=]) { let _: LitStr = meta.value()?.parse()?; }
             } else if meta.path.is_ident("serialize_with") && is_rjson {
                 out.serialize_with = Some(meta.value()?.parse::<LitStr>()?.parse()?);
             } else if meta.path.is_ident("deserialize_with") && is_rjson {
@@ -220,9 +188,9 @@ pub fn parse_field_attrs(attrs: &[Attribute]) -> Result<FieldAttrs> {
                      use #[rjson(serialize_with = \"path\")] / #[rjson(deserialize_with = \"path\")] \
                      for a jzon-native escape hatch, or jzon_serde (Mode B) for serde-compatible fns",
                 ));
-            } else if is_rjson {
+            } else {
                 return Err(meta.error(format!(
-                    "unknown rjson field attribute `{}`",
+                    "unsupported Mode A field attribute `{}`",
                     meta.path.get_ident().map_or_else(|| "?".into(), |i| i.to_string())
                 )));
             }

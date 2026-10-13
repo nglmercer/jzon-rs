@@ -1,7 +1,7 @@
 //! Integration tests covering all supported struct syntaxes, serde attributes,
 //! data types, and runtime properties (zero-copy, allocation behaviour).
 
-use jzon::{Error, FromJson, ToJson};
+use jzon::{FromJson, ToJson};
 #[derive(ToJson, FromJson, Debug, PartialEq)]
 struct Point {
     x: f64,
@@ -357,10 +357,7 @@ fn skip_serializing_if_middle_present() {
 
 #[test]
 fn skip_serializing_if_all_conditional_skipped_empty_object() {
-    let v = SkipIfAllConditional {
-        a: None,
-        b: None,
-    };
+    let v = SkipIfAllConditional { a: None, b: None };
     let json = v.to_json_string();
     assert_eq!(json, "{}");
 }
@@ -411,10 +408,7 @@ fn skip_serializing_if_with_custom_ser_present() {
 #[test]
 fn skip_serializing_if_size_hint_matches_present_fields() {
     use jzon::ToJson;
-    let all_skipped = SkipIfAllConditional {
-        a: None,
-        b: None,
-    };
+    let all_skipped = SkipIfAllConditional { a: None, b: None };
     assert_eq!(all_skipped.json_size_hint(), 2);
 
     let one_present = SkipIfAllConditional {
@@ -462,7 +456,7 @@ fn field_default_missing() {
 fn field_default_present_overrides() {
     let json = r#"{"id":5,"score":3.14,"tag":"custom"}"#;
     let v = WithDefault::from_json_str(json).unwrap();
-    assert!((v.score - 3.14).abs() < 1e-9);
+    assert!((v.score - (314.0 / 100.0)).abs() < 1e-9);
     assert_eq!(v.tag, "custom");
 }
 #[derive(ToJson, FromJson, Debug, PartialEq)]
@@ -804,7 +798,7 @@ fn stats_zero_copy() {
     let mut sc = jzon::Scanner::new_str(input);
     Borrowed::from_json_scanner(&mut sc).unwrap();
     assert_eq!(sc.stats.zero_copy_borrows, 1);
-    assert_eq!(sc.stats.heap_allocations, 0);
+    assert_eq!(sc.stats.decoded_strings, 0);
 }
 #[derive(ToJson, FromJson, Debug, PartialEq)]
 struct Empty {}
@@ -1155,7 +1149,7 @@ fn fused_key_colon_with_spaces() {
     let v = Xyz::from_json_str(json).unwrap();
     assert!((v.x - 1.0).abs() < 1e-12);
     assert!((v.y - (-2.5)).abs() < 1e-12);
-    assert!((v.z - 3.14).abs() < 1e-10);
+    assert!((v.z - (314.0 / 100.0)).abs() < 1e-10);
 }
 #[test]
 fn capacity_hint_reasonable() {
@@ -1181,7 +1175,7 @@ fn fixed_buf_stack_roundtrip() {
     let buf = p
         .to_fixed_buf::<64>()
         .expect("64 bytes is enough for Point");
-    assert!(buf.len() > 0);
+    assert!(!buf.is_empty());
     assert!(buf.as_str().contains("1.5"));
     let p2 = Point::from_json_bytes(buf.as_slice()).unwrap();
     assert_eq!(p.x, p2.x);
@@ -1279,7 +1273,7 @@ fn jzon_serde_roundtrip_matches_serde_json() {
 
     let p = Payload {
         id: 42,
-        value: 3.14,
+        value: (314.0 / 100.0),
         tag: "hello".into(),
     };
     let rjson_out = p.to_json_string();
@@ -1326,14 +1320,18 @@ fn unit_struct_serializes_braces() {
 struct Miles(f64);
 #[test]
 fn newtype_struct_delegates_to_inner() {
-    let v = Miles(3.14);
+    let v = Miles(314.0 / 100.0);
     let json = v.to_json_string();
     assert!(
         !json.contains('{'),
         "newtype should not add braces, got: {json}"
     );
     let v2 = Miles::from_json_str(&json).unwrap();
-    assert!((v2.0 - 3.14).abs() < 1e-10, "roundtrip mismatch: {}", v2.0);
+    assert!(
+        (v2.0 - (314.0 / 100.0)).abs() < 1e-10,
+        "roundtrip mismatch: {}",
+        v2.0
+    );
 }
 #[test]
 fn newtype_struct_integer() {
@@ -1349,7 +1347,7 @@ fn newtype_struct_integer() {
 struct Pair(u64, f64);
 #[test]
 fn tuple_struct_serializes_as_array() {
-    let v = Pair(42, 3.14);
+    let v = Pair(42, 314.0 / 100.0);
     let json = v.to_json_string();
     assert!(
         json.starts_with('['),
@@ -1377,7 +1375,9 @@ struct Wrapper {
 }
 #[test]
 fn transparent_delegates() {
-    let v = Wrapper { inner: 2.718 };
+    let v = Wrapper {
+        inner: (2718.0 / 1000.0),
+    };
     let json = v.to_json_string();
     assert!(
         !json.contains('{'),
@@ -1385,7 +1385,7 @@ fn transparent_delegates() {
     );
     let v2 = Wrapper::from_json_str(&json).unwrap();
     assert!(
-        (v2.inner - 2.718).abs() < 1e-10,
+        (v2.inner - (2718.0 / 1000.0)).abs() < 1e-10,
         "roundtrip mismatch: {}",
         v2.inner
     );
@@ -1679,11 +1679,18 @@ fn internally_tagged_enum_matches_serde_json() {
 #[derive(jzon::FromJson, jzon::ToJson, Debug, PartialEq)]
 #[serde(tag = "type")]
 enum TaggedDispatch {
-    Circle { radius: f64 },
-    Rectangle { width: f64, height: f64 },
+    Circle {
+        radius: f64,
+    },
+    Rectangle {
+        width: f64,
+        height: f64,
+    },
     Point,
     #[serde(rename = "Cir\\cle")]
-    EscapedCircle { radius: f64 },
+    EscapedCircle {
+        radius: f64,
+    },
 }
 
 #[test]
@@ -2104,19 +2111,17 @@ fn read_str_valid_non_ascii_unescaped() {
 #[test]
 fn read_str_invalid_utf8_unescaped_returns_error() {
     use jzon::scanner::Scanner;
-    use jzon::Error;
     let input = b"\"\xFF\xFE\"";
     let mut sc = Scanner::new(input);
-    assert!(matches!(sc.read_str(), Err(Error::InvalidUtf8)));
+    assert!(matches!(sc.read_str(), Err(jzon::Error::InvalidUtf8)));
 }
 
 #[test]
 fn read_str_raw_control_byte_returns_invalid_escape() {
     use jzon::scanner::Scanner;
-    use jzon::Error;
     let input = b"\"hello\x01world\"";
     let mut sc = Scanner::new(input);
-    assert!(matches!(sc.read_str(), Err(Error::InvalidEscape)));
+    assert!(matches!(sc.read_str(), Err(jzon::Error::InvalidEscape)));
 }
 
 #[cfg(not(feature = "unbounded_depth"))]
@@ -2132,14 +2137,14 @@ fn recursion_limit_enforced_and_bounded() {
     let shallow: Node = FromJson::from_json_str(&nested(10)).unwrap();
     assert!(shallow.next.is_some());
     // serde_json trips at 128 opens; the derive path matches.
-    assert!(matches!(Node::from_json_str(&nested(127)), Ok(_)));
+    assert!(Node::from_json_str(&nested(127)).is_ok());
     assert!(matches!(
         Node::from_json_str(&nested(128)),
-        Err(Error::RecursionLimit)
+        Err(jzon::Error::RecursionLimit)
     ));
     assert!(matches!(
         Node::from_json_str(&nested(500)),
-        Err(Error::RecursionLimit)
+        Err(jzon::Error::RecursionLimit)
     ));
 }
 
@@ -2152,12 +2157,20 @@ fn recursion_limit_applies_to_skipped_regions() {
     struct HasSkipped {
         keep: u32,
     }
-    let deep = format!("{{\"keep\":1,\"drop\":{}{}}}", "[".repeat(500), "]".repeat(500));
+    let deep = format!(
+        "{{\"keep\":1,\"drop\":{}{}}}",
+        "[".repeat(500),
+        "]".repeat(500)
+    );
     assert!(matches!(
         HasSkipped::from_json_str(&deep),
-        Err(Error::RecursionLimit)
+        Err(jzon::Error::RecursionLimit)
     ));
-    let ok = format!("{{\"keep\":1,\"drop\":{}{}}}", "[".repeat(10), "]".repeat(10));
+    let ok = format!(
+        "{{\"keep\":1,\"drop\":{}{}}}",
+        "[".repeat(10),
+        "]".repeat(10)
+    );
     assert_eq!(
         HasSkipped::from_json_str(&ok).unwrap(),
         HasSkipped { keep: 1 }
@@ -2174,15 +2187,15 @@ fn strict_rejects_trailing_commas_in_structs_and_maps() {
     }
     assert!(matches!(
         Solo::from_json_str(r#"{"x":1,}"#),
-        Err(Error::TrailingComma)
+        Err(jzon::Error::TrailingComma)
     ));
     assert!(matches!(
         Solo::from_json_str(r#"{"x":1,"y":2,}"#),
-        Err(Error::TrailingComma)
+        Err(jzon::Error::TrailingComma)
     ));
     assert!(matches!(
         HashMap::<String, u64>::from_json_str(r#"{"a":1,}"#),
-        Err(Error::TrailingComma)
+        Err(jzon::Error::TrailingComma)
     ));
     // Well-formed input still parses.
     assert_eq!(Solo::from_json_str(r#"{"x":1}"#).unwrap().x, 1);
@@ -2198,7 +2211,7 @@ fn strict_rejects_trailing_commas_in_enums() {
     }
     assert!(matches!(
         Msg::from_json_str(r#"{"Move":{"x":1,}}"#),
-        Err(Error::TrailingComma)
+        Err(jzon::Error::TrailingComma)
     ));
 
     #[derive(ToJson, FromJson, Debug, PartialEq)]
@@ -2208,7 +2221,7 @@ fn strict_rejects_trailing_commas_in_enums() {
     }
     assert!(matches!(
         Tagged::from_json_str(r#"{"t":"Point","x":1,}"#),
-        Err(Error::TrailingComma)
+        Err(jzon::Error::TrailingComma)
     ));
 }
 
@@ -2220,17 +2233,19 @@ fn strict_rejects_trailing_commas_on_other_fallback() {
     #[derive(ToJson, FromJson, Debug, PartialEq)]
     #[serde(tag = "t")]
     enum Catch {
-        Known { x: u32 },
+        Known {
+            x: u32,
+        },
         #[serde(other)]
         Other,
     }
     assert!(matches!(
         Catch::from_json_str(r#"{"t":"Nope","x":1,}"#),
-        Err(Error::TrailingComma)
+        Err(jzon::Error::TrailingComma)
     ));
     assert!(matches!(
         Catch::from_json_str(r#"{"x":1,"t":"Nope",}"#),
-        Err(Error::TrailingComma)
+        Err(jzon::Error::TrailingComma)
     ));
     assert_eq!(
         Catch::from_json_str(r#"{"t":"Nope","x":1}"#).unwrap(),

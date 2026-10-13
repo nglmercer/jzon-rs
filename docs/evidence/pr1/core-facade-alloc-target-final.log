@@ -1,0 +1,4 @@
+   Compiling serde_json v1.0.151 (/home/meme/Documentos/GitHub/jzon-rs/vendor/serde_json)
+    Checking memchr v2.8.3
+    Checking jzon-rs v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.76s

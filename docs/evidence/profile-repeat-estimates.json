@@ -1,0 +1,1967 @@
+{
+  "mode_b_component_parse/wide_field_dispatch/new/benchmark.json": {
+    "group_id": "mode_b/component_parse",
+    "function_id": "wide/field_dispatch",
+    "value_str": null,
+    "throughput": {
+      "Bytes": 104
+    },
+    "full_id": "mode_b/component_parse/wide/field_dispatch",
+    "directory_name": "mode_b_component_parse/wide_field_dispatch",
+    "title": "mode_b/component_parse/wide/field_dispatch"
+  },
+  "mode_b_component_parse/wide_field_dispatch/new/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 751.7610662068934,
+        "upper_bound": 782.0887200486541
+      },
+      "point_estimate": 765.9319002581043,
+      "standard_error": 7.7501558902077585
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 741.4767542569533,
+        "upper_bound": 760.7600673076369
+      },
+      "point_estimate": 748.6034723810976,
+      "standard_error": 5.41870517561557
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 12.602220915593213,
+        "upper_bound": 41.415018783668636
+      },
+      "point_estimate": 22.610167805711953,
+      "standard_error": 7.510373164200482
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 752.4191001490187,
+        "upper_bound": 793.8066726468676
+      },
+      "point_estimate": 770.6505690539335,
+      "standard_error": 10.598612881483264
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 26.82682123375639,
+        "upper_bound": 54.17581540074144
+      },
+      "point_estimate": 43.30332420558212,
+      "standard_error": 7.005605157864501
+    }
+  },
+  "mode_b_component_parse/wide_field_dispatch/new/sample.json": {
+    "sampling_mode": "Linear",
+    "iters": [
+      1457.0,
+      2914.0,
+      4371.0,
+      5828.0,
+      7285.0,
+      8742.0,
+      10199.0,
+      11656.0,
+      13113.0,
+      14570.0,
+      16027.0,
+      17484.0,
+      18941.0,
+      20398.0,
+      21855.0,
+      23312.0,
+      24769.0,
+      26226.0,
+      27683.0,
+      29140.0,
+      30597.0,
+      32054.0,
+      33511.0,
+      34968.0,
+      36425.0,
+      37882.0,
+      39339.0,
+      40796.0,
+      42253.0,
+      43710.0
+    ],
+    "times": [
+      1068894.0,
+      2136194.0,
+      3172864.0,
+      4226297.0,
+      5948926.0,
+      6937111.0,
+      7454857.0,
+      8696905.0,
+      9798701.0,
+      11508694.0,
+      12034479.0,
+      12860881.0,
+      14116251.0,
+      15107056.0,
+      16039562.0,
+      19359131.0,
+      18878462.0,
+      22390454.0,
+      20942410.0,
+      21767958.0,
+      23120763.0,
+      27908825.0,
+      29475855.0,
+      25958108.0,
+      28056270.0,
+      29810249.0,
+      29502521.0,
+      30977998.0,
+      30924164.0,
+      32042783.0
+    ]
+  },
+  "mode_b_component_parse/wide_field_dispatch/new/tukey.json": [
+    589.0400115270224,
+    661.683053407071,
+    855.3978317538673,
+    928.0408736339159
+  ],
+  "mode_b_component_parse/string_borrowed/new/benchmark.json": {
+    "group_id": "mode_b/component_parse",
+    "function_id": "string/borrowed",
+    "value_str": null,
+    "throughput": {
+      "Bytes": 18
+    },
+    "full_id": "mode_b/component_parse/string/borrowed",
+    "directory_name": "mode_b_component_parse/string_borrowed",
+    "title": "mode_b/component_parse/string/borrowed"
+  },
+  "mode_b_component_parse/string_borrowed/new/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 28.066202913847842,
+        "upper_bound": 29.97794549033633
+      },
+      "point_estimate": 28.89989478226706,
+      "standard_error": 0.49564100326609134
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 27.729615575003933,
+        "upper_bound": 28.205990587504537
+      },
+      "point_estimate": 27.86547975465062,
+      "standard_error": 0.11179916651110292
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.2470578085055667,
+        "upper_bound": 0.9360466368107516
+      },
+      "point_estimate": 0.5003137597753861,
+      "standard_error": 0.17206200049637196
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 27.84929469014198,
+        "upper_bound": 28.328590275788684
+      },
+      "point_estimate": 28.05658072132178,
+      "standard_error": 0.12217203723926225
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.7745821019718925,
+        "upper_bound": 4.037970548818371
+      },
+      "point_estimate": 2.765589993000593,
+      "standard_error": 0.824762519394696
+    }
+  },
+  "mode_b_component_parse/string_borrowed/new/sample.json": {
+    "sampling_mode": "Linear",
+    "iters": [
+      36134.0,
+      72268.0,
+      108402.0,
+      144536.0,
+      180670.0,
+      216804.0,
+      252938.0,
+      289072.0,
+      325206.0,
+      361340.0,
+      397474.0,
+      433608.0,
+      469742.0,
+      505876.0,
+      542010.0,
+      578144.0,
+      614278.0,
+      650412.0,
+      686546.0,
+      722680.0,
+      758814.0,
+      794948.0,
+      831082.0,
+      867216.0,
+      903350.0,
+      939484.0,
+      975618.0,
+      1011752.0,
+      1047886.0,
+      1084020.0
+    ],
+    "times": [
+      987164.0,
+      2893098.0,
+      3779423.0,
+      3963414.0,
+      5026601.0,
+      7426295.0,
+      6951504.0,
+      8044386.0,
+      9070209.0,
+      10973654.0,
+      11082798.0,
+      11941397.0,
+      14098841.0,
+      14358231.0,
+      15093831.0,
+      15977431.0,
+      16964891.0,
+      17846832.0,
+      19815687.0,
+      20325115.0,
+      22144442.0,
+      22186301.0,
+      23816229.0,
+      24239457.0,
+      25135368.0,
+      25851247.0,
+      27597639.0,
+      28108021.0,
+      29003073.0,
+      29892881.0
+    ]
+  },
+  "mode_b_component_parse/string_borrowed/new/tukey.json": [
+    24.723371230935985,
+    26.172755977238232,
+    30.037781967377562,
+    31.487166713679812
+  ],
+  "mode_b_component_parse/string_unicode/new/benchmark.json": {
+    "group_id": "mode_b/component_parse",
+    "function_id": "string/unicode",
+    "value_str": null,
+    "throughput": {
+      "Bytes": 26
+    },
+    "full_id": "mode_b/component_parse/string/unicode",
+    "directory_name": "mode_b_component_parse/string_unicode",
+    "title": "mode_b/component_parse/string/unicode"
+  },
+  "mode_b_component_parse/string_unicode/new/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 99.63967364370552,
+        "upper_bound": 102.08171714566716
+      },
+      "point_estimate": 100.84858906201438,
+      "standard_error": 0.6250124307137046
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 98.57111697965571,
+        "upper_bound": 102.79016692749087
+      },
+      "point_estimate": 101.26959226907536,
+      "standard_error": 1.0485133178798849
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 2.4098953576311253,
+        "upper_bound": 5.17875502663783
+      },
+      "point_estimate": 4.416781946973704,
+      "standard_error": 0.7283955860405686
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 99.64481536617308,
+        "upper_bound": 102.35145703850532
+      },
+      "point_estimate": 101.0543360506774,
+      "standard_error": 0.6929768778202807
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 2.6718030168392253,
+        "upper_bound": 4.1927580511710065
+      },
+      "point_estimate": 3.474701945192365,
+      "standard_error": 0.3911634773038884
+    }
+  },
+  "mode_b_component_parse/string_unicode/new/sample.json": {
+    "sampling_mode": "Linear",
+    "iters": [
+      10224.0,
+      20448.0,
+      30672.0,
+      40896.0,
+      51120.0,
+      61344.0,
+      71568.0,
+      81792.0,
+      92016.0,
+      102240.0,
+      112464.0,
+      122688.0,
+      132912.0,
+      143136.0,
+      153360.0,
+      163584.0,
+      173808.0,
+      184032.0,
+      194256.0,
+      204480.0,
+      214704.0,
+      224928.0,
+      235152.0,
+      245376.0,
+      255600.0,
+      265824.0,
+      276048.0,
+      286272.0,
+      296496.0,
+      306720.0
+    ],
+    "times": [
+      1068864.0,
+      2021046.0,
+      3129070.0,
+      4246095.0,
+      4926274.0,
+      6426933.0,
+      6940854.0,
+      8146746.0,
+      9043067.0,
+      11195916.0,
+      10971311.0,
+      12048055.0,
+      13279732.0,
+      13608418.0,
+      14623200.0,
+      16655234.0,
+      17574049.0,
+      19261737.0,
+      19800833.0,
+      20101184.0,
+      22388915.0,
+      23294260.0,
+      22812666.0,
+      25703174.0,
+      25997414.0,
+      27536587.0,
+      27662856.0,
+      29657772.0,
+      30072798.0,
+      29648418.0
+    ]
+  },
+  "mode_b_component_parse/string_unicode/new/tukey.json": [
+    82.0872971237921,
+    90.15357339833753,
+    111.66364346379203,
+    119.72991973833747
+  ],
+  "mode_b_component_parse/string_dense/new/benchmark.json": {
+    "group_id": "mode_b/component_parse",
+    "function_id": "string/dense",
+    "value_str": null,
+    "throughput": {
+      "Bytes": 20
+    },
+    "full_id": "mode_b/component_parse/string/dense",
+    "directory_name": "mode_b_component_parse/string_dense",
+    "title": "mode_b/component_parse/string/dense"
+  },
+  "mode_b_component_parse/string_dense/new/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 74.53727166432348,
+        "upper_bound": 79.3397361433319
+      },
+      "point_estimate": 76.44382471094816,
+      "standard_error": 1.2739553421790573
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 74.10829642867503,
+        "upper_bound": 75.28562931045721
+      },
+      "point_estimate": 74.5950908141584,
+      "standard_error": 0.2849227067689452
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.7037503908474019,
+        "upper_bound": 2.0588104550923974
+      },
+      "point_estimate": 1.36002448467448,
+      "standard_error": 0.35597990323070094
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 74.3344347939486,
+        "upper_bound": 75.606538769853
+      },
+      "point_estimate": 74.98590954776613,
+      "standard_error": 0.32639731490217694
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 1.1589431092260702,
+        "upper_bound": 11.330857402598806
+      },
+      "point_estimate": 7.1086356639080535,
+      "standard_error": 3.0465790254895007
+    }
+  },
+  "mode_b_component_parse/string_dense/new/sample.json": {
+    "sampling_mode": "Linear",
+    "iters": [
+      13946.0,
+      27892.0,
+      41838.0,
+      55784.0,
+      69730.0,
+      83676.0,
+      97622.0,
+      111568.0,
+      125514.0,
+      139460.0,
+      153406.0,
+      167352.0,
+      181298.0,
+      195244.0,
+      209190.0,
+      223136.0,
+      237082.0,
+      251028.0,
+      264974.0,
+      278920.0,
+      292866.0,
+      306812.0,
+      320758.0,
+      334704.0,
+      348650.0,
+      362596.0,
+      376542.0,
+      390488.0,
+      404434.0,
+      418380.0
+    ],
+    "times": [
+      1224424.0,
+      3091753.0,
+      3125396.0,
+      4164856.0,
+      5088836.0,
+      6799700.0,
+      7272109.0,
+      8501284.0,
+      9316028.0,
+      10515325.0,
+      11531677.0,
+      12493567.0,
+      13439872.0,
+      14347071.0,
+      15219739.0,
+      16243916.0,
+      17442045.0,
+      18456555.0,
+      19614072.0,
+      20565035.0,
+      21754474.0,
+      22613602.0,
+      24229971.0,
+      25066157.0,
+      26551589.0,
+      27566915.0,
+      27896192.0,
+      29795523.0,
+      30144795.0,
+      32377733.0
+    ]
+  },
+  "mode_b_component_parse/string_dense/new/tukey.json": [
+    67.5009798856898,
+    70.6524226560545,
+    79.05627004369369,
+    82.20771281405838
+  ],
+  "mode_b_component_parse/string_late_escape/new/benchmark.json": {
+    "group_id": "mode_b/component_parse",
+    "function_id": "string/late_escape",
+    "value_str": null,
+    "throughput": {
+      "Bytes": 19
+    },
+    "full_id": "mode_b/component_parse/string/late_escape",
+    "directory_name": "mode_b_component_parse/string_late_escape",
+    "title": "mode_b/component_parse/string/late_escape"
+  },
+  "mode_b_component_parse/string_late_escape/new/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 56.20383007813618,
+        "upper_bound": 59.05588903997782
+      },
+      "point_estimate": 57.47130840427818,
+      "standard_error": 0.7326853022650043
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 55.29178969469798,
+        "upper_bound": 56.90829192800655
+      },
+      "point_estimate": 55.86757384255043,
+      "standard_error": 0.4026290630618073
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.6130510235675822,
+        "upper_bound": 2.8138419752609525
+      },
+      "point_estimate": 1.2981663338094709,
+      "standard_error": 0.518087913130703
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 56.096974224250545,
+        "upper_bound": 57.57539709188945
+      },
+      "point_estimate": 56.771843905734066,
+      "standard_error": 0.3787427826420019
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 1.7842630189220434,
+        "upper_bound": 5.810123155971589
+      },
+      "point_estimate": 4.078464904685722,
+      "standard_error": 1.075516078038165
+    }
+  },
+  "mode_b_component_parse/string_late_escape/new/sample.json": {
+    "sampling_mode": "Linear",
+    "iters": [
+      18335.0,
+      36670.0,
+      55005.0,
+      73340.0,
+      91675.0,
+      110010.0,
+      128345.0,
+      146680.0,
+      165015.0,
+      183350.0,
+      201685.0,
+      220020.0,
+      238355.0,
+      256690.0,
+      275025.0,
+      293360.0,
+      311695.0,
+      330030.0,
+      348365.0,
+      366700.0,
+      385035.0,
+      403370.0,
+      421705.0,
+      440040.0,
+      458375.0,
+      476710.0,
+      495045.0,
+      513380.0,
+      531715.0,
+      550050.0
+    ],
+    "times": [
+      1031911.0,
+      2058116.0,
+      3036601.0,
+      5374647.0,
+      5043310.0,
+      5985217.0,
+      7143703.0,
+      9507825.0,
+      9128504.0,
+      11982953.0,
+      11086830.0,
+      12035581.0,
+      14442645.0,
+      15448053.0,
+      15313292.0,
+      16120578.0,
+      17225619.0,
+      18096589.0,
+      19177404.0,
+      21834525.0,
+      22066051.0,
+      22513886.0,
+      23582026.0,
+      25167615.0,
+      25954411.0,
+      28502688.0,
+      27941956.0,
+      28339902.0,
+      30413101.0,
+      30474882.0
+    ]
+  },
+  "mode_b_component_parse/string_late_escape/new/tukey.json": [
+    48.969344927442755,
+    52.08637961372072,
+    60.39847211046198,
+    63.515506796739956
+  ],
+  "mode_b_component_parse/string_plain/new/benchmark.json": {
+    "group_id": "mode_b/component_parse",
+    "function_id": "string/plain",
+    "value_str": null,
+    "throughput": {
+      "Bytes": 18
+    },
+    "full_id": "mode_b/component_parse/string/plain",
+    "directory_name": "mode_b_component_parse/string_plain",
+    "title": "mode_b/component_parse/string/plain"
+  },
+  "mode_b_component_parse/string_plain/new/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 41.19471481373469,
+        "upper_bound": 42.52576666029889
+      },
+      "point_estimate": 41.79035725795196,
+      "standard_error": 0.34267491996497085
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 40.96460635132833,
+        "upper_bound": 41.25885909633662
+      },
+      "point_estimate": 41.05887200356493,
+      "standard_error": 0.08328765509361084
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.19576874471017558,
+        "upper_bound": 0.6696529675156992
+      },
+      "point_estimate": 0.4146607634872037,
+      "standard_error": 0.12825872871005178
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 40.95611141730304,
+        "upper_bound": 43.158036239971864
+      },
+      "point_estimate": 41.857797201024006,
+      "standard_error": 0.5838099329827076
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.9963681312442042,
+        "upper_bound": 2.631825958439264
+      },
+      "point_estimate": 1.9078362601407026,
+      "standard_error": 0.44806650392829384
+    }
+  },
+  "mode_b_component_parse/string_plain/new/sample.json": {
+    "sampling_mode": "Linear",
+    "iters": [
+      25433.0,
+      50866.0,
+      76299.0,
+      101732.0,
+      127165.0,
+      152598.0,
+      178031.0,
+      203464.0,
+      228897.0,
+      254330.0,
+      279763.0,
+      305196.0,
+      330629.0,
+      356062.0,
+      381495.0,
+      406928.0,
+      432361.0,
+      457794.0,
+      483227.0,
+      508660.0,
+      534093.0,
+      559526.0,
+      584959.0,
+      610392.0,
+      635825.0,
+      661258.0,
+      686691.0,
+      712124.0,
+      737557.0,
+      762990.0
+    ],
+    "times": [
+      1042204.0,
+      2073531.0,
+      3133230.0,
+      4300499.0,
+      5275148.0,
+      6249010.0,
+      7980505.0,
+      9145438.0,
+      9148792.0,
+      10456493.0,
+      11606549.0,
+      12626069.0,
+      14801132.0,
+      14653919.0,
+      15535920.0,
+      16640882.0,
+      17727789.0,
+      18768449.0,
+      19957510.0,
+      20703475.0,
+      21890126.0,
+      23062113.0,
+      23895453.0,
+      25058174.0,
+      28598616.0,
+      32228215.0,
+      27978041.0,
+      29296609.0,
+      29826818.0,
+      31125259.0
+    ]
+  },
+  "mode_b_component_parse/string_plain/new/tukey.json": [
+    39.07944127280716,
+    39.97013261292672,
+    42.34530951991222,
+    43.23600086003179
+  ],
+  "mode_b_component_parse/float/new/benchmark.json": {
+    "group_id": "mode_b/component_parse",
+    "function_id": "float",
+    "value_str": null,
+    "throughput": {
+      "Bytes": 22
+    },
+    "full_id": "mode_b/component_parse/float",
+    "directory_name": "mode_b_component_parse/float",
+    "title": "mode_b/component_parse/float"
+  },
+  "mode_b_component_parse/float/new/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 42.974481233697524,
+        "upper_bound": 43.99619087493056
+      },
+      "point_estimate": 43.43057169892245,
+      "standard_error": 0.26143838662334784
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 42.67286589784251,
+        "upper_bound": 43.2694299560481
+      },
+      "point_estimate": 42.820069316711354,
+      "standard_error": 0.17142822242204206
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.2209763023428904,
+        "upper_bound": 0.9981019202299718
+      },
+      "point_estimate": 0.5074901114132089,
+      "standard_error": 0.20886701771902413
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 42.88280368495162,
+        "upper_bound": 44.77757629153254
+      },
+      "point_estimate": 43.75356732942822,
+      "standard_error": 0.4888001899291372
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.6115262706380191,
+        "upper_bound": 2.023062409712984
+      },
+      "point_estimate": 1.4529812751404299,
+      "standard_error": 0.3634892360809103
+    }
+  },
+  "mode_b_component_parse/float/new/sample.json": {
+    "sampling_mode": "Linear",
+    "iters": [
+      24593.0,
+      49186.0,
+      73779.0,
+      98372.0,
+      122965.0,
+      147558.0,
+      172151.0,
+      196744.0,
+      221337.0,
+      245930.0,
+      270523.0,
+      295116.0,
+      319709.0,
+      344302.0,
+      368895.0,
+      393488.0,
+      418081.0,
+      442674.0,
+      467267.0,
+      491860.0,
+      516453.0,
+      541046.0,
+      565639.0,
+      590232.0,
+      614825.0,
+      639418.0,
+      664011.0,
+      688604.0,
+      713197.0,
+      737790.0
+    ],
+    "times": [
+      1081970.0,
+      2095977.0,
+      3143649.0,
+      4206405.0,
+      5263762.0,
+      6626563.0,
+      7525149.0,
+      8665248.0,
+      9569954.0,
+      10468187.0,
+      11441076.0,
+      12522792.0,
+      13677150.0,
+      14905408.0,
+      15695539.0,
+      16911354.0,
+      17907724.0,
+      18922579.0,
+      20053096.0,
+      21422294.0,
+      22010342.0,
+      23398720.0,
+      25687053.0,
+      28629916.0,
+      26056585.0,
+      27270467.0,
+      29027940.0,
+      32740239.0,
+      30326625.0,
+      31501304.0
+    ]
+  },
+  "mode_b_component_parse/float/new/tukey.json": [
+    39.43980425130651,
+    41.02716955850775,
+    45.26014371104438,
+    46.84750901824561
+  ],
+  "mode_b_component_parse/integer/new/benchmark.json": {
+    "group_id": "mode_b/component_parse",
+    "function_id": "integer",
+    "value_str": null,
+    "throughput": {
+      "Bytes": 20
+    },
+    "full_id": "mode_b/component_parse/integer",
+    "directory_name": "mode_b_component_parse/integer",
+    "title": "mode_b/component_parse/integer"
+  },
+  "mode_b_component_parse/integer/new/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 102.35922880222687,
+        "upper_bound": 104.97394285183552
+      },
+      "point_estimate": 103.55994332381557,
+      "standard_error": 0.6680102427134706
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 101.736999202449,
+        "upper_bound": 104.53676341537518
+      },
+      "point_estimate": 102.07251136992932,
+      "standard_error": 0.6812832015571695
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 1.172503754843819,
+        "upper_bound": 4.121143991257567
+      },
+      "point_estimate": 2.1710976136684668,
+      "standard_error": 0.8026107708461159
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 102.63069960068884,
+        "upper_bound": 104.86914666286812
+      },
+      "point_estimate": 103.70492963703678,
+      "standard_error": 0.5717807785069741
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 2.175753093767846,
+        "upper_bound": 5.223351551699948
+      },
+      "point_estimate": 3.7363114393771455,
+      "standard_error": 0.8617065466557449
+    }
+  },
+  "mode_b_component_parse/integer/new/sample.json": {
+    "sampling_mode": "Linear",
+    "iters": [
+      9971.0,
+      19942.0,
+      29913.0,
+      39884.0,
+      49855.0,
+      59826.0,
+      69797.0,
+      79768.0,
+      89739.0,
+      99710.0,
+      109681.0,
+      119652.0,
+      129623.0,
+      139594.0,
+      149565.0,
+      159536.0,
+      169507.0,
+      179478.0,
+      189449.0,
+      199420.0,
+      209391.0,
+      219362.0,
+      229333.0,
+      239304.0,
+      249275.0,
+      259246.0,
+      269217.0,
+      279188.0,
+      289159.0,
+      299130.0
+    ],
+    "times": [
+      988293.0,
+      1988016.0,
+      2986548.0,
+      4015300.0,
+      5132646.0,
+      6088777.0,
+      8206036.0,
+      8020018.0,
+      9114160.0,
+      10565098.0,
+      11192095.0,
+      13004617.0,
+      13635286.0,
+      14196603.0,
+      16233917.0,
+      16637173.0,
+      17762430.0,
+      19218689.0,
+      19135627.0,
+      20305027.0,
+      21584805.0,
+      22394669.0,
+      23404582.0,
+      24175510.0,
+      25110150.0,
+      27477097.0,
+      27460888.0,
+      28637919.0,
+      31086299.0,
+      31383255.0
+    ]
+  },
+  "mode_b_component_parse/integer/new/tukey.json": [
+    89.2677237278706,
+    95.21333225863549,
+    111.06828834067517,
+    117.01389687144004
+  ],
+  "mode_b_component_serialize/wide_direct_reuse/new/benchmark.json": {
+    "group_id": "mode_b/component_serialize",
+    "function_id": "wide/direct_reuse",
+    "value_str": null,
+    "throughput": {
+      "Bytes": 104
+    },
+    "full_id": "mode_b/component_serialize/wide/direct_reuse",
+    "directory_name": "mode_b_component_serialize/wide_direct_reuse",
+    "title": "mode_b/component_serialize/wide/direct_reuse"
+  },
+  "mode_b_component_serialize/wide_direct_reuse/new/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 271.69350497154187,
+        "upper_bound": 279.6232983262011
+      },
+      "point_estimate": 275.27081107395793,
+      "standard_error": 2.0390123953136214
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 268.8218854217226,
+        "upper_bound": 274.48117862529625
+      },
+      "point_estimate": 272.53447393336154,
+      "standard_error": 1.486592350552267
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 3.4104743793211236,
+        "upper_bound": 10.113341768815319
+      },
+      "point_estimate": 6.833414426168337,
+      "standard_error": 1.805688055689545
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 271.30047356531827,
+        "upper_bound": 277.31942208567756
+      },
+      "point_estimate": 274.1661326426524,
+      "standard_error": 1.5324279080282208
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 5.8713798379604825,
+        "upper_bound": 16.117585016956813
+      },
+      "point_estimate": 11.294754020105117,
+      "standard_error": 2.9240443582597417
+    }
+  },
+  "mode_b_component_serialize/wide_direct_reuse/new/sample.json": {
+    "sampling_mode": "Linear",
+    "iters": [
+      3757.0,
+      7514.0,
+      11271.0,
+      15028.0,
+      18785.0,
+      22542.0,
+      26299.0,
+      30056.0,
+      33813.0,
+      37570.0,
+      41327.0,
+      45084.0,
+      48841.0,
+      52598.0,
+      56355.0,
+      60112.0,
+      63869.0,
+      67626.0,
+      71383.0,
+      75140.0,
+      78897.0,
+      82654.0,
+      86411.0,
+      90168.0,
+      93925.0,
+      97682.0,
+      101439.0,
+      105196.0,
+      108953.0,
+      112710.0
+    ],
+    "times": [
+      1076859.0,
+      1984347.0,
+      3080797.0,
+      4040872.0,
+      5069642.0,
+      6588725.0,
+      7174042.0,
+      9611543.0,
+      9036162.0,
+      10276203.0,
+      11194870.0,
+      11947998.0,
+      14002540.0,
+      14420009.0,
+      15062735.0,
+      16293632.0,
+      17165064.0,
+      19552499.0,
+      19168828.0,
+      20136462.0,
+      21975979.0,
+      22006269.0,
+      23146472.0,
+      25208398.0,
+      25913026.0,
+      26610134.0,
+      27061701.0,
+      30025333.0,
+      29706363.0,
+      30973528.0
+    ]
+  },
+  "mode_b_component_serialize/wide_direct_reuse/new/tukey.json": [
+    238.85946916132508,
+    253.4913190965837,
+    292.5095855906067,
+    307.14143552586535
+  ],
+  "mode_b_component_serialize/wide_buffered_writer/new/benchmark.json": {
+    "group_id": "mode_b/component_serialize",
+    "function_id": "wide/buffered_writer",
+    "value_str": null,
+    "throughput": {
+      "Bytes": 104
+    },
+    "full_id": "mode_b/component_serialize/wide/buffered_writer",
+    "directory_name": "mode_b_component_serialize/wide_buffered_writer",
+    "title": "mode_b/component_serialize/wide/buffered_writer"
+  },
+  "mode_b_component_serialize/wide_buffered_writer/new/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 286.2189827743643,
+        "upper_bound": 294.1968796637122
+      },
+      "point_estimate": 289.71907244727925,
+      "standard_error": 2.061232198496877
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 283.81336739241146,
+        "upper_bound": 290.7160772263451
+      },
+      "point_estimate": 286.41381802721094,
+      "standard_error": 1.9525902692578267
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 2.899300537370162,
+        "upper_bound": 10.756855435943777
+      },
+      "point_estimate": 6.378529375394745,
+      "standard_error": 2.0006684540422826
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 286.2744366525668,
+        "upper_bound": 301.18772732236124
+      },
+      "point_estimate": 292.28303549966694,
+      "standard_error": 3.982183912319093
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 5.46502823464579,
+        "upper_bound": 17.1500514566937
+      },
+      "point_estimate": 11.510283632667333,
+      "standard_error": 3.511986899032632
+    }
+  },
+  "mode_b_component_serialize/wide_buffered_writer/new/sample.json": {
+    "sampling_mode": "Linear",
+    "iters": [
+      3696.0,
+      7392.0,
+      11088.0,
+      14784.0,
+      18480.0,
+      22176.0,
+      25872.0,
+      29568.0,
+      33264.0,
+      36960.0,
+      40656.0,
+      44352.0,
+      48048.0,
+      51744.0,
+      55440.0,
+      59136.0,
+      62832.0,
+      66528.0,
+      70224.0,
+      73920.0,
+      77616.0,
+      81312.0,
+      85008.0,
+      88704.0,
+      92400.0,
+      96096.0,
+      99792.0,
+      103488.0,
+      107184.0,
+      110880.0
+    ],
+    "times": [
+      1048634.0,
+      2160738.0,
+      3085281.0,
+      4162657.0,
+      5290544.0,
+      6194499.0,
+      7413435.0,
+      8678691.0,
+      9597462.0,
+      10454974.0,
+      11589761.0,
+      13049261.0,
+      14320972.0,
+      15040524.0,
+      15547090.0,
+      18010890.0,
+      17838345.0,
+      18815727.0,
+      19964712.0,
+      21493002.0,
+      23262557.0,
+      24368633.0,
+      25247008.0,
+      25067700.0,
+      26483845.0,
+      27192380.0,
+      33833237.0,
+      29178602.0,
+      31059879.0,
+      31543224.0
+    ]
+  },
+  "mode_b_component_serialize/wide_buffered_writer/new/tukey.json": [
+    251.9465301625458,
+    267.42189093458626,
+    308.6895196600275,
+    324.16488043206795
+  ],
+  "mode_b_component_serialize/wide_fresh/new/benchmark.json": {
+    "group_id": "mode_b/component_serialize",
+    "function_id": "wide/fresh",
+    "value_str": null,
+    "throughput": {
+      "Bytes": 104
+    },
+    "full_id": "mode_b/component_serialize/wide/fresh",
+    "directory_name": "mode_b_component_serialize/wide_fresh",
+    "title": "mode_b/component_serialize/wide/fresh"
+  },
+  "mode_b_component_serialize/wide_fresh/new/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 315.3339932979575,
+        "upper_bound": 353.6077788421483
+      },
+      "point_estimate": 333.50820113865745,
+      "standard_error": 9.772161624254885
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 299.00881495123895,
+        "upper_bound": 338.5991761148431
+      },
+      "point_estimate": 313.6383832355184,
+      "standard_error": 9.911168019349182
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 21.257787065784548,
+        "upper_bound": 69.7118486730905
+      },
+      "point_estimate": 39.83643685441239,
+      "standard_error": 11.267747409844628
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 314.02372150527424,
+        "upper_bound": 348.41281522758817
+      },
+      "point_estimate": 329.4839259802476,
+      "standard_error": 8.759165511386238
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 37.699976866047685,
+        "upper_bound": 64.81842229893044
+      },
+      "point_estimate": 54.52892018268641,
+      "standard_error": 6.975529371474524
+    }
+  },
+  "mode_b_component_serialize/wide_fresh/new/sample.json": {
+    "sampling_mode": "Linear",
+    "iters": [
+      3351.0,
+      6702.0,
+      10053.0,
+      13404.0,
+      16755.0,
+      20106.0,
+      23457.0,
+      26808.0,
+      30159.0,
+      33510.0,
+      36861.0,
+      40212.0,
+      43563.0,
+      46914.0,
+      50265.0,
+      53616.0,
+      56967.0,
+      60318.0,
+      63669.0,
+      67020.0,
+      70371.0,
+      73722.0,
+      77073.0,
+      80424.0,
+      83775.0,
+      87126.0,
+      90477.0,
+      93828.0,
+      97179.0,
+      100530.0
+    ],
+    "times": [
+      1436454.0,
+      2930378.0,
+      3198805.0,
+      3722678.0,
+      4862344.0,
+      5634878.0,
+      6591228.0,
+      7547353.0,
+      9810464.0,
+      9434464.0,
+      12678016.0,
+      11905962.0,
+      14517682.0,
+      20832534.0,
+      22279772.0,
+      23641440.0,
+      16542315.0,
+      19078496.0,
+      19183995.0,
+      22238840.0,
+      24263447.0,
+      22783730.0,
+      22868282.0,
+      28322820.0,
+      32736283.0,
+      27027354.0,
+      31761552.0,
+      29178464.0,
+      29567856.0,
+      29383089.0
+    ]
+  },
+  "mode_b_component_serialize/wide_fresh/new/tukey.json": [
+    124.47768469966331,
+    208.85449439399758,
+    433.85932024555564,
+    518.2361299398899
+  ],
+  "mode_b_component_serialize/string_escaped/new/benchmark.json": {
+    "group_id": "mode_b/component_serialize",
+    "function_id": "string/escaped",
+    "value_str": null,
+    "throughput": {
+      "Bytes": 15
+    },
+    "full_id": "mode_b/component_serialize/string/escaped",
+    "directory_name": "mode_b_component_serialize/string_escaped",
+    "title": "mode_b/component_serialize/string/escaped"
+  },
+  "mode_b_component_serialize/string_escaped/new/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 33.42691876828374,
+        "upper_bound": 35.804230449325296
+      },
+      "point_estimate": 34.4740056323117,
+      "standard_error": 0.6133558149625685
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 32.78491662272948,
+        "upper_bound": 34.61127131947542
+      },
+      "point_estimate": 33.6471261032104,
+      "standard_error": 0.4206428769079565
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 1.0857017970612142,
+        "upper_bound": 2.608098217983338
+      },
+      "point_estimate": 2.061793559865642,
+      "standard_error": 0.4079672270470221
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 33.27683354606836,
+        "upper_bound": 34.56849596848682
+      },
+      "point_estimate": 33.911620067555155,
+      "standard_error": 0.3304625470415669
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 1.3021257679972478,
+        "upper_bound": 4.887682980926721
+      },
+      "point_estimate": 3.410475182111379,
+      "standard_error": 0.9621976026411356
+    }
+  },
+  "mode_b_component_serialize/string_escaped/new/sample.json": {
+    "sampling_mode": "Linear",
+    "iters": [
+      32243.0,
+      64486.0,
+      96729.0,
+      128972.0,
+      161215.0,
+      193458.0,
+      225701.0,
+      257944.0,
+      290187.0,
+      322430.0,
+      354673.0,
+      386916.0,
+      419159.0,
+      451402.0,
+      483645.0,
+      515888.0,
+      548131.0,
+      580374.0,
+      612617.0,
+      644860.0,
+      677103.0,
+      709346.0,
+      741589.0,
+      773832.0,
+      806075.0,
+      838318.0,
+      870561.0,
+      902804.0,
+      935047.0,
+      967290.0
+    ],
+    "times": [
+      1051530.0,
+      2142947.0,
+      3242807.0,
+      4696439.0,
+      7559789.0,
+      8680462.0,
+      7938378.0,
+      8272538.0,
+      9904389.0,
+      10269323.0,
+      11461157.0,
+      12299677.0,
+      14941949.0,
+      15161561.0,
+      15457176.0,
+      16610673.0,
+      18612738.0,
+      18563793.0,
+      21318531.0,
+      21853216.0,
+      22162455.0,
+      25333439.0,
+      24660506.0,
+      26790870.0,
+      29238927.0,
+      29007061.0,
+      30937881.0,
+      28931550.0,
+      31517198.0,
+      31764394.0
+    ]
+  },
+  "mode_b_component_serialize/string_escaped/new/tukey.json": [
+    24.32024409585879,
+    28.35472277874341,
+    39.113332599769066,
+    43.14781128265369
+  ],
+  "mode_b_component_serialize/string_plain/new/benchmark.json": {
+    "group_id": "mode_b/component_serialize",
+    "function_id": "string/plain",
+    "value_str": null,
+    "throughput": {
+      "Bytes": 18
+    },
+    "full_id": "mode_b/component_serialize/string/plain",
+    "directory_name": "mode_b_component_serialize/string_plain",
+    "title": "mode_b/component_serialize/string/plain"
+  },
+  "mode_b_component_serialize/string_plain/new/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 29.440668434643,
+        "upper_bound": 30.580173350767513
+      },
+      "point_estimate": 29.945809145656124,
+      "standard_error": 0.2933390658330594
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 29.19517407693995,
+        "upper_bound": 29.47778815347224
+      },
+      "point_estimate": 29.362372038103665,
+      "standard_error": 0.08053306106039086
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.1988607104274945,
+        "upper_bound": 0.6318674098132129
+      },
+      "point_estimate": 0.3473012836872934,
+      "standard_error": 0.12166501027920326
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 29.203508465006344,
+        "upper_bound": 29.60364551106276
+      },
+      "point_estimate": 29.35643215417389,
+      "standard_error": 0.10311436960956348
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 0.5155811089736632,
+        "upper_bound": 2.321680498059277
+      },
+      "point_estimate": 1.6402225189134538,
+      "standard_error": 0.45749649042016277
+    }
+  },
+  "mode_b_component_serialize/string_plain/new/sample.json": {
+    "sampling_mode": "Linear",
+    "iters": [
+      35339.0,
+      70678.0,
+      106017.0,
+      141356.0,
+      176695.0,
+      212034.0,
+      247373.0,
+      282712.0,
+      318051.0,
+      353390.0,
+      388729.0,
+      424068.0,
+      459407.0,
+      494746.0,
+      530085.0,
+      565424.0,
+      600763.0,
+      636102.0,
+      671441.0,
+      706780.0,
+      742119.0,
+      777458.0,
+      812797.0,
+      848136.0,
+      883475.0,
+      918814.0,
+      954153.0,
+      989492.0,
+      1024831.0,
+      1060170.0
+    ],
+    "times": [
+      1068705.0,
+      2220071.0,
+      3727067.0,
+      4217434.0,
+      5323493.0,
+      7555038.0,
+      7446641.0,
+      8277850.0,
+      9283837.0,
+      10265868.0,
+      11454686.0,
+      12351423.0,
+      13399467.0,
+      14363457.0,
+      15615820.0,
+      18207300.0,
+      17782952.0,
+      18750584.0,
+      19559209.0,
+      20811216.0,
+      21876372.0,
+      22820624.0,
+      23531282.0,
+      24884668.0,
+      25949316.0,
+      26735357.0,
+      27987530.0,
+      28882182.0,
+      29925653.0,
+      30670271.0
+    ]
+  },
+  "mode_b_component_serialize/string_plain/new/tukey.json": [
+    27.359081108907773,
+    28.265731421158137,
+    30.683465587159105,
+    31.59011589940947
+  ],
+  "mode_b_component_serialize/floats_fresh/new/benchmark.json": {
+    "group_id": "mode_b/component_serialize",
+    "function_id": "floats/fresh",
+    "value_str": null,
+    "throughput": {
+      "Bytes": 2115
+    },
+    "full_id": "mode_b/component_serialize/floats/fresh",
+    "directory_name": "mode_b_component_serialize/floats_fresh",
+    "title": "mode_b/component_serialize/floats/fresh"
+  },
+  "mode_b_component_serialize/floats_fresh/new/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 3719.5178186519324,
+        "upper_bound": 3758.471293131826
+      },
+      "point_estimate": 3738.3433351408603,
+      "standard_error": 10.000170627040193
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 3710.3407577998923,
+        "upper_bound": 3747.355769230769
+      },
+      "point_estimate": 3724.1019813519815,
+      "standard_error": 9.744808800574608
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 18.519340499618696,
+        "upper_bound": 74.22659800209303
+      },
+      "point_estimate": 47.67264915364132,
+      "standard_error": 15.006031576528713
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 3740.701047912551,
+        "upper_bound": 3787.078073958176
+      },
+      "point_estimate": 3764.61511317873,
+      "standard_error": 11.783479075643465
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 39.26887674505889,
+        "upper_bound": 68.14965909320156
+      },
+      "point_estimate": 55.547261816422335,
+      "standard_error": 7.4019903670232745
+    }
+  },
+  "mode_b_component_serialize/floats_fresh/new/sample.json": {
+    "sampling_mode": "Linear",
+    "iters": [
+      286.0,
+      572.0,
+      858.0,
+      1144.0,
+      1430.0,
+      1716.0,
+      2002.0,
+      2288.0,
+      2574.0,
+      2860.0,
+      3146.0,
+      3432.0,
+      3718.0,
+      4004.0,
+      4290.0,
+      4576.0,
+      4862.0,
+      5148.0,
+      5434.0,
+      5720.0,
+      6006.0,
+      6292.0,
+      6578.0,
+      6864.0,
+      7150.0,
+      7436.0,
+      7722.0,
+      8008.0,
+      8294.0,
+      8580.0
+    ],
+    "times": [
+      1049084.0,
+      2087292.0,
+      3148068.0,
+      4216614.0,
+      5304520.0,
+      6393620.0,
+      7471009.0,
+      8496961.0,
+      9624423.0,
+      10605010.0,
+      11721871.0,
+      13124844.0,
+      13793137.0,
+      14780005.0,
+      16398985.0,
+      16980870.0,
+      17998256.0,
+      19333929.0,
+      20019404.0,
+      21227508.0,
+      22356243.0,
+      23653312.0,
+      25551159.0,
+      26312207.0,
+      26996415.0,
+      27657482.0,
+      28845440.0,
+      30538686.0,
+      31396902.0,
+      32465015.0
+    ]
+  },
+  "mode_b_component_serialize/floats_fresh/new/tukey.json": [
+    3518.7648283534636,
+    3613.5812778130953,
+    3866.42514303878,
+    3961.2415924984116
+  ],
+  "mode_b_component_serialize/integers_fresh/new/benchmark.json": {
+    "group_id": "mode_b/component_serialize",
+    "function_id": "integers/fresh",
+    "value_str": null,
+    "throughput": {
+      "Bytes": 1546
+    },
+    "full_id": "mode_b/component_serialize/integers/fresh",
+    "directory_name": "mode_b_component_serialize/integers_fresh",
+    "title": "mode_b/component_serialize/integers/fresh"
+  },
+  "mode_b_component_serialize/integers_fresh/new/estimates.json": {
+    "mean": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 1689.2846852934954,
+        "upper_bound": 1722.6149251709442
+      },
+      "point_estimate": 1704.6958365978446,
+      "standard_error": 8.530695461239873
+    },
+    "median": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 1675.1937458813472,
+        "upper_bound": 1702.1776742301458
+      },
+      "point_estimate": 1684.6212105425639,
+      "standard_error": 6.352623238556191
+    },
+    "median_abs_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 8.600395990674667,
+        "upper_bound": 42.2354511552837
+      },
+      "point_estimate": 20.15216605227617,
+      "standard_error": 8.437908232216891
+    },
+    "slope": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 1684.104281425074,
+        "upper_bound": 1726.6671239216855
+      },
+      "point_estimate": 1702.398619580766,
+      "standard_error": 11.025448864153224
+    },
+    "std_dev": {
+      "confidence_interval": {
+        "confidence_level": 0.95,
+        "lower_bound": 27.253034478155513,
+        "upper_bound": 61.25748264827296
+      },
+      "point_estimate": 47.55176604965095,
+      "standard_error": 8.619606465643884
+    }
+  },
+  "mode_b_component_serialize/integers_fresh/new/sample.json": {
+    "sampling_mode": "Linear",
+    "iters": [
+      617.0,
+      1234.0,
+      1851.0,
+      2468.0,
+      3085.0,
+      3702.0,
+      4319.0,
+      4936.0,
+      5553.0,
+      6170.0,
+      6787.0,
+      7404.0,
+      8021.0,
+      8638.0,
+      9255.0,
+      9872.0,
+      10489.0,
+      11106.0,
+      11723.0,
+      12340.0,
+      12957.0,
+      13574.0,
+      14191.0,
+      14808.0,
+      15425.0,
+      16042.0,
+      16659.0,
+      17276.0,
+      17893.0,
+      18510.0
+    ],
+    "times": [
+      1032833.0,
+      2105963.0,
+      3110849.0,
+      4121208.0,
+      5164919.0,
+      6184396.0,
+      7936583.0,
+      8820990.0,
+      9481916.0,
+      10427682.0,
+      11328201.0,
+      12570069.0,
+      14029257.0,
+      14582405.0,
+      15493643.0,
+      16986921.0,
+      17599516.0,
+      19621744.0,
+      20472611.0,
+      20786581.0,
+      21829364.0,
+      22590593.0,
+      23740534.0,
+      24887874.0,
+      28285579.0,
+      26876802.0,
+      27703061.0,
+      28937046.0,
+      30943097.0,
+      31269313.0
+    ]
+  },
+  "mode_b_component_serialize/integers_fresh/new/tukey.json": [
+    1544.1928163830364,
+    1609.1532153227986,
+    1782.380945828831,
+    1847.3413447685932
+  ]
+}

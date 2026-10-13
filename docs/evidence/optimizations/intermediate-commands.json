@@ -1,0 +1,174 @@
+[
+  {
+    "label": "components-before-1",
+    "command": [
+      "cargo",
+      "bench",
+      "-p",
+      "jzon-rs",
+      "--bench",
+      "bench_native_profile",
+      "--features",
+      "float_roundtrip",
+      "--",
+      "--sample-size",
+      "30",
+      "--warm-up-time",
+      "0.2",
+      "--measurement-time",
+      "0.5"
+    ],
+    "cwd": "/tmp/jzon-optimization-baseline-947",
+    "exit_status": 0,
+    "elapsed_seconds": 36.56846195999992,
+    "log": "/tmp/jzon-optimizations/benchmarks/components-before-1.log"
+  },
+  {
+    "label": "components-after-1",
+    "command": [
+      "cargo",
+      "bench",
+      "-p",
+      "jzon-rs",
+      "--bench",
+      "bench_native_profile",
+      "--features",
+      "float_roundtrip",
+      "--",
+      "--sample-size",
+      "30",
+      "--warm-up-time",
+      "0.2",
+      "--measurement-time",
+      "0.5"
+    ],
+    "cwd": "/home/meme/Documentos/GitHub/jzon-rs",
+    "exit_status": 0,
+    "elapsed_seconds": 42.71490463700002,
+    "log": "/tmp/jzon-optimizations/benchmarks/components-after-1.log"
+  },
+  {
+    "label": "serialize-before-1",
+    "command": [
+      "cargo",
+      "bench",
+      "-p",
+      "jzon-rs",
+      "--bench",
+      "bench_cmp",
+      "--features",
+      "float_roundtrip",
+      "--",
+      "^serialize/(twitter|canada)"
+    ],
+    "cwd": "/tmp/jzon-optimization-baseline-947",
+    "exit_status": 0,
+    "elapsed_seconds": 79.72524984200004,
+    "log": "/tmp/jzon-optimizations/benchmarks/serialize-before-1.log"
+  },
+  {
+    "label": "serialize-after-1",
+    "command": [
+      "cargo",
+      "bench",
+      "-p",
+      "jzon-rs",
+      "--bench",
+      "bench_cmp",
+      "--features",
+      "float_roundtrip",
+      "--",
+      "^serialize/(twitter|canada)"
+    ],
+    "cwd": "/home/meme/Documentos/GitHub/jzon-rs",
+    "exit_status": 0,
+    "elapsed_seconds": 59.60354487399991,
+    "log": "/tmp/jzon-optimizations/benchmarks/serialize-after-1.log"
+  },
+  {
+    "label": "components-before-2",
+    "command": [
+      "cargo",
+      "bench",
+      "-p",
+      "jzon-rs",
+      "--bench",
+      "bench_native_profile",
+      "--features",
+      "float_roundtrip",
+      "--",
+      "--sample-size",
+      "30",
+      "--warm-up-time",
+      "0.2",
+      "--measurement-time",
+      "0.5"
+    ],
+    "cwd": "/tmp/jzon-optimization-baseline-947",
+    "exit_status": 0,
+    "elapsed_seconds": 37.67177500600019,
+    "log": "/tmp/jzon-optimizations/benchmarks/components-before-2.log"
+  },
+  {
+    "label": "components-after-2",
+    "command": [
+      "cargo",
+      "bench",
+      "-p",
+      "jzon-rs",
+      "--bench",
+      "bench_native_profile",
+      "--features",
+      "float_roundtrip",
+      "--",
+      "--sample-size",
+      "30",
+      "--warm-up-time",
+      "0.2",
+      "--measurement-time",
+      "0.5"
+    ],
+    "cwd": "/home/meme/Documentos/GitHub/jzon-rs",
+    "exit_status": 0,
+    "elapsed_seconds": 40.800735109000016,
+    "log": "/tmp/jzon-optimizations/benchmarks/components-after-2.log"
+  },
+  {
+    "label": "serialize-before-2",
+    "command": [
+      "cargo",
+      "bench",
+      "-p",
+      "jzon-rs",
+      "--bench",
+      "bench_cmp",
+      "--features",
+      "float_roundtrip",
+      "--",
+      "^serialize/(twitter|canada)"
+    ],
+    "cwd": "/tmp/jzon-optimization-baseline-947",
+    "exit_status": 0,
+    "elapsed_seconds": 59.655110583999885,
+    "log": "/tmp/jzon-optimizations/benchmarks/serialize-before-2.log"
+  },
+  {
+    "label": "serialize-after-2",
+    "command": [
+      "cargo",
+      "bench",
+      "-p",
+      "jzon-rs",
+      "--bench",
+      "bench_cmp",
+      "--features",
+      "float_roundtrip",
+      "--",
+      "^serialize/(twitter|canada)"
+    ],
+    "cwd": "/home/meme/Documentos/GitHub/jzon-rs",
+    "exit_status": 0,
+    "elapsed_seconds": 65.20587023400003,
+    "log": "/tmp/jzon-optimizations/benchmarks/serialize-after-2.log"
+  }
+]

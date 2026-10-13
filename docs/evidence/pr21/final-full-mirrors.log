@@ -1,0 +1,585 @@
+warning: unused import: `Error`
+ --> crates/jzon/tests/integration.rs:4:12
+  |
+4 | use jzon::{Error, FromJson, ToJson};
+  |            ^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `jzon-rs` (test "integration") generated 1 warning (run `cargo fix --test "integration" -p jzon-rs` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running unittests src/lib.rs (target/debug/deps/jzon-f4f1fc5c8ac4eabd)
+
+running 41 tests
+test compat::tests::arb_precision_exact_through_compat ... ok
+test compat::tests::error_positions_and_categories_are_authoritative ... ok
+test compat::tests::from_reader_works ... ok
+test compat::tests::json_macro_works ... ok
+test compat::tests::from_slice_works ... ok
+test compat::tests::io_errors_are_io_category ... ok
+test compat::tests::from_value_to_value_roundtrip ... ok
+test compat::tests::matches_serde_json_output ... ok
+test compat::tests::pretty_functions_work ... ok
+test compat::tests::preserve_order_keeps_insertion_order ... ok
+test compat::tests::raw_value_reexport_available ... ok
+test compat::tests::raw_value_through_compat ... ok
+test compat::tests::roundtrip_via_compat ... ok
+test compat::tests::serialize_errors_match_serde_json ... ok
+test compat::tests::to_vec_works ... ok
+test compat::tests::to_writer_works ... ok
+test serde_impl::tests::bool_roundtrip ... ok
+test serde_impl::tests::float_output_matches_serde_json ... ok
+test serde_impl::tests::float_overflow_errors_like_serde_json ... ok
+test serde_impl::tests::float_zero_sign_matches_serde_json ... ok
+test serde_impl::tests::integer_types ... ok
+test serde_impl::tests::int_boundaries_match_serde_json ... ok
+test compat::tests::errors_match_serde_json_exactly ... ok
+test serde_impl::tests::invalid_float_heads_rejected_like_serde_json ... ok
+test serde_impl::tests::leading_dot_numbers_rejected_like_serde_json ... ok
+test compat::tests::unbounded_depth_requires_explicit_opt_out ... ok
+test serde_impl::tests::lone_surrogates_rejected_like_serde_json ... ok
+test serde_impl::tests::map_keys_reject_structured_keys_like_serde_json ... ok
+test compat::tests::value_roundtrip ... ok
+test serde_impl::tests::map_float_keys_stringify_and_reject_infinite ... ok
+test serde_impl::tests::map_keys_stringify_like_serde_json ... ok
+test serde_impl::tests::nested_map ... ok
+test serde_impl::tests::option_roundtrip ... ok
+test serde_impl::tests::neg_zero_matches_serde_json ... ok
+test serde_impl::tests::huge_integers_fall_back_to_f64_like_serde_json ... ok
+test serde_impl::tests::point_roundtrip ... ok
+test serde_impl::tests::string_escape_roundtrip ... ok
+test serde_impl::tests::string_zero_copy ... ok
+test serde_impl::tests::unit_enum_roundtrip ... ok
+test serde_impl::tests::serde_json_compat ... ok
+test serde_impl::tests::unbounded_depth_parses_deep_input ... ok
+
+test result: ok. 41 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/arb_precision.rs (target/debug/deps/arb_precision-2fbec8cc7dad362c)
+
+running 7 tests
+test big_int_exact_in_number ... ok
+test fitting_ints_still_typed ... ok
+test big_int_exact_in_value ... ok
+test float_overflow_exact ... ok
+test nested_structures_exact ... ok
+test ordinary_float_exact ... ok
+test u64_max_plus_one_exact ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/conformance.rs (target/debug/deps/conformance-aef8b09454b913fa)
+
+running 1 test
+test bounded_json_test_suite ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/depth_safety.rs (target/debug/deps/depth_safety-07e7c0603814611c)
+
+running 4 tests
+test guard_owns_state_after_owner_drops ... ok
+test public_string_variant_cannot_bypass_escaping ... ok
+test restores_on_error_and_unwind ... ok
+test native_deserializer_restores_budget_after_visitor_unwind ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration.rs (target/debug/deps/integration-5ae8e23c020f5713)
+
+running 158 tests
+test all_primitives_roundtrip ... ok
+test btreemap_roundtrip ... ok
+test arrays_reject_trailing_commas_unconditionally ... ok
+test alias_short_key ... ok
+test alias_primary_key ... ok
+test char_multibyte_roundtrip ... ok
+test basic_roundtrip ... ok
+test capacity_hint_reasonable ... ok
+test alias_long_key ... ok
+test char_via_serde_compat ... ok
+test btreemap_sorted_key_order ... ok
+test borrow_attr_is_noop_jzon_zercopies_natively ... ok
+test basic_serialize_shape ... ok
+test const_json_str_len_correctness ... ok
+test char_roundtrip ... ok
+test container_default_all_missing ... ok
+test control_chars_roundtrip ... ok
+test deeply_nested_5_levels_roundtrip ... ok
+test deny_unknown_fields_errors ... ok
+test deny_unknown_fields_ok ... ok
+test deny_unknown_first_byte_mismatch_errors ... ok
+test deny_unknown_known_first_byte_but_wrong_key_errors ... ok
+test deny_unknown_nested_value_skipped ... ok
+test deny_unknown_valid_fields_ok ... ok
+test derived_struct_uses_sink_path ... ok
+test deserialize_with_propagates_error ... ok
+test deserialize_with_reads_u64_from_string ... ok
+test emoji_surrogate_roundtrip ... ok
+test empty_string_roundtrip ... ok
+test empty_struct_roundtrip ... ok
+test empty_tuple_struct_is_empty_array ... ok
+test enum_other_catches_unknown_variant ... ok
+test enum_rename_all ... ok
+test enum_struct_variant_ser_circle ... ok
+test enum_struct_variant_ser_rectangle ... ok
+test escape_roundtrip_control_chars ... ok
+test escaped_string_rejects_borrow ... ok
+test field_default_missing ... ok
+test field_default_present_overrides ... ok
+test field_rename ... ok
+test fixed_buf_stack_roundtrip ... ok
+test fixed_buf_too_small_returns_none ... ok
+test float_special_values ... ok
+test float_zero_variants ... ok
+test fused_key_colon_with_spaces ... ok
+test generic_like_struct_u32 ... ok
+test hashmap_empty_object ... ok
+test hashmap_from_json ... ok
+test hashmap_single_entry_roundtrip ... ok
+test hashmap_struct_value_roundtrip ... ok
+test hashmap_to_json ... ok
+test i64_min_roundtrip ... ok
+test integer_extremes ... ok
+test internally_tagged_enum_borrowed_tag_dispatch ... ok
+test internally_tagged_enum_escaped_tag_value ... ok
+test internally_tagged_enum_matches_serde_json ... ok
+test internally_tagged_enum_tag_first_struct_variant ... ok
+test internally_tagged_enum_tag_last_struct_variant ... ok
+test internally_tagged_enum_tag_not_first ... ok
+test internally_tagged_enum_unit_variant_tag_first ... ok
+test internally_tagged_enum_roundtrip ... ok
+test internally_tagged_enum_unit_variant_tag_last ... ok
+test internally_tagged_enum_unknown_variant ... ok
+test json_sink_vec_and_fixed_produce_same_output ... ok
+test json_write_io_preserves_write_error ... ok
+test json_write_reuse_deterministic ... ok
+test jsonstr_as_borrowed_includes_no_esc_variant ... ok
+test jsonstr_borrowed_no_esc_is_returned_for_plain_strings ... ok
+test jsonstr_into_owned_works_for_no_esc ... ok
+test jsonstr_no_esc_roundtrip_matches_write_escaped_str ... ok
+test jsonstr_no_esc_serializes_correctly ... ok
+test jsonstr_owned_for_escaped_strings ... ok
+test jzon_serde_roundtrip_matches_serde_json ... ok
+test large_struct_roundtrip ... ok
+test length_counter_matches_vec_len ... ok
+test nan_infinity_to_null ... ok
+test nested_struct_roundtrip ... ok
+test newtype_struct_delegates_to_inner ... ok
+test newtype_struct_integer ... ok
+test option_absent_field_is_none ... ok
+test option_none ... ok
+test option_some ... ok
+test out_of_order_fields ... ok
+test owned_string_with_escapes ... ok
+test owned_strings_roundtrip ... ok
+test read_str_ascii_unescaped_returns_borrowed_no_esc ... ok
+test read_str_escaped_still_returns_owned ... ok
+test read_str_invalid_utf8_unescaped_returns_error ... ok
+test read_str_raw_control_byte_returns_invalid_escape ... ok
+test read_str_valid_non_ascii_unescaped ... ok
+test rename_all_camel_deserialize ... ok
+test rename_all_camel_serialize ... ok
+test rename_all_kebab ... ok
+test rename_all_pascal ... ok
+test rename_all_screaming_snake ... ok
+test rjson_trie_dispatch_compiles_and_parses_out_of_order ... ok
+test scan_string_run_detects_non_ascii_before_quote ... ok
+test scan_string_run_stops_on_backslash ... ok
+test scan_string_run_stops_on_control_and_clears_ascii_only ... ok
+test scan_string_run_stops_on_quote_and_tracks_ascii ... ok
+test serialization_uses_size_hint ... ok
+test serialize_deserialize_with_roundtrip ... ok
+test serialize_with_writes_u64_as_string ... ok
+test short_key_dispatch_roundtrip ... ok
+test single_char_keys ... ok
+test single_field_roundtrip ... ok
+test skip_deserializing ... ok
+test skip_omits_field ... ok
+test skip_serializing ... ok
+test skip_serializing_if_all_conditional_present ... ok
+test skip_serializing_if_all_conditional_skipped_empty_object ... ok
+test skip_serializing_if_first_present ... ok
+test skip_serializing_if_first_skipped_no_leading_comma ... ok
+test skip_serializing_if_middle_present ... ok
+test skip_serializing_if_middle_skipped ... ok
+test skip_serializing_if_none ... ok
+test skip_serializing_if_size_hint_matches_present_fields ... ok
+test skip_serializing_if_some_included ... ok
+test skip_serializing_if_with_custom_ser_present ... ok
+test skip_serializing_if_with_custom_ser_skipped ... ok
+test skip_value_string_errors_on_unterminated_escape ... ok
+test skip_value_string_skips_escaped_quotes_and_backslashes ... ok
+test small_bitmask_all_fields_present ... ok
+test small_bitmask_missing_field_errors ... ok
+test small_bitmask_out_of_order_ok ... ok
+test swar_find_backslash ... ok
+test swar_find_quote ... ok
+test swar_finds_at_all_offsets_mod_8 ... ok
+test swar_finds_backslash_at_all_offsets ... ok
+test swar_no_match_returns_len ... ok
+test tojson_object_safety ... ok
+test transparent_delegates ... ok
+test transparent_string_delegates ... ok
+test tuple_struct_serializes_as_array ... ok
+test tuple_struct_three_fields ... ok
+test tuple_three_roundtrip ... ok
+test tuple_two_roundtrip ... ok
+test u128_large_value ... ok
+test u128_zero ... ok
+test u64_max_roundtrip ... ok
+test unicode_bmp_roundtrip ... ok
+test unicode_escape_roundtrip ... ok
+test unit_enum_roundtrip ... ok
+test unit_enum_unknown_variant ... ok
+test unit_struct_serializes_braces ... ok
+test unknown_fields_skipped ... ok
+test unknown_nested_object_skipped ... ok
+test unknown_string_field_errors_on_unterminated_escape ... ok
+test unknown_string_field_skips_escaped_quotes_and_backslashes ... ok
+test vec_empty ... ok
+test vec_of_nodes_roundtrip ... ok
+test vec_of_tuples_roundtrip ... ok
+test vec_roundtrip ... ok
+test vec_u8_empty ... ok
+test vec_u8_is_array ... ok
+test wide_struct_phf_out_of_order ... ok
+test wide_struct_phf_roundtrip ... ok
+test zero_copy_borrow_no_allocation ... ok
+
+test result: ok. 158 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/json_spec.rs (target/debug/deps/json_spec-0e68a39b22da06e0)
+
+running 103 tests
+test array_empty ... ok
+test array_missing_element_rejected ... ok
+test array_mixed_types ... ok
+test array_nested ... ok
+test array_trailing_comma_rejected ... ignored, jzon accepts trailing commas in arrays unless `strict`
+test array_simple ... ok
+test num_bare_decimal_point_rejected ... ok
+test num_exponent_marker_requires_digit_lower_e ... ok
+test num_exponent_marker_requires_digit_upper_e ... ok
+test num_extra_leading_zero_rejected ... ok
+test num_float ... ok
+test num_infinity_literal_rejected ... ok
+test num_large_integer ... ok
+test num_leading_plus_rejected ... ok
+test num_nan_literal_rejected ... ok
+test num_negative_exponent_sign_requires_digit ... ok
+test num_negative_integer ... ok
+test num_negative_zero_parse ... ok
+test num_negative_zero_with_surrounding_whitespace ... ok
+test num_plain_integer ... ok
+test num_positive_exponent_sign_requires_digit ... ok
+test num_scientific_notation_lower_e ... ok
+test num_scientific_notation_negative_exponent ... ok
+test num_scientific_notation_positive_exponent_sign ... ok
+test num_scientific_notation_upper_e ... ok
+test num_trailing_decimal_rejected ... ok
+test num_uppercase_negative_exponent_sign_requires_digit ... ok
+test num_uppercase_positive_exponent_sign_requires_digit ... ok
+test num_zero ... ok
+test obj_control_char_in_string_value_rejected ... ok
+test obj_control_char_in_key_rejected ... ok
+test obj_empty ... ok
+test obj_missing_colon_rejected ... ok
+test obj_multiple_keys ... ok
+test obj_proto_treated_as_regular_key ... ok
+test obj_trailing_comma_rejected ... ignored, jzon accepts trailing commas in objects unless `strict`
+test obj_simple_key_value ... ok
+test obj_unquoted_key_rejected ... ok
+test prim_bool_case_sensitive ... ok
+test obj_nested ... ok
+test prim_false_parses ... ok
+test prim_null_case_sensitive ... ok
+test prim_null_parses ... ok
+test prim_true_parses ... ok
+test ser_ascii_control_chars_escaped ... ok
+test ser_empty_array ... ok
+test ser_empty_object ... ok
+test ser_false ... ok
+test ser_infinity_as_null ... ok
+test ser_integer ... ok
+test ser_mixed_array ... ok
+test ser_nan_as_null ... ok
+test ser_neg_infinity_as_null ... ok
+test ser_negative_zero ... ok
+test ser_negative_zero_actual_behavior ... ok
+test ser_nested_object ... ok
+test ser_null ... ok
+test ser_simple_array ... ok
+test ser_roundtrip_complex_object ... ok
+test ser_simple_object ... ok
+test ser_string ... ok
+test ser_true ... ok
+test str_control_chars_u0000_to_u0007_rejected ... ok
+test str_control_chars_u0008_to_u000f_rejected ... ok
+test str_control_chars_u0010_to_u001f_rejected ... ok
+test str_double_quoted ... ok
+test str_empty_string ... ok
+test str_escape_backslash ... ok
+test str_escape_backspace ... ok
+test str_escape_carriage_return ... ok
+test str_escape_double_quote ... ok
+test str_escape_form_feed ... ok
+test str_escape_newline ... ok
+test str_escape_slash ... ok
+test str_escape_tab ... ok
+test str_single_quotes_rejected ... ok
+test str_surrogate_pair_via_unicode_escapes ... ok
+test str_unicode_bmp_roundtrip ... ok
+test str_unicode_escape_non_hex_rejected ... ok
+test str_unicode_escape_too_short_rejected ... ok
+test str_unicode_escape_valid ... ok
+test str_unterminated_rejected ... ok
+test toplevel_bare_identifier_rejected ... ok
+test toplevel_empty_input_rejected ... ok
+test toplevel_trailing_garbage_rejected ... ok
+test toplevel_undefined_rejected ... ok
+test toplevel_whitespace_only_rejected ... ok
+test ws_bom_is_invalid ... ok
+test ws_cr_before_number ... ok
+test ws_cr_between_digits_is_invalid ... ok
+test ws_ff_is_invalid ... ok
+test ws_lf_before_number ... ok
+test ws_lf_between_digits_is_invalid ... ok
+test ws_nbsp_is_invalid ... ok
+test ws_space_before_number ... ok
+test ws_space_between_digits_is_invalid ... ok
+test ws_tab_before_number ... ok
+test ws_tab_between_digits_is_invalid ... ok
+test ws_unicode_category_z_is_invalid ... ok
+test ws_unicode_line_separator_is_invalid ... ok
+test ws_valid_surrounding_all_tokens ... ok
+test ws_vt_is_invalid ... ok
+test ws_zero_width_space_is_invalid ... ok
+
+test result: ok. 101 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/large_data.rs (target/debug/deps/large_data-fd950c524b944031)
+
+running 16 tests
+test citm_catalog_roundtrip ... ok
+test canada_typed_roundtrip ... ok
+test citm_catalog_parse_correctness ... ok
+test twitter_roundtrip ... ok
+test verify_data_file_sizes ... ok
+test twitter_typed_roundtrip ... ok
+test twitter_parse_correctness ... ok
+test canada_roundtrip ... ok
+test mixed_2mb_roundtrip ... ok
+test canada_parse_correctness ... ok
+test mixed_2mb_parse_correctness ... ok
+test all_files_sequential_throughput ... ok
+test stress_9mb_generated ... ok
+test large_generated_parse_and_roundtrip ... ok
+test generated_50k_roundtrip ... ok
+test generated_50k_parse_correctness ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.04s
+
+     Running tests/optimizations.rs (target/debug/deps/optimizations-22246d50f7fbc460)
+
+running 10 tests
+test raw_and_number_protocols_stream_without_materialization ... ok
+test reusable_serializer_preserves_capacity_and_partial_output ... ok
+test buffered_writer_keeps_its_explicit_contract ... ok
+test dedicated_structs_and_variants_match_reference ... ok
+test native_128_bit_endpoints_use_fallible_sinks ... ok
+test scratch_reuses_small_strings_and_releases_oversized_on_unwind ... ok
+test reusable_and_streaming_serializers_recover_ownership_after_unwind ... ok
+test streaming_io_and_callback_order_match_reference ... ok
+test emitted_strings_match_oracle_at_dispatch_boundaries ... ok
+test short_key_batching_validates_names_and_preserves_error_order ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pr21_native_map_regressions.rs (target/debug/deps/pr21_native_map_regressions-467693345d18c36f)
+
+running 8 tests
+test bool_callback_requires_complete_lexeme ... ok
+test boolean_key_lexemes ... ok
+test non_ascii_boolean_keys_use_slice_oracle ... ok
+test byte_key_callbacks_and_model ... ok
+test custom_unit_visitor_consumes_quoted_key ... ok
+test enum_key_grammar ... ok
+test invalid_key_never_invokes_seed ... ok
+test missing_unit_keys ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/readiness.rs (target/debug/deps/readiness-e285fffe7c4519bc)
+
+running 21 tests
+test byte_model ... ok
+test derived_attribute_and_enum_matrix ... ok
+test container_matrix ... ok
+test early_visitors_must_finish ... ok
+test exactly_one_scalar ... ok
+test escaped_capacity_is_local ... ok
+test float_bits_match_equivalent_configuration ... ok
+test ignored_strings_validate ... ok
+test scalar_callback_traces ... ok
+test scalar_serialization_matches_reference ... ok
+test tuple_completion ... ok
+test structs_accept_reference_sequence_representation ... ok
+test integer_boundaries ... ok
+test raw_and_ignored_have_distinct_unicode_contracts ... ok
+test reusable_buffer_restores_partial_output_on_error_and_panic ... ok
+test unsized_native_api ... ok
+test reuse_buffer_and_failure_output ... ok
+test whitespace_bulk_blocks_reject_other_controls ... ok
+test map_key_grammar ... ok
+test recursion_boundaries_match_reference ... ok
+test iterative_ignored_and_raw_follow_upstream_depth_policy ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/readme_features.rs (target/debug/deps/readme_features-de8118c04a044015)
+
+running 24 tests
+test btreemap_borrowed_keys_are_zero_copy ... ok
+test btreemap_borrowed_keys_roundtrip ... ok
+test compat_feature::jzon_compat_roundtrip ... ok
+test compat_feature::jzon_compat_value_and_macro ... ok
+test external_enum_matches_serde_json ... ok
+test external_enum_other_catches_unknown ... ok
+test external_enum_struct_variant_alias ... ok
+test external_enum_struct_variant_roundtrip ... ok
+test external_enum_unit_variant_map_form ... ok
+test external_enum_unit_variant_shape ... ok
+test external_enum_unknown_variant_errors ... ok
+test external_enum_variant_skip_serializing_if ... ok
+test serde_feature::jzon_f32_parses_directly ... ok
+test serde_feature::jzon_from_str_to_string_zero_copy ... ok
+test serde_feature::jzon_slice_bytes_writer_reader_roundtrip ... ok
+test tagged_enum_empty_struct_variant_has_no_trailing_comma ... ok
+test tagged_enum_unit_variant_includes_tag ... ok
+test tagged_enum_unit_variant_matches_serde_json ... ok
+test tagged_enum_variant_deny_unknown_fields ... ok
+test tagged_enum_variant_field_alias ... ok
+test top_level_trailing_garbage_rejected ... ok
+test tagged_enum_variant_name_alias ... ok
+test external_enum_struct_variant_deny_unknown_fields ... ok
+test tagged_enum_variant_skip_serializing_if ... ok
+
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/serde_compat.rs (target/debug/deps/serde_compat-a4d8f38a9a428454)
+
+running 95 tests
+test btreemap_roundtrip_deterministic ... ok
+test complex_nested_struct_roundtrip ... ok
+test de_any_number_routes_to_expected_visitor_kinds ... ok
+test de_btreemap ... ok
+test de_bool ... ok
+test de_enum_deny_unknown_fields ... ok
+test de_enum_tuple_variant ... ok
+test de_enum_unit_variant ... ok
+test de_f64 ... ok
+test de_i64 ... ok
+test de_integer_narrowing_rejects_out_of_range_values ... ok
+test de_integer_extreme_bounds_match_target_types ... ok
+test de_integer_targets_reject_float_syntax ... ok
+test de_trailing_whitespace ... ok
+test de_u64 ... ok
+test de_from_slice ... ok
+test de_null ... ok
+test de_option ... ok
+test edge_empty_string_roundtrip ... ok
+test de_string_unicode_escape ... ok
+test edge_nested_option ... ok
+test edge_large_number_roundtrip ... ok
+test de_vec ... ok
+test de_enum_unknown_variant_error ... ok
+test de_struct_from_json ... ok
+test edge_special_float_f32_nan_serializes_as_null ... ok
+test edge_null_roundtrip ... ok
+test edge_vec_of_options ... ok
+test error_invalid_json_syntax ... ok
+test edge_special_float_inf_serializes_as_null ... ok
+test error_missing_required_field ... ok
+test error_unknown_enum_variant ... ok
+test error_unknown_field_with_deny ... ok
+test error_wrong_type_for_bool ... ok
+test de_unsigned_integer_targets_reject_negative_numbers ... ok
+test error_wrong_type_for_struct ... ok
+test hashmap_string_keys_roundtrip ... ok
+test internally_tagged_ser_circle ... ok
+test internally_tagged_under_arb_matches_native ... ok
+test newtype_struct_roundtrip ... ok
+test edge_unicode_roundtrip ... ok
+test flatten_roundtrip ... ok
+test number_token_serialize_passthrough ... ok
+test edge_special_float_nan_serializes_as_null ... ok
+test de_enum_struct_variant ... ok
+test option_field_null_becomes_none ... ok
+test de_integer_128_bit_bounds_match_target_types ... ok
+test de_struct_missing_required_field ... ok
+test option_field_missing_becomes_none ... ok
+test raw_value_nested_in_struct ... ok
+test raw_value_deserialize_verbatim ... ok
+test raw_value_scalar_and_nested ... ok
+test de_string ... ok
+test option_field_ser_none_outputs_null ... ok
+test raw_value_borrowed ... ok
+test renamed_field_missing_ok_when_option ... ok
+test raw_value_malformed_errors ... ok
+test option_field_present_becomes_some ... ok
+test roundtrip_animal_supported_variants ... ok
+test roundtrip_all_animal_variants ... ok
+test roundtrip_nested_structs ... ok
+test ser_enum_newtype_vec_variant ... ok
+test ser_enum_struct_variant ... ok
+test raw_value_serialize_passthrough ... ok
+test ser_enum_tuple_variant ... ok
+test ser_bool ... ok
+test ser_f64 ... ok
+test ser_enum_unit_variant ... ok
+test ser_i64 ... ok
+test ser_null ... ok
+test ser_option_some_and_none ... ok
+test ser_string ... ok
+test ser_string_escapes ... ok
+test ser_tuple ... ok
+test ser_u64 ... ok
+test ser_vec ... ok
+test serde_attr_alias_first_alias ... ok
+test serde_attr_alias_primary ... ok
+test serde_attr_alias_second_alias ... ok
+test serde_attr_default_missing_uses_default ... ok
+test serde_attr_default_present_uses_value ... ok
+test serde_attr_deny_unknown_fields_error ... ok
+test serde_attr_deny_unknown_fields_ok ... ok
+test serde_attr_rename_all_camel_case_de ... ok
+test serde_attr_rename_all_camel_case_ser ... ok
+test serde_attr_rename_de ... ok
+test serde_attr_rename_missing_field_uses_renamed_key ... ok
+test serde_attr_rename_ser ... ok
+test serde_attr_skip_in_de_uses_default ... ok
+test serde_attr_skip_in_ser ... ok
+test serde_attr_skip_serializing_if_some ... ok
+test serde_attr_skip_serializing_if_none ... ok
+test token_struct_wrong_field_errors ... ok
+test tuple_struct_roundtrip ... ok
+test untagged_enum_roundtrip ... ok
+
+test result: ok. 95 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/simd_equivalence.rs (target/debug/deps/simd_equivalence-e1c23f359ba9a866)
+
+running 1 test
+test kernels_match_at_alignment_boundaries_and_invalid_offsets ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+   Doc-tests jzon
+
+running 2 tests
+test crates/jzon/src/lib.rs - (line 46) ... ok
+test crates/jzon/src/serde_impl.rs - serde_impl (line 13) ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+

@@ -1,0 +1,39 @@
+   Compiling serde_json v1.0.151 (/home/meme/Documentos/GitHub/jzon-rs/vendor/serde_json)
+   Compiling jzon-rs-derive v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_derive)
+   Compiling fast-float2 v0.2.4
+   Compiling tinytemplate v1.2.1
+   Compiling simd-json v0.13.11
+   Compiling jzon-rs-compat v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_compat)
+   Compiling jzon-rs v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon)
+   Compiling criterion v0.5.1
+   Compiling jzon-rs-serde v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_serde)
+    Finished `bench` profile [optimized] target(s) in 10.95s
+     Running benches/bench_reader.rs (target/release/deps/bench_reader-dc1423d082c94073)
+Gnuplot not found, using plotters backend
+Benchmarking reader_full_u32_array/native_incremental
+Benchmarking reader_full_u32_array/native_incremental: Warming up for 200.00 ms
+Benchmarking reader_full_u32_array/native_incremental: Collecting 20 samples in estimated 631.86 ms (840 iterations)
+Benchmarking reader_full_u32_array/native_incremental: Analyzing
+reader_full_u32_array/native_incremental
+                        time:   [714.86 µs 744.57 µs 772.74 µs]
+                        thrpt:  [60.338 MiB/s 62.621 MiB/s 65.224 MiB/s]
+Benchmarking reader_full_u32_array/native_buffered
+Benchmarking reader_full_u32_array/native_buffered: Warming up for 200.00 ms
+Benchmarking reader_full_u32_array/native_buffered: Collecting 20 samples in estimated 537.37 ms (1470 iterations)
+Benchmarking reader_full_u32_array/native_buffered: Analyzing
+reader_full_u32_array/native_buffered
+                        time:   [347.64 µs 351.57 µs 356.63 µs]
+                        thrpt:  [130.74 MiB/s 132.62 MiB/s 134.12 MiB/s]
+Found 2 outliers among 20 measurements (10.00%)
+  1 (5.00%) high mild
+  1 (5.00%) high severe
+Benchmarking reader_full_u32_array/patched_reference
+Benchmarking reader_full_u32_array/patched_reference: Warming up for 200.00 ms
+Benchmarking reader_full_u32_array/patched_reference: Collecting 20 samples in estimated 506.60 ms (1680 iterations)
+Benchmarking reader_full_u32_array/patched_reference: Analyzing
+reader_full_u32_array/patched_reference
+                        time:   [290.85 µs 294.68 µs 298.70 µs]
+                        thrpt:  [156.10 MiB/s 158.23 MiB/s 160.31 MiB/s]
+Found 3 outliers among 20 measurements (15.00%)
+  2 (10.00%) high mild
+  1 (5.00%) high severe

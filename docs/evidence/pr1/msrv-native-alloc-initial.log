@@ -1,0 +1,1132 @@
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.26
+   Compiling serde_core v1.0.229
+   Compiling serde v1.0.229
+   Compiling zmij v1.0.23
+    Checking fast-float2 v0.2.4
+    Checking ryu v1.0.23
+    Checking itoa v1.0.18
+error[E0463]: can't find crate for `core`
+  |
+  = note: the `thumbv7em-none-eabi` target may not be installed
+  = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error[E0463]: can't find crate for `compiler_builtins`
+
+error[E0463]: can't find crate for `core`
+ --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/buffer/mod.rs:2:5
+  |
+2 | use core::mem::MaybeUninit;
+  |     ^^^^ can't find crate
+  |
+  = note: the `thumbv7em-none-eabi` target may not be installed
+  = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error[E0463]: can't find crate for `core`
+ --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/buffer/mod.rs:3:5
+  |
+3 | use core::{slice, str};
+  |     ^^^^ can't find crate
+  |
+  = note: the `thumbv7em-none-eabi` target may not be installed
+  = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error[E0463]: can't find crate for `core`
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/itoa-1.0.18/src/lib.rs:56:5
+   |
+56 | use core::hint;
+   |     ^^^^ can't find crate
+   |
+   = note: the `thumbv7em-none-eabi` target may not be installed
+   = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error[E0463]: can't find crate for `core`
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/d2s.rs:29:5
+   |
+29 | use core::mem::MaybeUninit;
+   |     ^^^^ can't find crate
+   |
+   = note: the `thumbv7em-none-eabi` target may not be installed
+   = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error[E0463]: can't find crate for `core`
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/d2s_intrinsics.rs:21:5
+   |
+21 | use core::ptr;
+   |     ^^^^ can't find crate
+   |
+   = note: the `thumbv7em-none-eabi` target may not be installed
+   = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error[E0463]: can't find crate for `core`
+ --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/pretty/exponent.rs:2:5
+  |
+2 | use core::ptr;
+  |     ^^^^ can't find crate
+  |
+  = note: the `thumbv7em-none-eabi` target may not be installed
+  = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error[E0463]: can't find crate for `core`
+ --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/pretty/mantissa.rs:2:5
+  |
+2 | use core::ptr;
+  |     ^^^^ can't find crate
+  |
+  = note: the `thumbv7em-none-eabi` target may not be installed
+  = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error[E0463]: can't find crate for `core`
+ --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/pretty/mod.rs:9:5
+  |
+9 | use core::ptr;
+  |     ^^^^ can't find crate
+  |
+  = note: the `thumbv7em-none-eabi` target may not be installed
+  = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error[E0463]: can't find crate for `core`
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/itoa-1.0.18/src/lib.rs:57:5
+   |
+57 | use core::mem::{self, MaybeUninit};
+   |     ^^^^ can't find crate
+   |
+   = note: the `thumbv7em-none-eabi` target may not be installed
+   = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error[E0463]: can't find crate for `core`
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/itoa-1.0.18/src/lib.rs:58:5
+   |
+58 | use core::str;
+   |     ^^^^ can't find crate
+   |
+   = note: the `thumbv7em-none-eabi` target may not be installed
+   = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error: cannot find macro `debug_assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/pretty/mod.rs:181:5
+    |
+181 |     debug_assert!(k >= -45);
+    |     ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/pretty/mod.rs:75:5
+   |
+75 |     debug_assert!(k >= -324);
+   |     ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/pretty/exponent.rs:39:5
+   |
+39 |     debug_assert!(k < 100);
+   |     ^^^^^^^^^^^^
+
+error: cannot find macro `assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/itoa-1.0.18/src/lib.rs:138:13
+    |
+138 |             assert!($Signed::MIN < 0, "need signed");
+    |             ^^^^^^
+...
+185 | impl_Integer!(i8, u8);
+    | --------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `impl_Integer` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/pretty/exponent.rs:13:5
+   |
+13 |     debug_assert!(k < 1000);
+   |     ^^^^^^^^^^^^
+
+error[E0463]: can't find crate for `core`
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/lib.rs:63:5
+   |
+63 | use core::fmt::{self, Display};
+   |     ^^^^ can't find crate
+   |
+   = note: the `thumbv7em-none-eabi` target may not be installed
+   = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error: cannot find macro `debug_assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/f2s_intrinsics.rs:110:9
+    |
+110 |         debug_assert!(i < d2s::DOUBLE_POW5_SPLIT.len() as u32);
+    |         ^^^^^^^^^^^^
+
+error[E0463]: can't find crate for `core`
+ --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:1:5
+  |
+1 | use core::marker::PhantomData;
+  |     ^^^^ can't find crate
+  |
+  = note: the `thumbv7em-none-eabi` target may not be installed
+  = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/f2s_intrinsics.rs:89:9
+   |
+89 |         debug_assert!(q < d2s::DOUBLE_POW5_INV_SPLIT.len() as u32);
+   |         ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/f2s_intrinsics.rs:70:5
+   |
+70 |     debug_assert!(shifted_sum <= u32::MAX as u64);
+   |     ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/f2s_intrinsics.rs:59:5
+   |
+59 |     debug_assert!(shift > 32);
+   |     ^^^^^^^^^^^^
+
+error[E0463]: can't find crate for `core`
+ --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:2:5
+  |
+2 | use core::ptr;
+  |     ^^^^ can't find crate
+  |
+  = note: the `thumbv7em-none-eabi` target may not be installed
+  = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error[E0463]: can't find crate for `core`
+ --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/decimal.rs:1:5
+  |
+1 | use core::fmt::{self, Debug};
+  |     ^^^^ can't find crate
+  |
+  = note: the `thumbv7em-none-eabi` target may not be installed
+  = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error[E0463]: can't find crate for `core`
+ --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/float.rs:1:5
+  |
+1 | use core::fmt::{Debug, Display};
+  |     ^^^^ can't find crate
+  |
+  = note: the `thumbv7em-none-eabi` target may not be installed
+  = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/f2s_intrinsics.rs:30:9
+   |
+30 |         debug_assert!(value != 0);
+   |         ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/d2s_intrinsics.rs:65:5
+   |
+65 |     debug_assert!(p < 64);
+   |     ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/d2s_intrinsics.rs:64:5
+   |
+64 |     debug_assert!(value != 0);
+   |     ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/d2s_intrinsics.rs:44:9
+   |
+44 |         debug_assert!(value != 0);
+   |         ^^^^^^^^^^^^
+
+error[E0463]: can't find crate for `core`
+ --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/float.rs:2:5
+  |
+2 | use core::ops::{Add, Div, Mul, Neg};
+  |     ^^^^ can't find crate
+  |
+  = note: the `thumbv7em-none-eabi` target may not be installed
+  = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error[E0463]: can't find crate for `core`
+ --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/index.rs:3:5
+  |
+3 | use core::ops::{RangeFrom, RangeTo};
+  |     ^^^^ can't find crate
+  |
+  = note: the `thumbv7em-none-eabi` target may not be installed
+  = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error: cannot find macro `debug_assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/d2s.rs:180:21
+    |
+180 |                     debug_assert!(i < DOUBLE_POW5_SPLIT.len() as i32);
+    |                     ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/d2s.rs:138:21
+    |
+138 |                     debug_assert!(q < DOUBLE_POW5_INV_SPLIT.len() as u32);
+    |                     ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/d2s.rs:43:5
+   |
+43 |     debug_assert!(v < 100000000000000000);
+   |     ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/common.rs:93:5
+   |
+93 |     debug_assert!(e <= 2620);
+   |     ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/common.rs:92:5
+   |
+92 |     debug_assert!(e >= 0);
+   |     ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/common.rs:84:5
+   |
+84 |     debug_assert!(e <= 1650);
+   |     ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/binary.rs:83:5
+   |
+83 |     debug_assert!(q >= SMALLEST_POWER_OF_FIVE as i64);
+   |     ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/binary.rs:84:5
+   |
+84 |     debug_assert!(q <= LARGEST_POWER_OF_FIVE as i64);
+   |     ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/common.rs:83:5
+   |
+83 |     debug_assert!(e >= 0);
+   |     ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/common.rs:69:5
+   |
+69 |     debug_assert!(e <= 3528);
+   |     ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/common.rs:68:5
+   |
+68 |     debug_assert!(e >= 0);
+   |     ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/common.rs:58:5
+   |
+58 |     debug_assert!(e <= 3528);
+   |     ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/common.rs:57:5
+   |
+57 |     debug_assert!(e >= 0);
+   |     ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/common.rs:27:5
+   |
+27 |     debug_assert!(v < 1000000000);
+   |     ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/buffer/mod.rs:75:13
+   |
+75 |             debug_assert!(n <= self.bytes.len());
+   |             ^^^^^^^^^^^^
+
+error: cannot find macro `assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/itoa-1.0.18/src/lib.rs:139:13
+    |
+139 |             assert!($Unsigned::MIN == 0, "need unsigned");
+    |             ^^^^^^
+...
+185 | impl_Integer!(i8, u8);
+    | --------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `impl_Integer` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/binary.rs:85:5
+   |
+85 |     debug_assert!(precision <= 64);
+   |     ^^^^^^^^^^^^
+
+error: cannot find macro `assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/itoa-1.0.18/src/lib.rs:140:13
+    |
+140 |             assert!($Signed::BITS == $Unsigned::BITS, "need counterparts");
+    |             ^^^^^^
+...
+185 | impl_Integer!(i8, u8);
+    | --------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `impl_Integer` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: cannot find macro `assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/itoa-1.0.18/src/lib.rs:138:13
+    |
+138 |             assert!($Signed::MIN < 0, "need signed");
+    |             ^^^^^^
+...
+186 | impl_Integer!(i16, u16);
+    | ----------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `impl_Integer` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: cannot find macro `assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/itoa-1.0.18/src/lib.rs:139:13
+    |
+139 |             assert!($Unsigned::MIN == 0, "need unsigned");
+    |             ^^^^^^
+...
+186 | impl_Integer!(i16, u16);
+    | ----------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `impl_Integer` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: cannot find macro `assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/itoa-1.0.18/src/lib.rs:140:13
+    |
+140 |             assert!($Signed::BITS == $Unsigned::BITS, "need counterparts");
+    |             ^^^^^^
+...
+186 | impl_Integer!(i16, u16);
+    | ----------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `impl_Integer` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: cannot find macro `assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/itoa-1.0.18/src/lib.rs:138:13
+    |
+138 |             assert!($Signed::MIN < 0, "need signed");
+    |             ^^^^^^
+...
+187 | impl_Integer!(i32, u32);
+    | ----------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `impl_Integer` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: cannot find macro `assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/itoa-1.0.18/src/lib.rs:139:13
+    |
+139 |             assert!($Unsigned::MIN == 0, "need unsigned");
+    |             ^^^^^^
+...
+187 | impl_Integer!(i32, u32);
+    | ----------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `impl_Integer` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: cannot find attribute `derive` in this scope
+ --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:6:3
+  |
+6 | #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+  |   ^^^^^^
+
+error: cannot find macro `assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/itoa-1.0.18/src/lib.rs:140:13
+    |
+140 |             assert!($Signed::BITS == $Unsigned::BITS, "need counterparts");
+    |             ^^^^^^
+...
+187 | impl_Integer!(i32, u32);
+    | ----------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `impl_Integer` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: cannot find macro `assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/itoa-1.0.18/src/lib.rs:138:13
+    |
+138 |             assert!($Signed::MIN < 0, "need signed");
+    |             ^^^^^^
+...
+188 | impl_Integer!(i64, u64);
+    | ----------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `impl_Integer` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: cannot find macro `assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/itoa-1.0.18/src/lib.rs:139:13
+    |
+139 |             assert!($Unsigned::MIN == 0, "need unsigned");
+    |             ^^^^^^
+...
+188 | impl_Integer!(i64, u64);
+    | ----------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `impl_Integer` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: cannot find macro `assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/itoa-1.0.18/src/lib.rs:140:13
+    |
+140 |             assert!($Signed::BITS == $Unsigned::BITS, "need counterparts");
+    |             ^^^^^^
+...
+188 | impl_Integer!(i64, u64);
+    | ----------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `impl_Integer` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: cannot find macro `assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/itoa-1.0.18/src/lib.rs:138:13
+    |
+138 |             assert!($Signed::MIN < 0, "need signed");
+    |             ^^^^^^
+...
+189 | impl_Integer!(i128, u128);
+    | ------------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `impl_Integer` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: cannot find macro `assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/itoa-1.0.18/src/lib.rs:139:13
+    |
+139 |             assert!($Unsigned::MIN == 0, "need unsigned");
+    |             ^^^^^^
+...
+189 | impl_Integer!(i128, u128);
+    | ------------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `impl_Integer` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:33:9
+   |
+33 |         debug_assert!(
+   |         ^^^^^^^^^^^^
+
+error: cannot find macro `assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/itoa-1.0.18/src/lib.rs:140:13
+    |
+140 |             assert!($Signed::BITS == $Unsigned::BITS, "need counterparts");
+    |             ^^^^^^
+...
+189 | impl_Integer!(i128, u128);
+    | ------------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `impl_Integer` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: cannot find macro `debug_assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/itoa-1.0.18/src/lib.rs:232:5
+    |
+232 |     debug_assert!(value < 10_000);
+    |     ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:48:9
+   |
+48 |         debug_assert!(!self.is_empty(), "buffer overflow: buffer is empty.");
+   |         ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:73:9
+   |
+73 |         debug_assert!(!self.is_empty(), "attempting to get first value of empty buffer.");
+   |         ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:143:9
+    |
+143 |         debug_assert!(self.len() >= 8, "overflowing buffer: buffer is not 8 bytes long");
+    |         ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:202:9
+    |
+202 |         debug_assert!(self.as_ref().len() >= 8);
+    |         ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:214:9
+    |
+214 |         debug_assert!(self.as_ref().len() >= 8);
+    |         ^^^^^^^^^^^^
+
+error: cannot find attribute `derive` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:244:3
+    |
+244 | #[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
+    |   ^^^^^^
+
+error: cannot find attribute `derive` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/decimal.rs:20:3
+   |
+20 | #[derive(Clone)]
+   |   ^^^^^^
+
+error: cannot find macro `assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/decimal.rs:9:9
+    |
+9   |           assert!($($arg)*);
+    |           ^^^^^^
+...
+215 | /     no_panic_assert!(
+216 | |         !s.is_empty(),
+217 | |         "the buffer cannot be empty since it follows a call to parse_number"
+218 | |     );
+    | |_____- in this macro invocation
+    |
+    = note: this error originates in the macro `no_panic_assert` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0405]: cannot find trait `Copy` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/buffer/mod.rs:82:6
+   |
+82 | impl Copy for Buffer {}
+   |      ^^^^ not found in this scope
+
+error: cannot find attribute `derive` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/number.rs:27:3
+   |
+27 | #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+   |   ^^^^^^
+
+error[E0405]: cannot find trait `Clone` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/buffer/mod.rs:85:6
+   |
+85 | impl Clone for Buffer {
+   |      ^^^^^ not found in this scope
+
+error[E0405]: cannot find trait `Default` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/buffer/mod.rs:92:6
+   |
+92 | impl Default for Buffer {
+   |      ^^^^^^^ not found in this scope
+
+error: cannot find macro `debug_assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/number.rs:177:5
+    |
+177 |     debug_assert!(!s.is_empty(), "should not have empty buffer after sign checks");
+    |     ^^^^^^^^^^^^
+
+error: cannot find macro `debug_assert` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/number.rs:243:13
+    |
+243 |             debug_assert!(s.first_is(b'.'), "first character for the fraction must be a decimal");
+    |             ^^^^^^^^^^^^
+
+error[E0405]: cannot find trait `Copy` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ryu-1.0.23/src/buffer/mod.rs:109:19
+    |
+109 | pub trait Sealed: Copy {
+    |                   ^^^^ not found in this scope
+
+error: cannot find attribute `derive` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/lib.rs:79:3
+   |
+79 | #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+   |   ^^^^^^
+
+error: cannot find macro `write` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/lib.rs:84:9
+   |
+84 |         write!(f, "error while parsing a float")
+   |         ^^^^^
+
+error[E0405]: cannot find trait `Default` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/itoa-1.0.18/src/lib.rs:76:6
+   |
+76 | impl Default for Buffer {
+   |      ^^^^^^^ not found in this scope
+
+error[E0405]: cannot find trait `Copy` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/itoa-1.0.18/src/lib.rs:83:6
+   |
+83 | impl Copy for Buffer {}
+   |      ^^^^ not found in this scope
+
+error[E0405]: cannot find trait `Clone` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/itoa-1.0.18/src/lib.rs:86:6
+   |
+86 | impl Clone for Buffer {
+   |      ^^^^^ not found in this scope
+
+error[E0405]: cannot find trait `Copy` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/itoa-1.0.18/src/lib.rs:128:23
+    |
+128 |     pub trait Sealed: Copy {
+    |                       ^^^^ not found in this scope
+
+Some errors have detailed explanations: E0405, E0463.
+For more information about an error, try `rustc --explain E0405`.
+error: could not compile `itoa` (lib) due to 25 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `ryu` (lib) due to 38 previous errors
+error[E0463]: can't find crate for `core`
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/float.rs:55:28
+   |
+55 |     const INFINITY: Self = core::f32::INFINITY;
+   |                            ^^^^ can't find crate
+   |
+   = note: the `thumbv7em-none-eabi` target may not be installed
+   = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error[E0463]: can't find crate for `core`
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/float.rs:56:32
+   |
+56 |     const NEG_INFINITY: Self = core::f32::NEG_INFINITY;
+   |                                ^^^^ can't find crate
+   |
+   = note: the `thumbv7em-none-eabi` target may not be installed
+   = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error[E0463]: can't find crate for `core`
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/float.rs:57:23
+   |
+57 |     const NAN: Self = core::f32::NAN;
+   |                       ^^^^ can't find crate
+   |
+   = note: the `thumbv7em-none-eabi` target may not be installed
+   = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error[E0463]: can't find crate for `core`
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/float.rs:58:28
+   |
+58 |     const NEG_NAN: Self = -core::f32::NAN;
+   |                            ^^^^ can't find crate
+   |
+   = note: the `thumbv7em-none-eabi` target may not be installed
+   = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error[E0463]: can't find crate for `core`
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/float.rs:96:28
+   |
+96 |     const INFINITY: Self = core::f64::INFINITY;
+   |                            ^^^^ can't find crate
+   |
+   = note: the `thumbv7em-none-eabi` target may not be installed
+   = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error[E0463]: can't find crate for `core`
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/float.rs:97:32
+   |
+97 |     const NEG_INFINITY: Self = core::f64::NEG_INFINITY;
+   |                                ^^^^ can't find crate
+   |
+   = note: the `thumbv7em-none-eabi` target may not be installed
+   = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error[E0463]: can't find crate for `core`
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/float.rs:98:23
+   |
+98 |     const NAN: Self = core::f64::NAN;
+   |                       ^^^^ can't find crate
+   |
+   = note: the `thumbv7em-none-eabi` target may not be installed
+   = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error[E0463]: can't find crate for `core`
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/float.rs:99:28
+   |
+99 |     const NEG_NAN: Self = -core::f64::NAN;
+   |                            ^^^^ can't find crate
+   |
+   = note: the `thumbv7em-none-eabi` target may not be installed
+   = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error[E0463]: can't find crate for `core`
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/lib.rs:96:22
+   |
+96 | pub type Result<T> = core::result::Result<T, Error>;
+   |                      ^^^^ can't find crate
+   |
+   = note: the `thumbv7em-none-eabi` target may not be installed
+   = help: consider downloading the target with `rustup target add thumbv7em-none-eabi`
+
+error[E0412]: cannot find type `Option` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:78:28
+   |
+78 |     pub fn first(&self) -> Option<u8> {
+   |                            ^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `None` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:80:13
+   |
+80 |             None
+   |             ^^^^ not found in this scope
+
+error[E0412]: cannot find type `Option` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:103:34
+    |
+103 |     pub fn first_digit(&self) -> Option<u8> {
+    |                                  ^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `None` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:108:17
+    |
+108 |                 None
+    |                 ^^^^ not found in this scope
+
+error[E0412]: cannot find type `Option` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:114:41
+    |
+114 |     pub fn try_read_digit(&mut self) -> Option<u8> {
+    |                                         ^^^^^^ not found in this scope
+
+error[E0405]: cannot find trait `FnMut` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:122:51
+    |
+122 |     pub fn parse_digits(&mut self, mut func: impl FnMut(u8)) {
+    |                                                   ^^^^^ not found in this scope
+
+error[E0531]: cannot find tuple struct or tuple variant `Some` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:123:19
+    |
+123 |         while let Some(digit) = self.try_read_digit() {
+    |                   ^^^^ not found in this scope
+
+error[E0412]: cannot find type `Option` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:129:35
+    |
+129 |     pub fn try_read_u64(&self) -> Option<u64> {
+    |                                   ^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `None` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:133:13
+    |
+133 |             None
+    |             ^^^^ not found in this scope
+
+error[E0405]: cannot find trait `AsRef` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:157:22
+    |
+157 | pub trait ByteSlice: AsRef<[u8]> + AsMut<[u8]> {
+    |                      ^^^^^ not found in this scope
+
+error[E0405]: cannot find trait `AsMut` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:157:36
+    |
+157 | pub trait ByteSlice: AsRef<[u8]> + AsMut<[u8]> {
+    |                                    ^^^^^ not found in this scope
+
+error[E0531]: cannot find tuple struct or tuple variant `Some` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:165:16
+    |
+165 |         if let Some(&c) = self.as_ref().first() {
+    |                ^^^^ not found in this scope
+
+error[E0405]: cannot find trait `FnMut` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:232:48
+    |
+232 | pub fn parse_digits(s: &mut &[u8], mut f: impl FnMut(u8)) {
+    |                                                ^^^^^ not found in this scope
+
+error[E0531]: cannot find tuple struct or tuple variant `Some` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:233:15
+    |
+233 |     while let Some(&ch) = s.first() {
+    |               ^^^^ not found in this scope
+
+error[E0405]: cannot find trait `PartialEq` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/decimal.rs:41:6
+   |
+41 | impl PartialEq for Decimal {
+   |      ^^^^^^^^^ not found in this scope
+
+error[E0405]: cannot find trait `Eq` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/decimal.rs:51:6
+   |
+51 | impl Eq for Decimal {
+   |      ^^ not found in this scope
+
+error[E0405]: cannot find trait `Default` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/decimal.rs:54:6
+   |
+54 | impl Default for Decimal {
+   |      ^^^^^^^ not found in this scope
+
+error[E0405]: cannot find trait `Sized` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/float.rs:12:5
+   |
+12 |     Sized
+   |     ^^^^^ not found in this scope
+
+error[E0405]: cannot find trait `PartialEq` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/float.rs:18:7
+   |
+18 |     + PartialEq
+   |       ^^^^^^^^^ not found in this scope
+
+error[E0405]: cannot find trait `PartialOrd` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/float.rs:19:7
+   |
+19 |     + PartialOrd
+   |       ^^^^^^^^^^ not found in this scope
+
+error[E0405]: cannot find trait `Default` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/float.rs:20:7
+   |
+20 |     + Default
+   |       ^^^^^^^ not found in this scope
+
+error[E0405]: cannot find trait `Clone` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/float.rs:21:7
+   |
+21 |     + Clone
+   |       ^^^^^ not found in this scope
+
+error[E0405]: cannot find trait `Copy` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/float.rs:22:7
+   |
+22 |     + Copy
+   |       ^^^^ not found in this scope
+
+error[E0405]: cannot find trait `Sized` in this scope
+ --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/index.rs:5:35
+  |
+5 | pub(crate) trait GetAt<Index, R: ?Sized> {
+  |                                   ^^^^^ not found in this scope
+
+error[E0405]: cannot find trait `Sized` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/index.rs:39:38
+   |
+39 | pub(crate) trait GetAtMut<Index, R: ?Sized> {
+   |                                      ^^^^^ not found in this scope
+
+error[E0412]: cannot find type `Option` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/number.rs:45:46
+   |
+45 |     pub fn try_fast_path<F: Float>(&self) -> Option<F> {
+   |                                              ^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `None` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/number.rs:60:28
+   |
+60 |                     return None;
+   |                            ^^^^ not found in this scope
+
+error[E0425]: cannot find value `None` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/number.rs:69:13
+   |
+69 |             None
+   |             ^^^^ not found in this scope
+
+error[E0531]: cannot find tuple struct or tuple variant `Some` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/number.rs:97:16
+   |
+97 |         if let Some(digit) = s.try_read_digit() {
+   |                ^^^^ not found in this scope
+
+error[E0531]: cannot find tuple struct or tuple variant `Some` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/number.rs:108:12
+    |
+108 |     if let Some(v) = s.try_read_u64() {
+    |            ^^^^ not found in this scope
+
+error[E0531]: cannot find tuple struct or tuple variant `Some` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/number.rs:113:20
+    |
+113 |             if let Some(v) = s.try_read_u64() {
+    |                    ^^^^ not found in this scope
+
+error[E0412]: cannot find type `Option` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/number.rs:159:34
+    |
+159 | pub fn parse_number(s: &[u8]) -> Option<(Number, usize)> {
+    |                                  ^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `None` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/number.rs:161:16
+    |
+161 |         return None;
+    |                ^^^^ not found in this scope
+
+error[E0425]: cannot find value `None` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/number.rs:172:20
+    |
+172 |             return None;
+    |                    ^^^^ not found in this scope
+
+error[E0425]: cannot find value `None` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/number.rs:175:16
+    |
+175 |         return None;
+    |                ^^^^ not found in this scope
+
+error[E0425]: cannot find value `None` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/number.rs:199:16
+    |
+199 |         return None;
+    |                ^^^^ not found in this scope
+
+error[E0412]: cannot find type `Option` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/number.rs:264:45
+    |
+264 | pub fn parse_inf_nan<F: Float>(s: &[u8]) -> Option<(F, usize)> {
+    |                                             ^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `None` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/number.rs:295:5
+    |
+295 |     None
+    |     ^^^^ not found in this scope
+
+error[E0412]: cannot find type `Option` in this scope
+ --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/parse.rs:7:43
+  |
+7 | pub fn parse_float<F: Float>(s: &[u8]) -> Option<(F, usize)> {
+  |                                           ^^^^^^ not found in this scope
+
+error[E0531]: cannot find tuple struct or tuple variant `Some` in this scope
+ --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/parse.rs:9:9
+  |
+9 |         Some(r) => r,
+  |         ^^^^ not found in this scope
+
+error[E0531]: cannot find tuple struct or tuple variant `Some` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/parse.rs:12:12
+   |
+12 |     if let Some(value) = num.try_fast_path::<F>() {
+   |            ^^^^ not found in this scope
+
+error[E0405]: cannot find trait `AsRef` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/lib.rs:107:23
+    |
+107 |     fn parse_float<S: AsRef<[u8]>>(s: S) -> Result<Self> {
+    |                       ^^^^^ not found in this scope
+
+error[E0531]: cannot find tuple struct or tuple variant `Ok` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/lib.rs:110:13
+    |
+110 |             Ok((v, n)) if n == s.len() => Ok(v),
+    |             ^^ not found in this scope
+
+error[E0405]: cannot find trait `AsRef` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/lib.rs:126:31
+    |
+126 |     fn parse_float_partial<S: AsRef<[u8]>>(s: S) -> Result<(Self, usize)> {
+    |                               ^^^^^ not found in this scope
+
+error[E0405]: cannot find trait `AsRef` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/lib.rs:144:31
+    |
+144 | pub fn parse<T: FastFloat, S: AsRef<[u8]>>(s: S) -> Result<T> {
+    |                               ^^^^^ not found in this scope
+
+error[E0405]: cannot find trait `AsRef` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/lib.rs:160:39
+    |
+160 | pub fn parse_partial<T: FastFloat, S: AsRef<[u8]>>(s: S) -> Result<(T, usize)> {
+    |                                       ^^^^^ not found in this scope
+
+error[E0425]: cannot find function, tuple struct or tuple variant `Some` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:83:13
+   |
+83 |             Some(unsafe { self.first_unchecked() })
+   |             ^^^^ not found in this scope
+
+error[E0425]: cannot find function, tuple struct or tuple variant `Some` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:89:25
+   |
+89 |         self.first() == Some(c)
+   |                         ^^^^ not found in this scope
+
+error[E0425]: cannot find function, tuple struct or tuple variant `Some` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:106:17
+    |
+106 |                 Some(x - b'0')
+    |                 ^^^^ not found in this scope
+
+error[E0425]: cannot find function, tuple struct or tuple variant `Some` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:118:9
+    |
+118 |         Some(digit)
+    |         ^^^^ not found in this scope
+
+error[E0425]: cannot find function, tuple struct or tuple variant `Some` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:131:13
+    |
+131 |             Some(unsafe { self.read_u64_unchecked() })
+    |             ^^^^ not found in this scope
+
+error[E0425]: cannot find function, tuple struct or tuple variant `Some` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/common.rs:160:34
+    |
+160 |         self.as_ref().first() == Some(&c)
+    |                                  ^^^^ not found in this scope
+
+error[E0425]: cannot find function, tuple struct or tuple variant `Some` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/number.rs:67:13
+   |
+67 |             Some(value)
+   |             ^^^^ not found in this scope
+
+error[E0425]: cannot find function, tuple struct or tuple variant `Some` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/number.rs:210:16
+    |
+210 |         return Some((
+    |                ^^^^ not found in this scope
+
+error[E0425]: cannot find function, tuple struct or tuple variant `Some` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/number.rs:252:5
+    |
+252 |     Some((
+    |     ^^^^ not found in this scope
+
+error[E0425]: cannot find function, tuple struct or tuple variant `Some` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/number.rs:274:20
+    |
+274 |             return Some((F::NAN, 3));
+    |                    ^^^^ not found in this scope
+
+error[E0425]: cannot find function, tuple struct or tuple variant `Some` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/number.rs:276:20
+    |
+276 |             return Some((F::INFINITY, parse_inf_rest(s)));
+    |                    ^^^^ not found in this scope
+
+error[E0425]: cannot find function, tuple struct or tuple variant `Some` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/number.rs:281:28
+    |
+281 |                     return Some((F::NAN, 4));
+    |                            ^^^^ not found in this scope
+
+error[E0425]: cannot find function, tuple struct or tuple variant `Some` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/number.rs:283:28
+    |
+283 |                     return Some((F::INFINITY, 1 + parse_inf_rest(s)));
+    |                            ^^^^ not found in this scope
+
+error[E0425]: cannot find function, tuple struct or tuple variant `Some` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/number.rs:288:28
+    |
+288 |                     return Some((F::NEG_NAN, 4));
+    |                            ^^^^ not found in this scope
+
+error[E0425]: cannot find function, tuple struct or tuple variant `Some` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/number.rs:290:28
+    |
+290 |                     return Some((F::NEG_INFINITY, 1 + parse_inf_rest(s)));
+    |                            ^^^^ not found in this scope
+
+error[E0425]: cannot find function, tuple struct or tuple variant `Some` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/parse.rs:13:16
+   |
+13 |         return Some((value, rest));
+   |                ^^^^ not found in this scope
+
+error[E0425]: cannot find function, tuple struct or tuple variant `Some` in this scope
+  --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/parse.rs:29:5
+   |
+29 |     Some((F::from_u64_bits(word), rest))
+   |     ^^^^ not found in this scope
+
+error[E0425]: cannot find function, tuple struct or tuple variant `Ok` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/lib.rs:110:43
+    |
+110 |             Ok((v, n)) if n == s.len() => Ok(v),
+    |                                           ^^ not found in this scope
+
+error[E0425]: cannot find function, tuple struct or tuple variant `Err` in this scope
+   --> /home/meme/.cargo/registry/src/index.crates.io-6f17d22bba15001f/fast-float2-0.2.4/src/lib.rs:111:18
+    |
+111 |             _ => Err(Error),
+    |                  ^^^ not found in this scope
+
+Some errors have detailed explanations: E0405, E0412, E0425, E0463, E0531.
+error: could not compile `fast-float2` (lib) due to 101 previous errors

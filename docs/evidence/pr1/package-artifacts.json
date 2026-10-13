@@ -1,0 +1,22 @@
+{
+  "target/package/jzon-rs-derive-0.4.0.crate": {
+    "sha256": "da5d952fbf9db2885599735a88a317ace057f6c2ab6f7bcf2a02d3dbef93a653",
+    "bytes": 19772
+  },
+  "target/package/jzon-rs-0.4.0.crate": {
+    "sha256": "f46643edec4a4ec6a98108b063ab3bf30a2a1d550662e66ab445c8c42b522efd",
+    "bytes": 5154138
+  },
+  "target/package/jzon-rs-compat-0.4.0.crate": {
+    "sha256": "5dae4a0381680920abcacd36a5fbd61e360de71b3c7043d142c87c4b57b5abcc",
+    "bytes": 9962
+  },
+  "target/package/jzon-rs-serde-0.4.0.crate": {
+    "sha256": "062f881a5e69f1497bda94e434ba6ca71e09d7572970005c8d29e1fbfb2515d8",
+    "bytes": 5108
+  },
+  "vendor/serde_json/target/package/serde_json-1.0.151.crate": {
+    "sha256": "e365f8f21f97967e2a965976da3cf7e39c03e9fbbf4c39e4e57c0285cee62d72",
+    "bytes": 155964
+  }
+}

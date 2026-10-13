@@ -1,0 +1,14 @@
+   Compiling serde_core v1.0.229
+   Compiling hashbrown v0.14.5
+   Compiling equivalent v1.0.2
+   Compiling zmij v1.0.23
+   Compiling memchr v2.8.3
+   Compiling itoa v1.0.18
+warning: cargo:rustc-check-cfg requires -Zcheck-cfg=output flag
+   Compiling indexmap v2.2.3
+   Compiling serde_json v1.0.151 (/home/meme/Documentos/GitHub/jzon-rs/vendor/serde_json)
+   Compiling serde v1.0.229
+   Compiling jzon-rs-compat v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_compat)
+   Compiling facade-consumer v0.0.0 (/home/meme/Documentos/GitHub/jzon-rs/fixtures/facade)
+    Finished dev [unoptimized + debuginfo] target(s) in 6.24s
+     Running `fixtures/facade/target/debug/facade-consumer`

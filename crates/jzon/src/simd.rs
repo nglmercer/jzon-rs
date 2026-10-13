@@ -13,10 +13,8 @@ const fn swar_has_byte(x: u64, target: u8) -> u64 {
 pub fn find_quote_or_backslash(input: &[u8], start: usize) -> usize {
     let mut i = start;
 
-    while i + 8 <= input.len() {
-        let chunk = u64::from_le_bytes(
-            input[i..i + 8].try_into().expect("slice is 8 bytes"),
-        );
+    while input.len().saturating_sub(i) >= 8 {
+        let chunk = u64::from_le_bytes(input[i..i + 8].try_into().expect("slice is 8 bytes"));
         let m = swar_has_byte(chunk, b'"') | swar_has_byte(chunk, b'\\');
         if m != 0 {
             return i + (m.trailing_zeros() / 8) as usize;
@@ -36,8 +34,7 @@ pub fn find_quote_or_backslash(input: &[u8], start: usize) -> usize {
 #[cfg(feature = "simd")]
 #[inline(always)]
 const fn swar128_has_byte(x: u128, target: u8) -> u128 {
-    let rep = 0x0101_0101_0101_0101_0101_0101_0101_0101_u128
-        .wrapping_mul(target as u128);
+    let rep = 0x0101_0101_0101_0101_0101_0101_0101_0101_u128.wrapping_mul(target as u128);
     let v = x ^ rep;
     v.wrapping_sub(0x0101_0101_0101_0101_0101_0101_0101_0101_u128)
         & !v
@@ -48,7 +45,7 @@ const fn swar128_has_byte(x: u128, target: u8) -> u128 {
 pub fn find_quote_or_backslash_simd16(input: &[u8], start: usize) -> usize {
     let mut i = start;
 
-    while i + 16 <= input.len() {
+    while input.len().saturating_sub(i) >= 16 {
         let chunk = {
             let mut b = [0u8; 16];
             b.copy_from_slice(&input[i..i + 16]);
@@ -66,13 +63,13 @@ pub fn find_quote_or_backslash_simd16(input: &[u8], start: usize) -> usize {
 
 #[cfg(all(feature = "simd", feature = "unstable"))]
 pub fn find_quote_or_backslash_portable32(input: &[u8], start: usize) -> usize {
-    use std::simd::{cmp::SimdPartialEq, num::SimdUint, u8x32};
+    use core::simd::{cmp::SimdPartialEq, u8x32};
 
-    let quote  = u8x32::splat(b'"');
-    let slash  = u8x32::splat(b'\\');
-    let mut i  = start;
+    let quote = u8x32::splat(b'"');
+    let slash = u8x32::splat(b'\\');
+    let mut i = start;
 
-    while i + 32 <= input.len() {
+    while input.len().saturating_sub(i) >= 32 {
         let chunk = u8x32::from_slice(&input[i..i + 32]);
         let m = chunk.simd_eq(quote) | chunk.simd_eq(slash);
         let mask = m.to_bitmask();
@@ -88,13 +85,13 @@ pub fn find_quote_or_backslash_portable32(input: &[u8], start: usize) -> usize {
 /// 64-byte lanes — compiler emits AVX-512/SVE/etc. automatically; Rust code is fully safe.
 #[cfg(all(feature = "simd", feature = "unstable"))]
 pub fn find_quote_or_backslash_portable64(input: &[u8], start: usize) -> usize {
-    use std::simd::{cmp::SimdPartialEq, num::SimdUint, u8x64};
+    use core::simd::{cmp::SimdPartialEq, u8x64};
 
-    let quote  = u8x64::splat(b'"');
-    let slash  = u8x64::splat(b'\\');
-    let mut i  = start;
+    let quote = u8x64::splat(b'"');
+    let slash = u8x64::splat(b'\\');
+    let mut i = start;
 
-    while i + 64 <= input.len() {
+    while input.len().saturating_sub(i) >= 64 {
         let chunk = u8x64::from_slice(&input[i..i + 64]);
         let m = chunk.simd_eq(quote) | chunk.simd_eq(slash);
         let mask = m.to_bitmask();
@@ -158,7 +155,7 @@ const fn swar128_has_ctrl(x: u128) -> u128 {
 pub fn find_escape_simd16(input: &[u8], start: usize) -> usize {
     let mut i = start;
 
-    while i + 16 <= input.len() {
+    while input.len().saturating_sub(i) >= 16 {
         let chunk = {
             let mut b = [0u8; 16];
             b.copy_from_slice(&input[i..i + 16]);
@@ -193,18 +190,16 @@ pub fn find_escape_scalar(input: &[u8], start: usize) -> usize {
 /// Scan `input[start..]` for the first byte needing JSON string escaping using 32-byte portable SIMD.
 #[cfg(all(feature = "simd", feature = "unstable"))]
 fn find_escape_simd32(input: &[u8], start: usize) -> usize {
-    use std::simd::{cmp::SimdPartialEq, cmp::SimdPartialOrd, u8x32};
+    use core::simd::{cmp::SimdPartialEq, cmp::SimdPartialOrd, u8x32};
 
-    let quote     = u8x32::splat(b'"');
-    let slash     = u8x32::splat(b'\\');
+    let quote = u8x32::splat(b'"');
+    let slash = u8x32::splat(b'\\');
     let threshold = u8x32::splat(0x20u8);
 
     let mut i = start;
-    while i + 32 <= input.len() {
+    while input.len().saturating_sub(i) >= 32 {
         let chunk = u8x32::from_slice(&input[i..i + 32]);
-        let needs_esc = chunk.simd_eq(quote)
-            | chunk.simd_eq(slash)
-            | chunk.simd_lt(threshold);
+        let needs_esc = chunk.simd_eq(quote) | chunk.simd_eq(slash) | chunk.simd_lt(threshold);
         let mask = needs_esc.to_bitmask();
         if mask != 0 {
             return i + mask.trailing_zeros() as usize;
@@ -222,9 +217,9 @@ fn find_escape_simd32(input: &[u8], start: usize) -> usize {
 #[inline]
 pub fn has_control_char(slice: &[u8]) -> bool {
     const REPEAT: u64 = 0x2020_2020_2020_2020_u64;
-    const HIGH:   u64 = 0x8080_8080_8080_8080_u64;
+    const HIGH: u64 = 0x8080_8080_8080_8080_u64;
     let mut i = 0;
-    while i + 8 <= slice.len() {
+    while slice.len().saturating_sub(i) >= 8 {
         let chunk = u64::from_le_bytes(slice[i..i + 8].try_into().unwrap());
         // b < 0x20: (b - 0x20) wraps → high bit set; but also check ~b has high bit
         // (exclude bytes ≥ 0x80 which would wrap differently).
@@ -234,7 +229,9 @@ pub fn has_control_char(slice: &[u8]) -> bool {
         i += 8;
     }
     while i < slice.len() {
-        if slice[i] < 0x20 { return true; }
+        if slice[i] < 0x20 {
+            return true;
+        }
         i += 1;
     }
     false
@@ -282,7 +279,7 @@ pub fn scan_string_run_scalar(input: &[u8], start: usize) -> (usize, bool) {
     const REPEAT: u64 = 0x2020_2020_2020_2020_u64;
     const HIGH: u64 = 0x8080_8080_8080_8080_u64;
 
-    while i + 8 <= input.len() {
+    while input.len().saturating_sub(i) >= 8 {
         let chunk = u64::from_le_bytes(input[i..i + 8].try_into().unwrap());
         let m = swar_has_byte(chunk, b'"')
             | swar_has_byte(chunk, b'\\')
@@ -325,7 +322,7 @@ fn scan_string_run_simd16(input: &[u8], start: usize, mut ascii_only: bool) -> (
     let mut i = start;
     const HIGH: u128 = 0x8080_8080_8080_8080_8080_8080_8080_8080_u128;
 
-    while i + 16 <= input.len() {
+    while input.len().saturating_sub(i) >= 16 {
         let chunk = {
             let mut b = [0u8; 16];
             b.copy_from_slice(&input[i..i + 16]);
@@ -336,7 +333,10 @@ fn scan_string_run_simd16(input: &[u8], start: usize, mut ascii_only: bool) -> (
             | swar128_has_ctrl(chunk);
         if m != 0 {
             let stop = i + (m.trailing_zeros() / 8) as usize;
-            return (stop, ascii_only && input[start..stop].iter().all(|&b| b.is_ascii()));
+            return (
+                stop,
+                ascii_only && input[start..stop].iter().all(|&b| b.is_ascii()),
+            );
         }
         if (chunk & HIGH) != 0 {
             ascii_only = false;
@@ -350,7 +350,7 @@ fn scan_string_run_simd16(input: &[u8], start: usize, mut ascii_only: bool) -> (
 
 #[cfg(all(feature = "simd", feature = "unstable"))]
 fn scan_string_run_simd32(input: &[u8], start: usize) -> (usize, bool) {
-    use std::simd::{cmp::SimdPartialEq, cmp::SimdPartialOrd, u8x32};
+    use core::simd::{cmp::SimdPartialEq, cmp::SimdPartialOrd, u8x32};
 
     let quote = u8x32::splat(b'"');
     let slash = u8x32::splat(b'\\');
@@ -360,15 +360,16 @@ fn scan_string_run_simd32(input: &[u8], start: usize) -> (usize, bool) {
     let mut i = start;
     let mut ascii_only = true;
 
-    while i + 32 <= input.len() {
+    while input.len().saturating_sub(i) >= 32 {
         let chunk = u8x32::from_slice(&input[i..i + 32]);
-        let needs_esc = chunk.simd_eq(quote)
-            | chunk.simd_eq(slash)
-            | chunk.simd_lt(threshold);
+        let needs_esc = chunk.simd_eq(quote) | chunk.simd_eq(slash) | chunk.simd_lt(threshold);
         let mask = needs_esc.to_bitmask();
         if mask != 0 {
             let stop = i + mask.trailing_zeros() as usize;
-            return (stop, ascii_only && input[start..stop].iter().all(|&b| b.is_ascii()));
+            return (
+                stop,
+                ascii_only && input[start..stop].iter().all(|&b| b.is_ascii()),
+            );
         }
         if (chunk.simd_ge(high).to_bitmask()) != 0 {
             ascii_only = false;

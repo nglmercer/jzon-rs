@@ -6,3 +6,14 @@ bench_results/
 doc/
 findings/
 .claude/
+
+**/target/
+fuzz/artifacts/
+fuzz/coverage/
+!fixtures/**/Cargo.lock
+!fuzz/Cargo.lock
+fuzz/corpus/*/*
+!fuzz/corpus/*/review-*
+!fuzz/corpus/simd/boundaries
+
+**/__pycache__/

@@ -1,0 +1,7 @@
+   Compiling serde_json v1.0.151 (/home/meme/Documentos/GitHub/jzon-rs/vendor/serde_json)
+    Checking fast-float2 v0.2.4
+    Checking serde_core v1.0.229
+   Compiling jzon-rs-derive v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_derive)
+    Checking serde v1.0.229
+    Checking jzon-rs v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.60s

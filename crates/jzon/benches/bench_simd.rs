@@ -46,72 +46,118 @@ fn bench_kernels(c: &mut Criterion) {
             let input = builder(n);
 
             // --- scalar u64 SWAR (baseline) ---
-            g.bench_with_input(BenchmarkId::new(format!("swar_u64/{label}"), n), &input, |b, inp| {
-                b.iter(|| black_box(jzon::simd::find_quote_or_backslash(black_box(inp), 0)))
-            });
+            g.bench_with_input(
+                BenchmarkId::new(format!("swar_u64/{label}"), n),
+                &input,
+                |b, inp| {
+                    b.iter(|| black_box(jzon::simd::find_quote_or_backslash(black_box(inp), 0)))
+                },
+            );
 
             // --- u128 SWAR ---
             #[cfg(feature = "simd")]
-            g.bench_with_input(BenchmarkId::new(format!("swar_u128/{label}"), n), &input, |b, inp| {
-                b.iter(|| black_box(jzon::simd::find_quote_or_backslash_simd16(black_box(inp), 0)))
-            });
+            g.bench_with_input(
+                BenchmarkId::new(format!("swar_u128/{label}"), n),
+                &input,
+                |b, inp| {
+                    b.iter(|| {
+                        black_box(jzon::simd::find_quote_or_backslash_simd16(
+                            black_box(inp),
+                            0,
+                        ))
+                    })
+                },
+            );
 
             // --- portable_simd 32B ---
             #[cfg(all(feature = "simd", feature = "unstable"))]
-            g.bench_with_input(BenchmarkId::new(format!("portable_32/{label}"), n), &input, |b, inp| {
-                b.iter(|| black_box(jzon::simd::find_quote_or_backslash_portable32(black_box(inp), 0)))
-            });
+            g.bench_with_input(
+                BenchmarkId::new(format!("portable_32/{label}"), n),
+                &input,
+                |b, inp| {
+                    b.iter(|| {
+                        black_box(jzon::simd::find_quote_or_backslash_portable32(
+                            black_box(inp),
+                            0,
+                        ))
+                    })
+                },
+            );
 
             // --- portable_simd 64B ---
             #[cfg(all(feature = "simd", feature = "unstable"))]
-            g.bench_with_input(BenchmarkId::new(format!("portable_64/{label}"), n), &input, |b, inp| {
-                b.iter(|| black_box(jzon::simd::find_quote_or_backslash_portable64(black_box(inp), 0)))
-            });
+            g.bench_with_input(
+                BenchmarkId::new(format!("portable_64/{label}"), n),
+                &input,
+                |b, inp| {
+                    b.iter(|| {
+                        black_box(jzon::simd::find_quote_or_backslash_portable64(
+                            black_box(inp),
+                            0,
+                        ))
+                    })
+                },
+            );
 
             // --- std::arch NEON 16B ---
             #[cfg(all(feature = "simd-intrinsics", target_arch = "aarch64"))]
-            g.bench_with_input(BenchmarkId::new(format!("neon_16/{label}"), n), &input, |b, inp| {
-                b.iter(|| {
-                    black_box(jzon::simd_arch::neon::find_quote_or_backslash_16(
-                        black_box(inp),
-                        0,
-                    ))
-                })
-            });
+            g.bench_with_input(
+                BenchmarkId::new(format!("neon_16/{label}"), n),
+                &input,
+                |b, inp| {
+                    b.iter(|| {
+                        black_box(jzon::simd_arch::neon::find_quote_or_backslash_16(
+                            black_box(inp),
+                            0,
+                        ))
+                    })
+                },
+            );
 
             // --- std::arch NEON 64B ---
             #[cfg(all(feature = "simd-intrinsics", target_arch = "aarch64"))]
-            g.bench_with_input(BenchmarkId::new(format!("neon_64/{label}"), n), &input, |b, inp| {
-                b.iter(|| {
-                    black_box(jzon::simd_arch::neon::find_quote_or_backslash_64(
-                        black_box(inp),
-                        0,
-                    ))
-                })
-            });
+            g.bench_with_input(
+                BenchmarkId::new(format!("neon_64/{label}"), n),
+                &input,
+                |b, inp| {
+                    b.iter(|| {
+                        black_box(jzon::simd_arch::neon::find_quote_or_backslash_64(
+                            black_box(inp),
+                            0,
+                        ))
+                    })
+                },
+            );
 
             // --- std::arch SSE2 16B (x86_64 baseline) ---
             #[cfg(all(feature = "simd-intrinsics", target_arch = "x86_64"))]
-            g.bench_with_input(BenchmarkId::new(format!("sse2_16/{label}"), n), &input, |b, inp| {
-                b.iter(|| {
-                    black_box(jzon::simd_arch::x86::find_quote_or_backslash_16(
-                        black_box(inp),
-                        0,
-                    ))
-                })
-            });
+            g.bench_with_input(
+                BenchmarkId::new(format!("sse2_16/{label}"), n),
+                &input,
+                |b, inp| {
+                    b.iter(|| {
+                        black_box(jzon::simd_arch::x86::find_quote_or_backslash_16(
+                            black_box(inp),
+                            0,
+                        ))
+                    })
+                },
+            );
 
             // --- std::arch AVX2 32B (x86_64, runtime-detected) ---
             #[cfg(all(feature = "simd-intrinsics", target_arch = "x86_64"))]
-            g.bench_with_input(BenchmarkId::new(format!("avx2_32/{label}"), n), &input, |b, inp| {
-                b.iter(|| {
-                    black_box(jzon::simd_arch::x86::find_quote_or_backslash_32(
-                        black_box(inp),
-                        0,
-                    ))
-                })
-            });
-
+            g.bench_with_input(
+                BenchmarkId::new(format!("avx2_32/{label}"), n),
+                &input,
+                |b, inp| {
+                    b.iter(|| {
+                        black_box(jzon::simd_arch::x86::find_quote_or_backslash_32(
+                            black_box(inp),
+                            0,
+                        ))
+                    })
+                },
+            );
         }
         g.finish();
     }
@@ -123,6 +169,9 @@ fn bench_kernels(c: &mut Criterion) {
         let mut g = c.benchmark_group(format!("find_escape/{n}B"));
         g.throughput(Throughput::Bytes(n as u64));
         let input = no_match(n);
+        g.bench_with_input(BenchmarkId::new("scalar/nomatch", n), &input, |b, inp| {
+            b.iter(|| black_box(jzon::simd::find_escape_scalar(black_box(inp), 0)))
+        });
 
         #[cfg(all(feature = "simd-intrinsics", target_arch = "aarch64"))]
         {

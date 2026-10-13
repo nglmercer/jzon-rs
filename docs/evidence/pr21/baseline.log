@@ -1,0 +1,67 @@
+   Compiling jzon-rs v0.3.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.23s
+     Running tests/pr21_native_map_regressions.rs (target/debug/deps/pr21_native_map_regressions-c6ed029d887f6828)
+
+running 6 tests
+test boolean_key_lexemes ... FAILED
+test custom_unit_visitor_consumes_quoted_key ... FAILED
+test invalid_key_never_invokes_seed ... FAILED
+test byte_key_callbacks_and_model ... FAILED
+test enum_key_grammar ... FAILED
+test missing_unit_keys ... FAILED
+
+failures:
+
+---- boolean_key_lexemes stdout ----
+
+thread 'boolean_key_lexemes' (290366) panicked at crates/jzon/tests/pr21_native_map_regressions.rs:12:5:
+assertion `left == right` failed: slice [123, 34, 92, 117, 48, 48, 55, 52, 114, 117, 101, 34, 58, 49, 125]: native=Ok({true: 1}), reference=Err(Error("invalid type: string \"u0074rue\", expected a boolean", line: 1, column: 12))
+  left: true
+ right: false
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- custom_unit_visitor_consumes_quoted_key stdout ----
+
+thread 'custom_unit_visitor_consumes_quoted_key' (290368) panicked at crates/jzon/tests/pr21_native_map_regressions.rs:12:5:
+assertion `left == right` failed: slice [123, 34, 111, 107, 34, 58, 49, 44, 34, 110, 101, 120, 116, 34, 58, 50, 125]: native=Err(Scanner(UnexpectedToken)), reference=Ok({UnitProbe: 2})
+  left: false
+ right: true
+
+---- invalid_key_never_invokes_seed stdout ----
+
+thread 'invalid_key_never_invokes_seed' (290370) panicked at crates/jzon/tests/pr21_native_map_regressions.rs:86:9:
+assertion failed: jzon::serde_impl::from_str::<BTreeMap<UnitProbe, u8>>(input).is_err()
+
+---- byte_key_callbacks_and_model stdout ----
+
+thread 'byte_key_callbacks_and_model' (290367) panicked at crates/jzon/tests/pr21_native_map_regressions.rs:12:5:
+assertion `left == right` failed: slice [123, 34, 97, 98, 99, 34, 58, 49, 125]: native=Err(Custom("invalid type: string \"abc\", expected a byte key")), reference=Ok({ByteKey([97, 98, 99], true): 1})
+  left: false
+ right: true
+
+---- enum_key_grammar stdout ----
+
+thread 'enum_key_grammar' (290369) panicked at crates/jzon/tests/pr21_native_map_regressions.rs:12:5:
+assertion `left == right` failed: slice [123, 123, 34, 78, 101, 119, 34, 58, 49, 125, 58, 50, 125]: native=Ok({New(1): 2}), reference=Err(Error("key must be a string", line: 1, column: 2))
+  left: true
+ right: false
+
+---- missing_unit_keys stdout ----
+
+thread 'missing_unit_keys' (290371) panicked at crates/jzon/tests/pr21_native_map_regressions.rs:12:5:
+assertion `left == right` failed: slice [123, 58, 49, 125]: native=Ok({(): 1}), reference=Err(Error("key must be a string", line: 1, column: 2))
+  left: true
+ right: false
+
+
+failures:
+    boolean_key_lexemes
+    byte_key_callbacks_and_model
+    custom_unit_visitor_consumes_quoted_key
+    enum_key_grammar
+    invalid_key_never_invokes_seed
+    missing_unit_keys
+
+test result: FAILED. 0 passed; 6 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p jzon-rs --test pr21_native_map_regressions`

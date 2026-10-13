@@ -1,0 +1,20 @@
+    Updating crates.io index
+ Downloading crates ...
+  Downloaded indexmap v2.2.3
+indexmap #hashmap #no_std
+A hash table with consistent order and fast iteration.
+version: 2.2.3 (latest 2.14.2)
+license: Apache-2.0 OR MIT
+rust-version: 1.63
+documentation: https://docs.rs/indexmap/
+repository: https://github.com/indexmap-rs/indexmap
+crates.io: https://crates.io/crates/indexmap/2.2.3
+features:
+ +default     = [std]
+  std         = []
+  arbitrary   = [dep:arbitrary]
+  quickcheck  = [dep:quickcheck]
+  rayon       = [dep:rayon]
+  rustc-rayon = [dep:rustc-rayon]
+  serde       = [dep:serde]
+  test_debug  = []

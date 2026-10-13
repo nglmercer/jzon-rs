@@ -1,0 +1,269 @@
+    Checking serde_json v1.0.151 (/home/meme/Documentos/GitHub/jzon-rs/vendor/serde_json)
+   Compiling jzon-rs-derive v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_derive)
+    Checking tinytemplate v1.2.1
+    Checking jzon-rs-compat v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_compat)
+    Checking simd-json v0.13.11
+    Checking criterion v0.5.1
+    Checking jzon-rs v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon)
+error: method `into_iter` can be confused for the standard trait method `std::iter::IntoIterator::into_iter`
+   --> crates/jzon/src/serde_impl/reader.rs:134:5
+    |
+134 | /     pub fn into_iter<T: DeserializeOwned>(self) -> ReaderStream<R, T> {
+135 | |         ReaderStream {
+136 | |             de: self,
+137 | |             failed: false,
+...   |
+140 | |     }
+    | |_____^
+    |
+    = help: consider implementing the trait `std::iter::IntoIterator` or choosing a less ambiguous method name
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.97.0/index.html#should_implement_trait
+    = note: `-D clippy::should-implement-trait` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::should_implement_trait)]`
+
+error: this expression borrows a value the compiler would automatically borrow
+    --> crates/jzon/src/serde_impl.rs:1460:39
+     |
+1460 |                 b'-' | b'0'..=b'9' => (&mut *self).deserialize_number(visitor),
+     |                                       ^^^^^^^^^^^^ help: change this to: `(*self)`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.97.0/index.html#needless_borrow
+     = note: `-D clippy::needless-borrow` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::needless_borrow)]`
+
+error: deref which would be done by auto-deref
+    --> crates/jzon/src/serde_impl.rs:1460:39
+     |
+1460 |                 b'-' | b'0'..=b'9' => (&mut *self).deserialize_number(visitor),
+     |                                       ^^^^^^^^^^^^ help: try: `self`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.97.0/index.html#explicit_auto_deref
+     = note: `-D clippy::explicit-auto-deref` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::explicit_auto_deref)]`
+
+error: try not to call a closure in the expression where it is declared
+    --> crates/jzon/src/serde_impl.rs:1501:22
+     |
+1501 |           let result = (|| {
+     |  ______________________^
+1502 | |             #[cfg(feature = "float_roundtrip")]
+1503 | |             {
+1504 | |                 let bytes = self.scanner.read_number_bytes()?;
+...    |
+1524 | |             (&mut *self).deserialize_typed_number(visitor)
+1525 | |         })();
+     | |____________^ help: try doing something like: `(&mut *self).deserialize_typed_number(visitor)`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.97.0/index.html#redundant_closure_call
+     = note: `-D clippy::redundant-closure-call` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::redundant_closure_call)]`
+
+error: this expression borrows a value the compiler would automatically borrow
+    --> crates/jzon/src/serde_impl.rs:1524:13
+     |
+1524 |             (&mut *self).deserialize_typed_number(visitor)
+     |             ^^^^^^^^^^^^ help: change this to: `*self`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.97.0/index.html#needless_borrow
+
+error: deref which would be done by auto-deref
+    --> crates/jzon/src/serde_impl.rs:1524:13
+     |
+1524 |             (&mut *self).deserialize_typed_number(visitor)
+     |             ^^^^^^^^^^^^ help: try: `self`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.97.0/index.html#explicit_auto_deref
+
+error: try not to call a closure in the expression where it is declared
+    --> crates/jzon/src/serde_impl.rs:1529:22
+     |
+1529 |         let result = (|| (&mut *self).deserialize_typed_number(visitor))();
+     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try doing something like: `(&mut *self).deserialize_typed_number(visitor)`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.97.0/index.html#redundant_closure_call
+
+error: this expression borrows a value the compiler would automatically borrow
+    --> crates/jzon/src/serde_impl.rs:1529:26
+     |
+1529 |         let result = (|| (&mut *self).deserialize_typed_number(visitor))();
+     |                          ^^^^^^^^^^^^ help: change this to: `(*self)`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.97.0/index.html#needless_borrow
+
+error: deref which would be done by auto-deref
+    --> crates/jzon/src/serde_impl.rs:1529:26
+     |
+1529 |         let result = (|| (&mut *self).deserialize_typed_number(visitor))();
+     |                          ^^^^^^^^^^^^ help: try: `self`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.97.0/index.html#explicit_auto_deref
+
+error: try not to call a closure in the expression where it is declared
+    --> crates/jzon/src/serde_impl.rs:1534:22
+     |
+1534 |           let result = (|| {
+     |  ______________________^
+1535 | |             // The standard char visitor validates exactly one scalar. Using the
+1536 | |             // string entry point also preserves upstream custom-visitor callbacks.
+1537 | |             (&mut *self).deserialize_str(visitor)
+1538 | |         })();
+     | |____________^ help: try doing something like: `(&mut *self).deserialize_str(visitor)`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.97.0/index.html#redundant_closure_call
+
+error: try not to call a closure in the expression where it is declared
+    --> crates/jzon/src/serde_impl.rs:1543:22
+     |
+1543 |           let result = (|| {
+     |  ______________________^
+1544 | |             self.with_str(false, |s| match s {
+1545 | |                 DecodedStr::Borrowed(b) => visitor.visit_borrowed_str(b),
+1546 | |                 DecodedStr::Transient(s) => visitor.visit_str(s),
+1547 | |             })
+1548 | |         })();
+     | |____________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.97.0/index.html#redundant_closure_call
+help: try doing something like
+     |
+1543 ~         let result = self.with_str(false, |s| match s {
+1544 +                 DecodedStr::Borrowed(b) => visitor.visit_borrowed_str(b),
+1545 +                 DecodedStr::Transient(s) => visitor.visit_str(s),
+1546 ~             });
+     |
+
+error: try not to call a closure in the expression where it is declared
+    --> crates/jzon/src/serde_impl.rs:1553:22
+     |
+1553 |         let result = (|| (&mut *self).deserialize_str(visitor))();
+     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try doing something like: `(&mut *self).deserialize_str(visitor)`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.97.0/index.html#redundant_closure_call
+
+error: try not to call a closure in the expression where it is declared
+    --> crates/jzon/src/serde_impl.rs:1572:22
+     |
+1572 |         let result = (|| (&mut *self).deserialize_bytes(visitor))();
+     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try doing something like: `(&mut *self).deserialize_bytes(visitor)`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.97.0/index.html#redundant_closure_call
+
+error: try not to call a closure in the expression where it is declared
+    --> crates/jzon/src/serde_impl.rs:1601:22
+     |
+1601 |         let result = (|| (&mut *self).deserialize_unit(visitor))();
+     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try doing something like: `(&mut *self).deserialize_unit(visitor)`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.97.0/index.html#redundant_closure_call
+
+error: this expression borrows a value the compiler would automatically borrow
+    --> crates/jzon/src/serde_impl.rs:1614:24
+     |
+1614 |                 return (&mut *self).deserialize_raw_token(visitor);
+     |                        ^^^^^^^^^^^^ help: change this to: `(*self)`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.97.0/index.html#needless_borrow
+
+error: deref which would be done by auto-deref
+    --> crates/jzon/src/serde_impl.rs:1614:24
+     |
+1614 |                 return (&mut *self).deserialize_raw_token(visitor);
+     |                        ^^^^^^^^^^^^ help: try: `self`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.97.0/index.html#explicit_auto_deref
+
+error: try not to call a closure in the expression where it is declared
+    --> crates/jzon/src/serde_impl.rs:1622:22
+     |
+1622 |           let result = (|| {
+     |  ______________________^
+1623 | |             self.with_depth(|parser| {
+1624 | |                 parser.scanner.skip_whitespace();
+1625 | |                 parser.scanner.expect_byte(b'[')?;
+...    |
+1637 | |             })
+1638 | |         })();
+     | |____________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.97.0/index.html#redundant_closure_call
+help: try doing something like
+     |
+1622 ~         let result = self.with_depth(|parser| {
+1623 +                 parser.scanner.skip_whitespace();
+1624 +                 parser.scanner.expect_byte(b'[')?;
+1625 +                 let mut access = JsonSeqAccess {
+1626 +                     de: parser,
+1627 +                     first: true,
+1628 +                     done: false,
+1629 +                 };
+1630 +                 let value = visitor.visit_seq(&mut access)?;
+1631 +                 if !access.done {
+1632 +                     access.de.scanner.skip_whitespace();
+1633 +                     access.de.scanner.expect_byte(b']')?;
+1634 +                 }
+1635 +                 Ok(value)
+1636 ~             });
+     |
+
+error: try not to call a closure in the expression where it is declared
+    --> crates/jzon/src/serde_impl.rs:1647:22
+     |
+1647 |         let result = (|| (&mut *self).deserialize_seq(visitor))();
+     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try doing something like: `(&mut *self).deserialize_seq(visitor)`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.97.0/index.html#redundant_closure_call
+
+error: try not to call a closure in the expression where it is declared
+    --> crates/jzon/src/serde_impl.rs:1657:22
+     |
+1657 |         let result = (|| (&mut *self).deserialize_seq(visitor))();
+     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try doing something like: `(&mut *self).deserialize_seq(visitor)`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.97.0/index.html#redundant_closure_call
+
+error: try not to call a closure in the expression where it is declared
+    --> crates/jzon/src/serde_impl.rs:1662:22
+     |
+1662 |           let result = (|| {
+     |  ______________________^
+1663 | |             self.with_depth(|parser| {
+1664 | |                 parser.scanner.skip_whitespace();
+1665 | |                 parser.scanner.expect_byte(b'{')?;
+...    |
+1681 | |             })
+1682 | |         })();
+     | |____________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.97.0/index.html#redundant_closure_call
+help: try doing something like
+     |
+1662 ~         let result = self.with_depth(|parser| {
+1663 +                 parser.scanner.skip_whitespace();
+1664 +                 parser.scanner.expect_byte(b'{')?;
+1665 +                 let mut access = JsonMapAccess {
+1666 +                     de: parser,
+1667 +                     first: true,
+1668 +                     pending_value: false,
+1669 +                     done: false,
+1670 +                 };
+1671 +                 let value = visitor.visit_map(&mut access)?;
+1672 +                 if access.pending_value {
+1673 +                     return Err(Error::Custom("map value not consumed".into()));
+1674 +                 }
+1675 +                 if !access.done {
+1676 +                     access.de.scanner.skip_whitespace();
+1677 +                     access.de.scanner.expect_byte(b'}')?;
+1678 +                 }
+1679 +                 Ok(value)
+1680 ~             });
+     |
+
+error: try not to call a closure in the expression where it is declared
+    --> crates/jzon/src/serde_impl.rs:1729:22
+     |
+1729 |         let result = (|| (&mut *self).deserialize_str(visitor))();
+     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try doing something like: `(&mut *self).deserialize_str(visitor)`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.97.0/index.html#redundant_closure_call
+
+error: could not compile `jzon-rs` (lib) due to 21 previous errors

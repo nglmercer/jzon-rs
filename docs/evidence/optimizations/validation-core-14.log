@@ -1,0 +1,373 @@
+   Compiling jzon-rs v0.3.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon)
+   Compiling jzon-rs-serde v0.3.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon_serde)
+    Finished `bench` profile [optimized] target(s) in 29.63s
+     Running benches/bench_cmp.rs (target/release/deps/bench_cmp-590b984010563014)
+Gnuplot not found, using plotters backend
+Testing deserialize/twitter/serde_json
+Success
+Testing deserialize/twitter/sonic_rs
+Success
+Testing deserialize/twitter/simd_json/copy_then_parse
+Success
+Testing deserialize/twitter/jzon
+Success
+Testing deserialize/twitter/jzon_serde
+Success
+
+Testing deserialize/twitter_typed_jzon/jzon/A
+Success
+
+output-size serde_json: 51013 bytes
+Testing serialize/twitter/serde_json
+Success
+output-size sonic_rs: 51013 bytes
+Testing serialize/twitter/sonic_rs
+Success
+output-size jzon: 51013 bytes
+Testing serialize/twitter/jzon
+Success
+output-size jzon_serde: 51013 bytes
+Testing serialize/twitter/jzon_serde
+Success
+
+Testing deserialize/canada/serde_json
+Success
+Testing deserialize/canada/sonic_rs
+Success
+Testing deserialize/canada/simd_json/copy_then_parse
+Success
+Testing deserialize/canada/jzon
+Success
+Testing deserialize/canada/jzon_serde
+Success
+
+output-size serde_json: 2090326 bytes
+Testing serialize/canada/serde_json
+Success
+output-size sonic_rs: 2090326 bytes
+Testing serialize/canada/sonic_rs
+Success
+output-size jzon: 2090326 bytes
+Testing serialize/canada/jzon
+Success
+output-size jzon_serde: 2090326 bytes
+Testing serialize/canada/jzon_serde
+Success
+
+Testing deserialize/citm_catalog/serde_json
+Success
+Testing deserialize/citm_catalog/sonic_rs
+Success
+Testing deserialize/citm_catalog/simd_json/copy_then_parse
+Success
+Testing deserialize/citm_catalog/jzon_serde
+Success
+Testing deserialize/citm_catalog/jzon/A
+Success
+
+Testing deserialize/micro/serde_json/Point
+Success
+Testing deserialize/micro/sonic_rs/Point
+Success
+Testing deserialize/micro/simd_json/Point
+Success
+Testing deserialize/micro/jzon/Point
+Success
+Testing deserialize/micro/jzon_serde/Point
+Success
+Testing deserialize/micro/serde_json/Record
+Success
+Testing deserialize/micro/sonic_rs/Record
+Success
+Testing deserialize/micro/simd_json/Record
+Success
+Testing deserialize/micro/jzon/Record
+Success
+Testing deserialize/micro/jzon_serde/Record
+Success
+
+output-size serde_json/Point: 26 bytes
+Testing serialize/micro/serde_json/Point
+Success
+output-size sonic_rs/Point: 26 bytes
+Testing serialize/micro/sonic_rs/Point
+Success
+output-size jzon/Point: 26 bytes
+Testing serialize/micro/jzon/Point
+Success
+output-size jzon_serde/Point: 26 bytes
+Testing serialize/micro/jzon_serde/Point
+Success
+output-size serde_json/Record: 52 bytes
+Testing serialize/micro/serde_json/Record
+Success
+output-size sonic_rs/Record: 52 bytes
+Testing serialize/micro/sonic_rs/Record
+Success
+output-size jzon/Record: 52 bytes
+Testing serialize/micro/jzon/Record
+Success
+output-size jzon_serde/Record: 52 bytes
+Testing serialize/micro/jzon_serde/Record
+Success
+output-size jzon/Point/pre-alloc: 26 bytes
+Testing serialize/micro/jzon/Point/pre-alloc
+Success
+output-size serde_json/Point/pre-alloc: 26 bytes
+Testing serialize/micro/serde_json/Point/pre-alloc
+Success
+output-size jzon/Record/pre-alloc: 52 bytes
+Testing serialize/micro/jzon/Record/pre-alloc
+Success
+output-size serde_json/Record/pre-alloc: 52 bytes
+Testing serialize/micro/serde_json/Record/pre-alloc
+Success
+
+Testing deserialize/tiny_array/serde_json
+Success
+Testing deserialize/tiny_array/sonic_rs
+Success
+Testing deserialize/tiny_array/simd_json/copy_then_parse
+Success
+Testing deserialize/tiny_array/jzon
+Success
+Testing deserialize/tiny_array/jzon_serde
+Success
+
+Testing deserialize/string_heavy/serde_json
+Success
+Testing deserialize/string_heavy/sonic_rs
+Success
+Testing deserialize/string_heavy/simd_json/copy_then_parse
+Success
+Testing deserialize/string_heavy/jzon
+Success
+Testing deserialize/string_heavy/jzon_serde
+Success
+
+output-size serde_json: 60201 bytes
+Testing serialize/string_heavy/serde_json
+Success
+output-size sonic_rs: 60201 bytes
+Testing serialize/string_heavy/sonic_rs
+Success
+output-size jzon: 60201 bytes
+Testing serialize/string_heavy/jzon
+Success
+output-size jzon_serde: 60201 bytes
+Testing serialize/string_heavy/jzon_serde
+Success
+
+Testing deserialize/deep_nested/serde_json
+Success
+Testing deserialize/deep_nested/sonic_rs
+Success
+Testing deserialize/deep_nested/simd_json/copy_then_parse
+Success
+Testing deserialize/deep_nested/jzon
+Success
+
+Testing deserialize/wide_struct/serde_json
+Success
+Testing deserialize/wide_struct/sonic_rs
+Success
+Testing deserialize/wide_struct/simd_json/copy_then_parse
+Success
+Testing deserialize/wide_struct/jzon
+Success
+
+output-size serde_json: 197 bytes
+Testing serialize/wide_struct/serde_json
+Success
+output-size sonic_rs: 197 bytes
+Testing serialize/wide_struct/sonic_rs
+Success
+output-size jzon: 197 bytes
+Testing serialize/wide_struct/jzon
+Success
+
+Testing deserialize/mixed_array/serde_json
+Success
+Testing deserialize/mixed_array/sonic_rs
+Success
+Testing deserialize/mixed_array/simd_json/copy_then_parse
+Success
+Testing deserialize/mixed_array/jzon
+Success
+Testing deserialize/mixed_array/jzon_serde
+Success
+
+output-size serde_json: 13750 bytes
+Testing serialize/mixed_array/serde_json
+Success
+output-size sonic_rs: 13750 bytes
+Testing serialize/mixed_array/sonic_rs
+Success
+output-size jzon: 13748 bytes
+Testing serialize/mixed_array/jzon
+Success
+output-size jzon_serde: 13750 bytes
+Testing serialize/mixed_array/jzon_serde
+Success
+
+output-size jzon/reuse: 51013 bytes
+Testing serialize/pre_alloc/jzon/reuse
+Success
+output-size serde_json/reuse: 51013 bytes
+Testing serialize/pre_alloc/serde_json/reuse
+Success
+output-size jzon_serde/reuse: 51013 bytes
+Testing serialize/pre_alloc/jzon_serde/reuse
+Success
+output-size sonic_rs/fresh_to_string: 51013 bytes
+Testing serialize/pre_alloc/sonic_rs/fresh_to_string
+Success
+
+Testing deserialize/zero_copy/jzon/A/borrowed
+Success
+Testing deserialize/zero_copy/jzon/A/owned
+Success
+Testing deserialize/zero_copy/jzon/B/borrowed
+Success
+Testing deserialize/zero_copy/jzon/B/owned
+Success
+Testing deserialize/zero_copy/serde_json/borrowed
+Success
+Testing deserialize/zero_copy/serde_json/owned
+Success
+Testing deserialize/zero_copy/sonic_rs
+Success
+
+output-size jzon/A/Vec_alloc: 27 bytes
+Testing serialize/fixed_buf/jzon/A/Vec_alloc
+Success
+output-size jzon/A/FixedBuf<128>: 27 bytes
+Testing serialize/fixed_buf/jzon/A/FixedBuf<128>
+Success
+output-size jzon/A/reuse: 27 bytes
+Testing serialize/fixed_buf/jzon/A/reuse
+Success
+output-size serde_json/alloc: 27 bytes
+Testing serialize/fixed_buf/serde_json/alloc
+Success
+output-size serde_json/reuse: 27 bytes
+Testing serialize/fixed_buf/serde_json/reuse
+Success
+output-size sonic_rs: 27 bytes
+Testing serialize/fixed_buf/sonic_rs
+Success
+
+Testing deserialize/hashmap/jzon/A
+Success
+Testing deserialize/hashmap/jzon/B
+Success
+Testing deserialize/hashmap/serde_json
+Success
+Testing deserialize/hashmap/sonic_rs
+Success
+
+output-size jzon/A: 7601 bytes
+Testing serialize/hashmap/jzon/A
+Success
+output-size jzon/B: 7601 bytes
+Testing serialize/hashmap/jzon/B
+Success
+output-size serde_json: 7601 bytes
+Testing serialize/hashmap/serde_json
+Success
+output-size sonic_rs: 7601 bytes
+Testing serialize/hashmap/sonic_rs
+Success
+
+Testing deserialize/enum_variants/jzon/B
+Success
+Testing deserialize/enum_variants/serde_json
+Success
+Testing deserialize/enum_variants/sonic_rs
+Success
+
+output-size jzon/A: 48255 bytes
+Testing serialize/enum_variants/jzon/A
+Success
+output-size jzon/B: 48257 bytes
+Testing serialize/enum_variants/jzon/B
+Success
+output-size serde_json: 48257 bytes
+Testing serialize/enum_variants/serde_json
+Success
+output-size sonic_rs: 48257 bytes
+Testing serialize/enum_variants/sonic_rs
+Success
+
+Testing deserialize/serde_adapter_numeric_heavy/jzon/A
+Success
+Testing deserialize/serde_adapter_numeric_heavy/jzon/B
+Success
+Testing deserialize/serde_adapter_numeric_heavy/serde_json
+Success
+Testing deserialize/serde_adapter_numeric_heavy/sonic_rs
+Success
+
+output-size jzon/A/to_json_bytes: 43464 bytes
+Testing serialize/serde_adapter_numeric_heavy/jzon/A/to_json_bytes
+Success
+output-size jzon/B/to_string: 43466 bytes
+Testing serialize/serde_adapter_numeric_heavy/jzon/B/to_string
+Success
+output-size jzon/B/streaming_to_writer: 43466 bytes
+Testing serialize/serde_adapter_numeric_heavy/jzon/B/streaming_to_writer
+Success
+output-size serde_json/to_string: 43466 bytes
+Testing serialize/serde_adapter_numeric_heavy/serde_json/to_string
+Success
+output-size serde_json/to_writer: 43466 bytes
+Testing serialize/serde_adapter_numeric_heavy/serde_json/to_writer
+Success
+output-size sonic_rs/to_string: 43466 bytes
+Testing serialize/serde_adapter_numeric_heavy/sonic_rs/to_string
+Success
+
+Testing deserialize/generated_50k/serde_json
+Success
+Testing deserialize/generated_50k/sonic_rs
+Success
+Testing deserialize/generated_50k/jzon/A
+Success
+Testing deserialize/generated_50k/jzon/B
+Success
+
+output-size serde_json: 9412636 bytes
+Testing serialize/generated_50k/serde_json
+Success
+output-size sonic_rs: 9412636 bytes
+Testing serialize/generated_50k/sonic_rs
+Success
+output-size jzon/A: 9412636 bytes
+Testing serialize/generated_50k/jzon/A
+Success
+output-size jzon/B: 9412636 bytes
+Testing serialize/generated_50k/jzon/B
+Success
+
+Testing deserialize/mixed_2mb/serde_json
+Success
+Testing deserialize/mixed_2mb/sonic_rs
+Success
+Testing deserialize/mixed_2mb/jzon/B
+Success
+Testing deserialize/mixed_2mb/jzon/A
+Success
+
+output-size serde_json: 2106432 bytes
+Testing serialize/mixed_2mb/serde_json
+Success
+output-size sonic_rs: 2106432 bytes
+Testing serialize/mixed_2mb/sonic_rs
+Success
+output-size jzon/B: 2106432 bytes
+Testing serialize/mixed_2mb/jzon/B
+Success
+output-size jzon/A: 1944307 bytes
+Testing serialize/mixed_2mb/jzon/A
+Success
+

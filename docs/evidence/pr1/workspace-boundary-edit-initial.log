@@ -1,0 +1,11 @@
+   Compiling jzon-rs v0.4.0 (/home/meme/Documentos/GitHub/jzon-rs/crates/jzon)
+error[E0609]: no field `first` on type `ReaderEnum<'a, R>`
+   --> crates/jzon/src/serde_impl/reader.rs:705:14
+    |
+705 |         self.first = false;
+    |              ^^^^^ unknown field
+    |
+    = note: available field is: `de`
+
+For more information about this error, try `rustc --explain E0609`.
+error: could not compile `jzon-rs` (lib) due to 1 previous error

@@ -2,7 +2,7 @@
 
 [![crates.io](https://img.shields.io/crates/v/jzon-rs.svg)](https://crates.io/crates/jzon-rs)
 [![docs.rs](https://docs.rs/jzon-rs/badge.svg)](https://docs.rs/jzon-rs)
-[![CI](https://github.com/Rajaniraiyn/jzon-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/Rajaniraiyn/jzon-rs/actions)
+[![CI](https://github.com/nglmercer/jzon-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/nglmercer/jzon-rs/actions)
 [![MSRV](https://img.shields.io/badge/rustc-1.71%2B-blue.svg)](https://blog.rust-lang.org/2022/11/03/Rust-1.71.0.html)
 
 Zero-copy JSON for Rust with compile-time generated parsers.
@@ -11,7 +11,7 @@ Zero-copy JSON for Rust with compile-time generated parsers.
 
 ```toml
 [dependencies]
-jzon-rs = "0.3"
+jzon-rs = "0.4"
 ```
 
 ```rust
@@ -53,7 +53,7 @@ fn main() {
 
 ```toml
 [dependencies]
-jzon-rs = { version = "0.3", features = ["serde"] }
+jzon-rs = { version = "0.4", features = ["serde"] }
 serde = { version = "1", features = ["derive"] }
 ```
 
@@ -71,7 +71,7 @@ let out = jzon::to_string(&user).unwrap();
 
 ```toml
 [dependencies]
-jzon-rs = { version = "0.3", features = ["compat"] }
+jzon-rs = { version = "0.4", features = ["compat"] }
 ```
 
 ```rust
@@ -91,10 +91,10 @@ let v: serde_json::Value = serde_json::from_str(src).unwrap();
 ## Performance
 
 <!-- bench:speedups-start -->
-Up to **3.9× serde_json**, **2.4× sonic-rs**, **3.7× simd-json** on real-world workloads.
+Performance claims from the earlier benchmark pipeline are withdrawn. See [current methodology and measurements](../../BENCHMARKS.md).
 <!-- bench:speedups-end -->
 <!-- bench:top-ser-start -->
-Top: **57.70 GiB/s** twitter serialize
+Current mode-specific results are reported with emitted bytes and time per operation
 <!-- bench:top-ser-end -->.
 Full matrix: [`BENCHMARKS.md`](../../BENCHMARKS.md).
 
@@ -112,3 +112,58 @@ MIT
 ---
 
 Made with ❤️ by [Rajaniraiyn](https://github.com/rajaniraiyn)
+
+## Migration scope and readiness
+
+Read [replacement readiness](../../docs/replacement-readiness.md) before migration.
+Mode C preserves upstream types, callbacks, error construction and streaming by
+re-exporting upstream once; it retains the serde_json dependency and claims no
+native acceleration. Mode B is an independent native parser/serializer with its
+own errors; its reader buffers input, while `to_writer` streams output directly.
+`to_writer_buffered` retains explicit complete-output buffering. Mode A implements
+an explicit attribute subset and accepts some trailing commas without `strict`.
+Unescaped strings can borrow; escaped strings allocate. Byte strings, ignored
+values and RawValue intentionally have different Unicode validation rules.
+
+DepthGuard now owns shared counter state and has no lifetime parameter. It is
+safe to move/drop the scanner before the guard. Unwind restores the budget;
+leaking a guard conservatively reduces it. The first composite parse lazily allocates counter state; scalar parsing
+and unescaped string borrowing need no counter allocation. Native Serde uses a
+private scoped borrow of the entire parser for depth restoration, avoiding
+atomic counter operations; public Scanner guards retain independent ownership. Enabling `unbounded_depth` does not disable the default limit:
+call the deserializer/scanner method explicitly and manage stack safety yourself.
+Statistics fields are now `decoded_strings` and `number_bytes_scanned` to avoid
+implying total allocation or total scan counts. These API/feature changes warrant
+a minor version bump for this pre-1.0 project. No release has been published.
+
+Native reusable output: `Serializer::with_capacity(n)`, `serialize(value)`,
+`clear()` (retain capacity), and `into_inner()`. Calls append; errors/panics
+retain partial bytes. Escaped-string scratch reuses up to 64 KiB and releases
+larger buffers on return or unwind. See [optimization progress](../../docs/optimization-progress.md).
+
+## Planned 0.4.0 migration and safe facade source
+
+Native `from_reader` parses incrementally; `from_reader_buffered` retains the
+former read-to-end contract. Reader streams own their decoded values, slice
+streams can borrow, and `into_parts()` preserves reader lookahead. Native Serde
+errors expose category/line/column; match underlying variants via `cause()`.
+Disable defaults and enable `alloc,serde,derive` for no_std on targets with
+pointer-width atomics. Std gates I/O and HashMap APIs. Native-only mirror flags do
+not activate upstream JSON.
+
+The core `compat` module and standalone strict facade require the audited
+serde_json 1.0.151 source. Its registry version has a confirmed non-ASCII bool-key
+safety defect. Consumers need a workspace-root override to the audited source:
+
+```toml
+[patch.crates-io]
+serde_json = { path = "/absolute/path/to/jzon-rs/vendor/serde_json" }
+```
+
+Packaged manifests lose path dependencies; registry-only publication is blocked
+until a verified safe registry source or an explicitly migrated maintained fork
+is available. No fixed upstream release is assumed. Facades still delegate
+upstream and require its dependency. The new incremental reader is slower on the
+measured integer-array workload. See [migration](../../docs/migration-0.4.md) and
+[replacement readiness](../../docs/replacement-readiness.md) for separate verdicts
+and executed evidence.

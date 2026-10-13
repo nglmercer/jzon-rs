@@ -1,0 +1,2 @@
+# Preserve tool-produced log whitespace as executed evidence.
+*.log -whitespace

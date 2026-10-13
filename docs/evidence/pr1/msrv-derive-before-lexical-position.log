@@ -1,0 +1,20 @@
+warning: method `location` is never used
+   --> /home/meme/Documentos/GitHub/jzon-rs/crates/jzon/src/scanner.rs:131:19
+    |
+103 | impl<'de> Scanner<'de> {
+    | ---------------------- method in this implementation
+...
+131 |     pub(crate) fn location(&self, offset: usize) -> (usize, usize) {
+    |                   ^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` on by default
+
+warning: function `try_write_escaped_key_sink` is never used
+  --> /home/meme/Documentos/GitHub/jzon-rs/crates/jzon/src/ser.rs:90:15
+   |
+90 | pub(crate) fn try_write_escaped_key_sink<S: SerializeSink>(
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `jzon-rs` (lib) generated 2 warnings
+    Finished dev [unoptimized + debuginfo] target(s) in 0.09s
+     Running `fixtures/derive/target/debug/derive-consumer`
